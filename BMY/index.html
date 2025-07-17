@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Firebase App -->
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js"></script>
+<!-- Firebase Analytics -->
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-analytics.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC7DtQmA1Wauf4_54E6zYIjw6mKgGSj7i8",
+    authDomain: "brightmind-youth.firebaseapp.com",
+    projectId: "brightmind-youth",
+    storageBucket: "brightmind-youth.firebasestorage.app",
+    messagingSenderId: "626652020125",
+    appId: "1:626652020125:web:17bae66ae6db656d858374",
+    measurementId: "G-RTCTKHE1Q1"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const analytics = firebase.analytics();
+
+  const auth = firebase.auth();
+
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(user => {
+        alert("Login successful!");
+        window.location.href = "resources.html"; // Protect content access
+      })
+      .catch(error => {
+        alert(error.message);
+      });
+  }
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC7DtQmA1Wauf4_54E6zYIjw6mKgGSj7i8",
+    authDomain: "brightmind-youth.firebaseapp.com",
+    projectId: "brightmind-youth",
+    storageBucket: "brightmind-youth.firebasestorage.app",
+    messagingSenderId: "626652020125",
+    appId: "1:626652020125:web:17bae66ae6db656d858374"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // 🔒 Protect page: redirect if not logged in
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = "index.html";
+    }
+  });
+</script>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Firmament - Reaching up for a better you</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #e6fff9, #d1ecf1);
+            color: #333;
+        }
+
+        nav {
+            background-color: #2e8b57;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        nav h1 {
+            color: #fff;
+            margin: 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.2rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li a {
+            color: #ffeb3b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom right, #ffffff, #ccf2e9);
+            border-bottom: 3px solid #2e8b57;
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2e8b57;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+        }
+
+        .section {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section h3 {
+            color: #2e8b57;
+            margin-top: 0;
+        }
+
+        .chatbox {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+
+        input[type="text"], button {
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            border-radius: 5px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #2e8b57;
+            color: #fff;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        #output {
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #2e8b57;
+        }
+
+        .hiring-banner {
+            margin: 3rem auto;
+            max-width: 800px;
+            background-color: #e1ffe1;
+            border-left: 6px solid #2e8b57;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .hiring-banner h3 {
+            margin-top: 0;
+            color: #2e8b57;
+        }
+
+        footer {
+            background-color: #2e8b57;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #ffeb3b;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <h1>The Firmament</h1>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="Res.html">Resources</a></li>
+            <li><a href="#">Mentors</a></li>
+            <li><a href="#">Careers</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <h2>Empowering Teens for a Brighter Future</h2>
+        <p>Resilience, support, and emotal stregth start here 🌟</p>
+    </div>
+
+    <div class="section">
+        <h3>Welcome to The Firmament</h3>
+        <p>We offer guidance, mentorship, and a safe space for teens to explre their mental welless journey. Whatever you're going through, you're not alone—and we’re here to help you thrive.</p>
+
+        <h3>What We Offer</h3>
+        <ul>
+            <li><strong>Emotional Guidance</strong> — Practical strategies to manage stress and anxiety.</li>
+            <li><strong>Wellness Resources</strong> — Articles, vide, and exercises for growth.</li>
+            <li><strong>Peer Mentorship</strong> — Connect with young mentors who care.</li>
+            <li><strong>Chatbot Support</strong> — Ask Zano for help, 24/7.</li>
+        </ul>
+
+        <div class="chatbox">
+            <h3>Ask Zano 💬</h3>
+            <input type="text" id="message" placeholder="Ask something..." />
+            <button onclick="sendMessage()">Ask</button>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <div class="hiring-banner">
+        <h3>🌱 We're Hiring!</h3>
+        <p>Are you passionate about youth wellness and mental health? Join our team and make a difference in young lives. We’re looking for mentors, content creators, and wellness advocates.</p>
+        <p><strong>Apply today:</strong> <a href="mailto:careers@brightmind.org">careers@brightmind.org</a></p>
+    </div>
+
+    <footer>
+        © 2025 BrightMind Youth | <a href="#">Terms</a> | <a href="#">Privacy</a>
+    </footer>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('message').value.toLowerCase();
+            let response = "I'm here to help. Ask me about anxiety, focus, stress, or how to talk to someone.";
+
+            if (input.includes("anxious")) {
+                response = "Try journaling, deep breathing, or talking to someone you trust.";
+            } else if (input.includes("focus")) {
+                response = "Eliminate distractions, break your task into small steps, and take breaks.";
+            } else if (input.includes("stress")) {
+                response = "Exercise, mindfulness, and rest can help. Try a walk or stretch break.";
+            } else if (input.includes("talk") || input.includes("feel")) {
+                response = "Open up with someone you trust. You can also reach out to a mentor or counselor.";
+            }
+
+            document.getElementById('output').innerText = response;
+        }
+    </script>
+
+</body>
+</html>
