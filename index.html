@@ -257,78 +257,83 @@
     <li>💬 Talk to a trusted adult, mentor, or counselor</li>
     <li>🧘 Try grounding: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste</li>
     <li>💌 Write your feelings down—sometimes letting it out helps</li>
-  </ul>
-  <p style="font-weight: bold;">You matter. You are not alone. ❤️</p>
-</div>
-
-
-    <div class="section">
-        <h3>Welcome to The Firmament</h3>
-        <p>We offer guidance, mentorship, and a safe space for teens to explre their mental welless journey. Whatever you're going through, you're not alone—and we’re here to help you thrive.</p>
-
-        <h3>What We Offer</h3>
-        <ul>
-            <li><strong>Emotional Guidance</strong> — Practical strategies to manage stress and anxiety.</li>
-            <li><strong>Wellness Resources</strong> — Articles, vide, and exercises for growth.</li>
-            <li><strong>Peer Mentorship</strong> — Connect with young mentors who care.</li>
-            <li><strong>Chatbot Support</strong> — Ask Zano for help, 24/7.</li>
-        </ul>
-
-        <div class="chatbox">
-            <h3>Ask Zano 💬</h3>
-            <input type="text" id="message" placeholder="Ask something..." />
-            <button onclick="sendMessage()">Ask</button>
-            <div id="output"></div>
-        </div>
+      </ul>
+      <p style="font-weight: bold;">You matter. You are not alone. ❤️</p>
     </div>
 
-    <div class="hiring-banner">
-        <h3>🌱 We're Hiring!</h3>
-        <p>Are you passionate about youth wellness and mental health? Join our team and make a difference in young lives. We’re looking for mentors, content creators, and wellness advocates.</p>
-        <p><strong>Apply today:</strong> <a href="mailto:careers@brightmind.org">careers@brightmind.org</a></p>
+    <h3>Welcome to The Firmament</h3>
+    <p>We offer guidance, mentorship, and a safe space for teens to explore their mental wellness journey. Whatever you're going through, you're not alone—and we’re here to help you thrive.</p>
+
+    <h3>What We Offer</h3>
+    <ul>
+      <li><strong>Emotional Guidance</strong> — Practical strategies to manage stress and anxiety.</li>
+      <li><strong>Wellness Resources</strong> — Articles, videos, and exercises for growth.</li>
+      <li><strong>Peer Mentorship</strong> — Connect with young mentors who care.</li>
+      <li><strong>Chatbot Support</strong> — Ask Zano for help, 24/7.</li>
+    </ul>
+
+    <div class="chatbox" id="zano">
+      <h3>Ask Zano 💬</h3>
+      <input type="text" id="message" placeholder="Ask something..." />
+      <button onclick="sendMessage()">Ask</button>
+      <div id="output"></div>
     </div>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8635193131204885"
-     crossorigin="anonymous"></script>
-<!-- Fixed adds -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
-     data-ad-client="ca-pub-8635193131204885"
-     data-ad-slot="4278970364"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+  </div>
 
-    <footer>
-        © 2025 BrightMind Youth | <a href="#">Terms</a> | <a href="#">Privacy</a>
-    </footer>
+  <div class="hiring-banner">
+    <h3>🌱 We're Hiring!</h3>
+    <p>Are you passionate about youth wellness and mental health? Join our team and make a difference in young lives. We’re looking for mentors, content creators, and wellness advocates.</p>
+    <p><strong>Apply today:</strong> <a href="mailto:careers@brightmind.org">careers@brightmind.org</a></p>
+  </div>
 
-    <script>
-function sendMessage() {
-  const input = document.getElementById('message').value.toLowerCase();
-  let response = "I'm here to help. Ask me about anxiety, focus, stress, depression, or how to talk to someone.";
+  <footer>
+    © 2025 BrightMind Youth | <a href="#">Terms</a> | <a href="#">Privacy</a>
+  </footer>
 
-  if (input.includes("anxious")) {
-    response = "Try journaling, deep breathing, or talking to someone you trust.";
-  } else if (input.includes("focus")) {
-    response = "Eliminate distractions, break your task into small steps, and take breaks.";
-  } else if (input.includes("stress")) {
-    response = "Exercise, mindfulness, and rest can help. Try a walk or stretch break.";
-  } else if (input.includes("talk") || input.includes("feel")) {
-    response = "Open up with someone you trust. You can also reach out to a mentor or counselor.";
-  } else if (input.includes("depressed") || input.includes("sad")) {
-    response = "You're not alone. Feeling low is okay. Try journaling, calling a friend, or reaching out to a mentor.";
-  } else if (input.includes("lonely") || input.includes("alone")) {
-    response = "Loneliness is tough—but connection is possible. Reach out. Someone cares.";
-  } else if (input.includes("panic") || input.includes("attack")) {
-    response = "Try grounding: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste. You're safe.";
-  } else if (input.includes("suicidal") || input.includes("kill") || input.includes("self-harm") || input.includes("hurt myself")) {
-    response = "I'm really sorry you're feeling this way. You're not alone, and help is available. Please call or text the 988 Suicide & Crisis Lifeline. You matter and deserve support.";
-  }
+  <script>
+    function sendMessage() {
+      const input = document.getElementById('message').value.toLowerCase();
+      let response = "I'm here to help. Ask me about anxiety, focus, stress, depression, or how to talk to someone.";
 
-  document.getElementById('output').innerText = response;
-}
+      if (input.includes("anxious")) {
+        response = "Try journaling, deep breathing, or talking to someone you trust.";
+      } else if (input.includes("focus")) {
+        response = "Eliminate distractions, break your task into small steps, and take breaks.";
+      } else if (input.includes("stress")) {
+        response = "Exercise, mindfulness, and rest can help. Try a walk or stretch break.";
+      } else if (input.includes("talk") || input.includes("feel")) {
+        response = "Open up with someone you trust. You can also reach out to a mentor or counselor.";
+      } else if (input.includes("depressed") || input.includes("sad")) {
+        response = "You're not alone. Feeling low is okay. Try journaling, calling a friend, or reaching out to a mentor.";
+      } else if (input.includes("lonely") || input.includes("alone")) {
+        response = "Loneliness is tough—but connection is possible. Reach out. Someone cares.";
+      } else if (input.includes("panic") || input.includes("attack")) {
+        response = "Try grounding: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste. You're safe.";
+      } else if (input.includes("suicidal") || input.includes("kill") || input.includes("self-harm") || input.includes("hurt myself")) {
+        response = "I'm really sorry you're feeling this way. You're not alone, and help is available. Please call or text the 988 Suicide & Crisis Lifeline. You matter and deserve support.";
+      }
 
-    </script>
+      document.getElementById('output').innerText = response;
+    }
 
+    function suggestSupport() {
+      const mood = document.getElementById("mood").value;
+      let message = "";
+
+      if (mood.includes("Sad")) {
+        message = "You're allowed to feel this way. Try journaling, calling a friend, or listening to something peaceful.";
+      } else if (mood.includes("Anxious")) {
+        message = "Focus on your breath: in for 4, hold for 4, out for 6. You're safe. You're okay.";
+      } else if (mood.includes("Angry")) {
+        message = "Anger is energy. Channel it into movement—walk, dance, or punch a pillow safely.";
+      } else if (mood.includes("Calm")) {
+        message = "Beautiful. Protect that calm. Share it, breathe into it, build from it.";
+      } else if (mood.includes("Hopeful")) {
+        message = "That spark of hope is powerful. Use it. What’s one small step you could take today?";
+      }
+
+      document.getElementById("moodResponse").innerText = message;
+    }
+  </script>
 </body>
 </html>
