@@ -1,75 +1,12 @@
 <!DOCTYPE html>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8635193131204885"
-     crossorigin="anonymous"></script>
-<meta name="google-site-verification" content="1J0nAurbk76Yv7R41-78n_H9572lQJn9vFtyr91CFwg" />
 <html lang="en">
-<!-- Firebase App -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
-<!-- Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js"></script>
-<!-- Firebase Analytics -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-analytics.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC7DtQmA1Wauf4_54E6zYIjw6mKgGSj7i8",
-    authDomain: "brightmind-youth.firebaseapp.com",
-    projectId: "brightmind-youth",
-    storageBucket: "brightmind-youth.firebasestorage.app",
-    messagingSenderId: "626652020125",
-    appId: "1:626652020125:web:17bae66ae6db656d858374",
-    measurementId: "G-RTCTKHE1Q1"
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const analytics = firebase.analytics();
-
-  const auth = firebase.auth();
-
-  function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    auth.signInWithEmailAndPassword(email, password)
-      .then(user => {
-        alert("Login successful!");
-        window.location.href = "resources.html"; // Protect content access
-      })
-      .catch(error => {
-        alert(error.message);
-      });
-  }
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC7DtQmA1Wauf4_54E6zYIjw6mKgGSj7i8",
-    authDomain: "brightmind-youth.firebaseapp.com",
-    projectId: "brightmind-youth",
-    storageBucket: "brightmind-youth.firebasestorage.app",
-    messagingSenderId: "626652020125",
-    appId: "1:626652020125:web:17bae66ae6db656d858374"
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // 🔒 Protect page: redirect if not logged in
-  auth.onAuthStateChanged(user => {
-    if (!user) {
-      window.location.href = "index.html";
-    }
-  });
-</script>
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png">
-    <title>The Firmament - Reaching up for a better you</title>
-    <style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Firmament – A Brighter You</title>
+  <link rel="icon" href="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png" type="image/png">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8635193131204885" crossorigin="anonymous"></script>
+  <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -77,203 +14,166 @@
       background: linear-gradient(to bottom right, #007CF0, #00DFD8);
       color: #333;
     }
-
     nav {
       background-color: #0040A0;
-      padding: 0.5rem 0.5rem;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
     }
-
+    nav h1 {
+      font-size: 2rem;
+      color: #00DFD8;
+      display: flex;
+      align-items: center;
+    }
     nav h1 img {
-      height: 95px;
-      vertical-align: middle;
+      height: 80px;
       margin-right: 12px;
     }
-
-    nav h1,
-    .hero h2,
-    .section h3,
-    .hiring-banner h3,
-    #output {
-      color: #00DFD8;
-      margin: 0;
-    }
-
     nav ul {
       list-style: none;
       display: flex;
-      gap: 1.2rem;
+      gap: 1rem;
       margin: 0;
       padding: 0;
     }
-
     nav ul li a {
       color: #00DFD8;
-      text-decoration: none;
       font-weight: bold;
+      text-decoration: none;
     }
-
     .hero {
       text-align: center;
-      padding: 4rem 2rem;
+      padding: 3rem 2rem;
       background: linear-gradient(to bottom right, #ffffff, #b3e5fc);
       border-bottom: 3px solid #0040A0;
     }
-
-    .hero p {
-      font-size: 1.1rem;
+    .hero h2 {
+      color: #0040A0;
     }
-
     .section {
       max-width: 900px;
       margin: 2rem auto;
       padding: 2rem;
-      background-color: #fff;
+      background: #fff;
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-
+    .section h3 {
+      color: #0040A0;
+    }
     .chatbox {
-      background-color: #f9f9f9;
+      background: #f9f9f9;
       padding: 1rem;
       border-radius: 10px;
       margin-top: 2rem;
     }
-
-    input[type="text"],
-    button {
-      padding: 0.5rem 1rem;
+    input[type="text"], select, textarea, button {
       margin-top: 1rem;
-      border-radius: 5px;
-      border: none;
+      padding: 0.5rem;
       font-size: 1rem;
-    }
-
-    input[type="text"] {
-      width: 70%;
+      border-radius: 5px;
       border: 1px solid #ccc;
     }
-
-    button {
-      background-color: #0040A0;
-      color: #fff;
-      cursor: pointer;
-      margin-left: 0.5rem;
+    input[type="text"], select, textarea {
+      width: 100%;
     }
-
+    button {
+      background: #0040A0;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
     .hiring-banner {
-      margin: 3rem auto;
-      max-width: 800px;
-      background-color: #e0f7fa;
+      background: #e0f7fa;
       border-left: 6px solid #0040A0;
       padding: 1.5rem;
+      margin: 3rem auto;
+      max-width: 800px;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-
     footer {
-      background-color: #0040A0;
+      background: #0040A0;
       color: #fff;
-      padding: 0.5rem;
       text-align: center;
-      font-size: 1rem;
+      padding: 1rem;
+      font-size: 0.9rem;
     }
-
     footer a {
       color: #00DFD8;
       text-decoration: none;
     }
-    </style>
+  </style>
 </head>
 <body>
 
-    <nav>
-        <h1><img src="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png">The Firmament</h1>
-        <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="Res.html">Resources</a></li>
-            <li><a href="form.html">Contact</a></li>
-            <li><a href="#">Careers</a></li>
-        </ul>
-    </nav>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8635193131204885"
-     crossorigin="anonymous"></script>
-<!-- Fixed adds -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
-     data-ad-client="ca-pub-8635193131204885"
-     data-ad-slot="4278970364"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-    <div class="hero">
-        <h2>Empowering the Ones who Need for a Brighter Future</h2>
-        <p>Resilience, support, and emotional strength start here 🌟</p>
-    </div>
-     <!-- Add this inside your <div class="section"> -->
-
-<h3>Your Mental Wellness Check-In 🧠</h3>
-<p>Answer honestly. There are no wrong answers—just paths to support.</p>
-<ul>
-  <li>Do you often feel sad or empty?</li>
-  <li>Do you find it hard to enjoy things you used to love?</li>
-  <li>Do you struggle with anxiety or racing thoughts?</li>
-  <li>Do you feel overwhelmed even by small tasks?</li>
-  <li>Have you been sleeping too little—or too much?</li>
-</ul>
-<p>If any of these sound familiar, you're not alone. Let's explore ways to cope together.</p>
-
-<h3>Mood Tracker 🌈</h3>
-<label for="mood">How are you feeling right now?</label>
-<select id="mood">
-  <option>😔 Sad</option>
-  <option>😨 Anxious</option>
-  <option>😠 Angry</option>
-  <option>😌 Calm</option>
-  <option>😊 Hopeful</option>
-</select>
-<button onclick="suggestSupport()">Get Support Tip</button>
-<div id="moodResponse" style="margin-top: 1rem; font-weight: bold; color: #0040A0;"></div>
-
-<h3>Express Yourself 💬</h3>
-<textarea rows="5" cols="70" placeholder="Write what’s on your mind. This won’t be saved—it’s just for you."></textarea>
-
-<h3>Mental Health Toolkit 🧰</h3>
-<ul>
-  <li><strong>🌬️ Breathing Exercise:</strong> Inhale for 4, hold for 4, exhale for 6. Repeat 5 times.</li>
-  <li><strong>🎧 Guided Meditation:</strong> <a href="https://www.youtube.com/watch?v=inpok4MKVLM" target="_blank">Try this calming video</a>.</li>
-  <li><strong>📞 Crisis Line:</strong> If you're in the U.S. and need urgent help, call or text <strong>988</strong>.</li>
-  <li><strong>🛌 Night Routine:</strong> Turn off screens 30 minutes before bed, stretch, and write a gratitude note.</li>
-</ul>
-
-<div style="margin-top: 2rem; background-color: #ffecec; border-left: 6px solid #ff3b3b; padding: 1rem; border-radius: 8px;">
-  <h3 style="color: #ff3b3b;">Feeling Overwhelmed or Unsafe?</h3>
-  <p>Your feelings are valid, and help is available. If you're having thoughts of self-harm or suicide, please reach out to someone.</p>
-  <ul>
-    <li>📞 Call or text <strong>988</strong> in the U.S. (Suicide & Crisis Lifeline)</li>
-    <li>💬 Talk to a trusted adult, mentor, or counselor</li>
-    <li>🧘 Try grounding: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste</li>
-    <li>💌 Write your feelings down—sometimes letting it out helps</li>
-      </ul>
-      <p style="font-weight: bold;">You matter. You are not alone. ❤️</p>
-    </div>
-
-    <h3>Welcome to The Firmament</h3>
-    <p>We offer guidance, mentorship, and a safe space for teens to explore their mental wellness journey. Whatever you're going through, you're not alone—and we’re here to help you thrive.</p>
-
-    <h3>What We Offer</h3>
+  <nav>
+    <h1><img src="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png" alt="Logo">The Firmament</h1>
     <ul>
-      <li><strong>Emotional Guidance</strong> — Practical strategies to manage stress and anxiety.</li>
-      <li><strong>Wellness Resources</strong> — Articles, videos, and exercises for growth.</li>
-      <li><strong>Peer Mentorship</strong> — Connect with young mentors who care.</li>
-      <li><strong>Chatbot Support</strong> — Ask Zano for help, 24/7.</li>
+      <li><a href="#">Home</a></li>
+      <li><a href="Res.html">Resources</a></li>
+      <li><a href="form.html">Contact</a></li>
+      <li><a href="#">Careers</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero">
+    <h2>Empowering Youth for a Brighter Future</h2>
+    <p>Resilience, support, and emotional strength start here 🌟</p>
+  </div>
+
+  <div class="section">
+    <h3>Your Mental Wellness Check-In 🧠</h3>
+    <p>If these sound familiar, you're not alone. We're here to help.</p>
+    <ul>
+      <li>Feeling sad or empty</li>
+      <li>Losing interest in activities</li>
+      <li>Racing thoughts or anxiety</li>
+      <li>Overwhelmed by small tasks</li>
+      <li>Changes in sleep or appetite</li>
     </ul>
 
-    <div class="chatbox" id="zano">
-      <h3>Ask Zano 💬</h3>
+    <h3>Mood Tracker 🌈</h3>
+    <label for="mood">How are you feeling?</label>
+    <select id="mood">
+      <option>😔 Sad</option>
+      <option>😨 Anxious</option>
+      <option>😠 Angry</option>
+      <option>😌 Calm</option>
+      <option>😊 Hopeful</option>
+    </select>
+    <button onclick="suggestSupport()">Get Support Tip</button>
+    <div id="moodResponse"></div>
+
+    <h3>Express Yourself 💬</h3>
+    <textarea rows="5" placeholder="Write what’s on your mind… this won't be saved. Let it out."></textarea>
+
+    <h3>Mental Health Toolkit 🧰</h3>
+    <ul>
+      <li><strong>🌬️ Breathing:</strong> Inhale for 4, hold 4, exhale for 6</li>
+      <li><strong>🎧 Meditation:</strong> <a href="https://www.youtube.com/watch?v=inpok4MKVLM" target="_blank">Try this calming video</a></li>
+      <li><strong>📞 Crisis Line:</strong> Call or text <strong>988</strong> in the U.S.</li>
+      <li><strong>🛌 Sleep Tips:</strong> Stretch, reflect, unplug before bed</li>
+    </ul>
+
+    <div style="margin-top: 2rem; background: #ffecec; border-left: 6px solid #ff3b3b; padding: 1rem; border-radius: 8px;">
+      <h3 style="color: #ff3b3b;">Feeling Unsafe or Overwhelmed?</h3>
+      <p>Your emotions matter. If you're having thoughts of self-harm or suicide, you're not alone.</p>
+      <ul>
+        <li>📞 Call or text <strong>988</strong> (Suicide & Crisis Lifeline)</li>
+        <li>💬 Speak with someone you trust</li>
+        <li>🧘 Use grounding: 5 things you see, 4 you can touch…</li>
+        <li>✍️ Journaling helps you release what's inside</li>
+      </ul>
+      <p><strong>You matter. Help is here. ❤️</strong></p>
+    </div>
+
+    <h3>Ask Zano 💬</h3>
+    <div class="chatbox">
       <input type="text" id="message" placeholder="Ask something..." />
       <button onclick="sendMessage()">Ask</button>
       <div id="output"></div>
@@ -281,10 +181,14 @@
   </div>
 
   <div class="hiring-banner">
-    <h3>🌱 We're Hiring!</h3>
-    <p>Are you passionate about youth wellness and mental health? Join our team and make a difference in young lives. We’re looking for mentors, content creators, and wellness advocates.</p>
-    <p><strong>Apply today:</strong> <a href="mailto:careers@brightmind.org">careers@brightmind.org</a></p>
+    <h3>🌱 We’re Hiring</h3>
+    <p>If you care about youth, wellness, and making a difference—come join us. We need mentors, designers, and creatives.</p>
+    <p><strong>Email us:</strong> <a href="mailto:careers@brightmind.org">careers@brightmind.org</a></p>
   </div>
+
+  <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px"
+    data-ad-client="ca-pub-8635193131204885" data-ad-slot="4278970364"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 
   <footer>
     © 2025 BrightMind Youth | <a href="#">Terms</a> | <a href="#">Privacy</a>
