@@ -213,6 +213,54 @@
         <h2>Empowering the Ones who Need for a Brighter Future</h2>
         <p>Resilience, support, and emotional strength start here 🌟</p>
     </div>
+     <!-- Add this inside your <div class="section"> -->
+
+<h3>Your Mental Wellness Check-In 🧠</h3>
+<p>Answer honestly. There are no wrong answers—just paths to support.</p>
+<ul>
+  <li>Do you often feel sad or empty?</li>
+  <li>Do you find it hard to enjoy things you used to love?</li>
+  <li>Do you struggle with anxiety or racing thoughts?</li>
+  <li>Do you feel overwhelmed even by small tasks?</li>
+  <li>Have you been sleeping too little—or too much?</li>
+</ul>
+<p>If any of these sound familiar, you're not alone. Let's explore ways to cope together.</p>
+
+<h3>Mood Tracker 🌈</h3>
+<label for="mood">How are you feeling right now?</label>
+<select id="mood">
+  <option>😔 Sad</option>
+  <option>😨 Anxious</option>
+  <option>😠 Angry</option>
+  <option>😌 Calm</option>
+  <option>😊 Hopeful</option>
+</select>
+<button onclick="suggestSupport()">Get Support Tip</button>
+<div id="moodResponse" style="margin-top: 1rem; font-weight: bold; color: #0040A0;"></div>
+
+<h3>Express Yourself 💬</h3>
+<textarea rows="5" cols="70" placeholder="Write what’s on your mind. This won’t be saved—it’s just for you."></textarea>
+
+<h3>Mental Health Toolkit 🧰</h3>
+<ul>
+  <li><strong>🌬️ Breathing Exercise:</strong> Inhale for 4, hold for 4, exhale for 6. Repeat 5 times.</li>
+  <li><strong>🎧 Guided Meditation:</strong> <a href="https://www.youtube.com/watch?v=inpok4MKVLM" target="_blank">Try this calming video</a>.</li>
+  <li><strong>📞 Crisis Line:</strong> If you're in the U.S. and need urgent help, call or text <strong>988</strong>.</li>
+  <li><strong>🛌 Night Routine:</strong> Turn off screens 30 minutes before bed, stretch, and write a gratitude note.</li>
+</ul>
+
+<div style="margin-top: 2rem; background-color: #ffecec; border-left: 6px solid #ff3b3b; padding: 1rem; border-radius: 8px;">
+  <h3 style="color: #ff3b3b;">Feeling Overwhelmed or Unsafe?</h3>
+  <p>Your feelings are valid, and help is available. If you're having thoughts of self-harm or suicide, please reach out to someone.</p>
+  <ul>
+    <li>📞 Call or text <strong>988</strong> in the U.S. (Suicide & Crisis Lifeline)</li>
+    <li>💬 Talk to a trusted adult, mentor, or counselor</li>
+    <li>🧘 Try grounding: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste</li>
+    <li>💌 Write your feelings down—sometimes letting it out helps</li>
+  </ul>
+  <p style="font-weight: bold;">You matter. You are not alone. ❤️</p>
+</div>
+
 
     <div class="section">
         <h3>Welcome to The Firmament</h3>
@@ -255,22 +303,31 @@
     </footer>
 
     <script>
-        function sendMessage() {
-            const input = document.getElementById('message').value.toLowerCase();
-            let response = "I'm here to help. Ask me about anxiety, focus, stress, or how to talk to someone.";
+function sendMessage() {
+  const input = document.getElementById('message').value.toLowerCase();
+  let response = "I'm here to help. Ask me about anxiety, focus, stress, depression, or how to talk to someone.";
 
-            if (input.includes("anxious")) {
-                response = "Try journaling, deep breathing, or talking to someone you trust.";
-            } else if (input.includes("focus")) {
-                response = "Eliminate distractions, break your task into small steps, and take breaks.";
-            } else if (input.includes("stress")) {
-                response = "Exercise, mindfulness, and rest can help. Try a walk or stretch break.";
-            } else if (input.includes("talk") || input.includes("feel")) {
-                response = "Open up with someone you trust. You can also reach out to a mentor or counselor.";
-            }
+  if (input.includes("anxious")) {
+    response = "Try journaling, deep breathing, or talking to someone you trust.";
+  } else if (input.includes("focus")) {
+    response = "Eliminate distractions, break your task into small steps, and take breaks.";
+  } else if (input.includes("stress")) {
+    response = "Exercise, mindfulness, and rest can help. Try a walk or stretch break.";
+  } else if (input.includes("talk") || input.includes("feel")) {
+    response = "Open up with someone you trust. You can also reach out to a mentor or counselor.";
+  } else if (input.includes("depressed") || input.includes("sad")) {
+    response = "You're not alone. Feeling low is okay. Try journaling, calling a friend, or reaching out to a mentor.";
+  } else if (input.includes("lonely") || input.includes("alone")) {
+    response = "Loneliness is tough—but connection is possible. Reach out. Someone cares.";
+  } else if (input.includes("panic") || input.includes("attack")) {
+    response = "Try grounding: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste. You're safe.";
+  } else if (input.includes("suicidal") || input.includes("kill") || input.includes("self-harm") || input.includes("hurt myself")) {
+    response = "I'm really sorry you're feeling this way. You're not alone, and help is available. Please call or text the 988 Suicide & Crisis Lifeline. You matter and deserve support.";
+  }
 
-            document.getElementById('output').innerText = response;
-        }
+  document.getElementById('output').innerText = response;
+}
+
     </script>
 
 </body>
