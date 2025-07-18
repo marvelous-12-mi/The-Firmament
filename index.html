@@ -70,139 +70,122 @@
     <link rel="icon" type="image/png" href="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png">
     <title>The Firmament - Reaching up for a better you</title>
     <style>
-      nav h1 img {
-    height: 50px;           /* Adjust size to fit comfortably */
-    vertical-align: middle; /* Align with text */
-    margin-right: 12px;     /* Space between image and title text */
-}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #007CF0, #00DFD8);
+      color: #333;
+    }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to bottom right, #e6fff9, #d1ecf1);
-            color: #333;
-        }
+    nav {
+      background-color: #0040A0;
+      padding: 0.5rem 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
 
-        nav {
-            background-color: #2e8b57;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    nav h1 img {
+      height: 95px;
+      vertical-align: middle;
+      margin-right: 12px;
+    }
 
-        nav h1 {
-            color: #fff;
-            margin: 0;
-        }
+    nav h1,
+    .hero h2,
+    .section h3,
+    .hiring-banner h3,
+    #output {
+      color: #0040A0;
+      margin: 0;
+    }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 1.2rem;
-            margin: 0;
-            padding: 0;
-        }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.2rem;
+      margin: 0;
+      padding: 0;
+    }
 
-        nav ul li a {
-            color: #ffeb3b;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    nav ul li a {
+      color: #00DFD8;
+      text-decoration: none;
+      font-weight: bold;
+    }
 
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(to bottom right, #ffffff, #ccf2e9);
-            border-bottom: 3px solid #2e8b57;
-        }
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(to bottom right, #ffffff, #b3e5fc);
+      border-bottom: 3px solid #0040A0;
+    }
 
-        .hero h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #2e8b57;
-        }
+    .hero p {
+      font-size: 1.1rem;
+    }
 
-        .hero p {
-            font-size: 1.1rem;
-        }
+    .section {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        .section {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    .chatbox {
+      background-color: #f9f9f9;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+    }
 
-        .section h3 {
-            color: #2e8b57;
-            margin-top: 0;
-        }
+    input[type="text"],
+    button {
+      padding: 0.5rem 1rem;
+      margin-top: 1rem;
+      border-radius: 5px;
+      border: none;
+      font-size: 1rem;
+    }
 
-        .chatbox {
-            background-color: #f9f9f9;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-top: 2rem;
-        }
+    input[type="text"] {
+      width: 70%;
+      border: 1px solid #ccc;
+    }
 
-        input[type="text"], button {
-            padding: 0.5rem 1rem;
-            margin-top: 1rem;
-            border-radius: 5px;
-            border: none;
-            font-size: 1rem;
-        }
+    button {
+      background-color: #0040A0;
+      color: #fff;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
 
-        input[type="text"] {
-            width: 70%;
-            border: 1px solid #ccc;
-        }
+    .hiring-banner {
+      margin: 3rem auto;
+      max-width: 800px;
+      background-color: #e0f7fa;
+      border-left: 6px solid #0040A0;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        button {
-            background-color: #2e8b57;
-            color: #fff;
-            cursor: pointer;
-            margin-left: 0.5rem;
-        }
+    footer {
+      background-color: #0040A0;
+      color: #fff;
+      padding: 0.5rem;
+      text-align: center;
+      font-size: 1rem;
+    }
 
-        #output {
-            margin-top: 1rem;
-            font-weight: bold;
-            color: #2e8b57;
-        }
-
-        .hiring-banner {
-            margin: 3rem auto;
-            max-width: 800px;
-            background-color: #e1ffe1;
-            border-left: 6px solid #2e8b57;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        .hiring-banner h3 {
-            margin-top: 0;
-            color: #2e8b57;
-        }
-
-        footer {
-            background-color: #2e8b57;
-            color: #fff;
-            padding: 1rem;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: #ffeb3b;
-            text-decoration: none;
-        }
+    footer a {
+      color: #00DFD8;
+      text-decoration: none;
+    }
     </style>
 </head>
 <body>
