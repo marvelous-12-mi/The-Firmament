@@ -1,273 +1,163 @@
 <!DOCTYPE html>
-<meta name="google-site-verification" content="1J0nAurbk76Yv7R41-78n_H9572lQJn9vFtyr91CFwg" />
 <html lang="en">
-<!-- Firebase App -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
-<!-- Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js"></script>
-<!-- Firebase Analytics -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-analytics.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC7DtQmA1Wauf4_54E6zYIjw6mKgGSj7i8",
-    authDomain: "brightmind-youth.firebaseapp.com",
-    projectId: "brightmind-youth",
-    storageBucket: "brightmind-youth.firebasestorage.app",
-    messagingSenderId: "626652020125",
-    appId: "1:626652020125:web:17bae66ae6db656d858374",
-    measurementId: "G-RTCTKHE1Q1"
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const analytics = firebase.analytics();
-
-  const auth = firebase.auth();
-
-  function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    auth.signInWithEmailAndPassword(email, password)
-      .then(user => {
-        alert("Login successful!");
-        window.location.href = "resources.html"; // Protect content access
-      })
-      .catch(error => {
-        alert(error.message);
-      });
-  }
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC7DtQmA1Wauf4_54E6zYIjw6mKgGSj7i8",
-    authDomain: "brightmind-youth.firebaseapp.com",
-    projectId: "brightmind-youth",
-    storageBucket: "brightmind-youth.firebasestorage.app",
-    messagingSenderId: "626652020125",
-    appId: "1:626652020125:web:17bae66ae6db656d858374"
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // 🔒 Protect page: redirect if not logged in
-  auth.onAuthStateChanged(user => {
-    if (!user) {
-      window.location.href = "index.html";
-    }
-  });
-</script>
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png">
-    <title>The Firmament - Reaching up for a better you</title>
-    <style>
-      nav h1 img {
-    height: 50px;           /* Adjust size to fit comfortably */
-    vertical-align: middle; /* Align with text */
-    margin-right: 12px;     /* Space between image and title text */
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farmer House Productions</title>
+  <link rel="icon" href="https://lh3.googleusercontent.com/a-/ALV-UjWGE1XaaoESN_OVRbfg0LBNpQmcN5phwNxzFZs5tSLWWPch7gSH=s120-p-k-rw-no" type="image/png" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(to bottom right, #0a0a0a, #1a001a);
+      color: #e0d6ff;
+      overflow-x: hidden;
+    }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to bottom right, #e6fff9, #d1ecf1);
-            color: #333;
-        }
+    header {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+      background: linear-gradient(to right, #2e003e, #000000);
+      color: #cfaaff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
 
-        nav {
-            background-color: #2e8b57;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    .logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1rem;
+      background-image: url('https://lh3.googleusercontent.com/a-/ALV-UjWGE1XaaoESN_OVRbfg0LBNpQmcN5phwNxzFZs5tSLWWPch7gSH=s120-p-k-rw-no'); /* Replace with actual logo path */
+      background-size: cover;
+      background-position: center;
+      border-radius: 20%;
+      box-shadow: 0 0 20px #a64aff;
+    }
 
-        nav h1 {
-            color: #fff;
-            margin: 0;
-        }
+    header h1 {
+      font-size: 2.8rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px #4b0082;
+    }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 1.2rem;
-            margin: 0;
-            padding: 0;
-        }
+    header p {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: #d8bfff;
+    }
 
-        nav ul li a {
-            color: #ffeb3b;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    .intro {
+      padding: 2rem;
+      background: #1a001a;
+      border-top: 2px solid #4b0082;
+      border-bottom: 2px solid #4b0082;
+    }
 
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(to bottom right, #ffffff, #ccf2e9);
-            border-bottom: 3px solid #2e8b57;
-        }
+    .intro h2 {
+      color: #b88aff;
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+    }
 
-        .hero h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #2e8b57;
-        }
+    .gallery {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
 
-        .hero p {
-            font-size: 1.1rem;
-        }
+    .project-card {
+      background: linear-gradient(135deg, #2e003e, #000000);
+      padding: 1.5rem;
+      border-radius: 10px;
+      color: #e0d6ff;
+      box-shadow: 0 0 10px #4b0082;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      position: relative;
+    }
 
-        .section {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    .project-card:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #4b0082, #1a001a);
+      box-shadow: 0 0 20px #a64aff;
+    }
 
-        .section h3 {
-            color: #2e8b57;
-            margin-top: 0;
-        }
+    .project-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(to right, #00ffff, #ffd700);
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
 
-        .chatbox {
-            background-color: #f9f9f9;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-top: 2rem;
-        }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #0a0a0a;
+      color: #888;
+      font-size: 0.9rem;
+      border-top: 1px solid #4b0082;
+    }
 
-        input[type="text"], button {
-            padding: 0.5rem 1rem;
-            margin-top: 1rem;
-            border-radius: 5px;
-            border: none;
-            font-size: 1rem;
-        }
+    .welcome {
+      text-align: center;
+      font-size: 1.5rem;
+      margin: 2rem;
+      color: #ffd700;
+      animation: fadeIn 2s ease-in-out;
+    }
 
-        input[type="text"] {
-            width: 70%;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background-color: #2e8b57;
-            color: #fff;
-            cursor: pointer;
-            margin-left: 0.5rem;
-        }
-
-        #output {
-            margin-top: 1rem;
-            font-weight: bold;
-            color: #2e8b57;
-        }
-
-        .hiring-banner {
-            margin: 3rem auto;
-            max-width: 800px;
-            background-color: #e1ffe1;
-            border-left: 6px solid #2e8b57;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        .hiring-banner h3 {
-            margin-top: 0;
-            color: #2e8b57;
-        }
-
-        footer {
-            background-color: #2e8b57;
-            color: #fff;
-            padding: 1rem;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: #ffeb3b;
-            text-decoration: none;
-        }
-    </style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="logo"></div>
+    <h1>Farmer House Productions</h1>
+    <p>Filming in Any Style. Storytelling Without Limits.</p>
+  </header>
 
-    <nav>
-        <h1><img src="https://bing.com/th/id/BCO.1e93ebe8-d824-4468-aa97-0f3e7dbb667c.png">The Firmament</h1>
-        <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="Res.html">Resources</a></li>
-            <li><a href="form.html">Contact</a></li>
-            <li><a href="#">Careers</a></li>
-        </ul>
-    </nav>
+  <div class="welcome" id="welcomeMessage"></div>
 
-    <div class="hero">
-        <h2>Empowering Teens for a Brighter Future</h2>
-        <p>Resilience, support, and emotal stregth start here 🌟</p>
-    </div>
+  <section class="intro">
+    <h2>Our Vision</h2>
+    <p>From mythic storytelling to street-level realism, we craft visuals that move minds and shift culture. Whether it's animation, live action, or experimental formats—we make it cinematic.</p>
+  </section>
 
-    <div class="section">
-        <h3>Welcome to The Firmament</h3>
-        <p>We offer guidance, mentorship, and a safe space for teens to explre their mental welless journey. Whatever you're going through, you're not alone—and we’re here to help you thrive.</p>
+  <section class="gallery">
+    <h2>Featured Projects</h2>
+    <div class="project-card">🎥 Lego Movie</div>
+    <div class="project-card">🎬 AI Heroes Showcase</div>
+  </section>
 
-        <h3>What We Offer</h3>
-        <ul>
-            <li><strong>Emotional Guidance</strong> — Practical strategies to manage stress and anxiety.</li>
-            <li><strong>Wellness Resources</strong> — Articles, vide, and exercises for growth.</li>
-            <li><strong>Peer Mentorship</strong> — Connect with young mentors who care.</li>
-            <li><strong>Chatbot Support</strong> — Ask Zano for help, 24/7.</li>
-        </ul>
+  <footer>
+    <p>&copy; 2025 Farmer House Productions. All rights reserved.</p>
+  </footer>
 
-        <div class="chatbox">
-            <h3>Ask Zano 💬</h3>
-            <input type="text" id="message" placeholder="Ask something..." />
-            <button onclick="sendMessage()">Ask</button>
-            <div id="output"></div>
-        </div>
-    </div>
-
-    <div class="hiring-banner">
-        <h3>🌱 We're Hiring!</h3>
-        <p>Are you passionate about youth wellness and mental health? Join our team and make a difference in young lives. We’re looking for mentors, content creators, and wellness advocates.</p>
-        <p><strong>Apply today:</strong> <a href="mailto:careers@brightmind.org">careers@brightmind.org</a></p>
-    </div>
-
-    <footer>
-        © 2025 BrightMind Youth | <a href="#">Terms</a> | <a href="#">Privacy</a>
-    </footer>
-
-    <script>
-        function sendMessage() {
-            const input = document.getElementById('message').value.toLowerCase();
-            let response = "I'm here to help. Ask me about anxiety, focus, stress, or how to talk to someone.";
-
-            if (input.includes("anxious")) {
-                response = "Try journaling, deep breathing, or talking to someone you trust.";
-            } else if (input.includes("focus")) {
-                response = "Eliminate distractions, break your task into small steps, and take breaks.";
-            } else if (input.includes("stress")) {
-                response = "Exercise, mindfulness, and rest can help. Try a walk or stretch break.";
-            } else if (input.includes("talk") || input.includes("feel")) {
-                response = "Open up with someone you trust. You can also reach out to a mentor or counselor.";
-            }
-
-            document.getElementById('output').innerText = response;
-        }
-    </script>
-
+  <script>
+    // Cool JavaScript: Dynamic welcome message
+    const welcome = document.getElementById("welcomeMessage");
+    const messages = [
+      "🎬 Welcome to the House of Vision.",
+      "🚀 Where every frame tells a story.",
+      "🎥 Farmer House: Style is limitless."
+    ];
+    let i = 0;
+    setInterval(() => {
+      welcome.textContent = messages[i];
+      i = (i + 1) % messages.length;
+    }, 4000);
+  </script>
 </body>
 </html>
