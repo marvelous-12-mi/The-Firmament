@@ -1,391 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Farmer House Productions</title>
-  <link rel="icon" href="https://lh3.googleusercontent.com/a-/ALV-UjWGE1XaaoESN_OVRbfg0LBNpQmcN5phwNxzFZs5tSLWWPch7gSH=s120-p-k-rw-no" type="image/png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/scrollreveal"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(to bottom right, #0a0a0a, #1a001a);
-      color: #eaeaea;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    #starfield {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: -2;
-      width: 100%;
-      height: 100%;
-    }
-
-    #loader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      animation: fadeOut 2s ease forwards;
-      animation-delay: 2s;
-    }
-
-    #loader h1 {
-      font-size: 4rem;
-      color: #a64aff;
-      text-shadow: 0 0 20px #a64aff;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.6; }
-    }
-
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
-
-    #soundToggle {
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
-      z-index: 1001;
-      background: #222;
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    nav {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      padding: 1rem 2rem;
-      z-index: 1000;
-      display: flex;
-      justify-content: center;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 2rem;
-    }
-
-    nav ul li a {
-      color: #ffffff;
-      text-decoration: none;
-      text-transform: uppercase;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-
-    nav ul li a:hover {
-      color: #ffd700;
-    }
-
-    .hero {
-      position: relative;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .bg-video {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-      opacity: 0.2;
-    }
-
-    .hero-text h1 {
-      font-size: 4rem;
-      color: #ffffff;
-      text-shadow: 2px 2px #4b0082;
-      transition: transform 0.2s ease;
-    }
-
-    .hero-text p {
-      font-size: 1.5rem;
-      color: #ffd700;
-      margin-top: 1rem;
-    }
-
-    .logo {
-      width: 120px;
-      height: 120px;
-      margin: 2rem auto;
-      background-image: url('https://lh3.googleusercontent.com/a-/ALV-UjWGE1XaaoESN_OVRbfg0LBNpQmcN5phwNxzFZs5tSLWWPch7gSH=s120-p-k-rw-no');
-      background-size: cover;
-      background-position: center;
-      border-radius: 20%;
-      box-shadow: 0 0 30px #a64aff;
-    }
-
-    .welcome {
-      font-size: 1.5rem;
-      text-align: center;
-      margin: 2rem;
-      color: #ffffff;
-    }
-
-    .section {
-      padding: 4rem 2rem;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    .section h2 {
-      font-size: 2rem;
-      color: #ffffff;
-      margin-bottom: 1rem;
-    }
-
-    .section p {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      color: #d8bfff;
-    }
-
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      margin-top: 2rem;
-    }
-
-    .project-card {
-      background: linear-gradient(135deg, #2e003e, #000000);
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #4b0082;
-      text-align: center;
-      font-weight: bold;
-      border: 1px solid #ffffff;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-    }
-
-    .project-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px #a64aff;
-    }
-
-    footer {
-      text-align: center;
-      padding: 2rem;
-      background: #000;
-      color: #888;
-      font-size: 0.9rem;
-      border-top: 1px solid #222;
-    }
-
-    #statusBar {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>SuperIntellect Elite</title>
+<style>
+  body { font-family: "Segoe UI"; background:#111418; color:#e6edf3; margin:0; display:flex; justify-content:center; align-items:center; height:100vh;}
+  #app { width:100%; max-width:900px; height:90vh; background:#111418; border-radius:14px; box-shadow:0 0 30px rgba(255,215,0,0.15); display:flex; flex-direction:column; overflow:hidden; border:1px solid rgba(255,215,0,0.2);}
+  header { background: linear-gradient(90deg,#1a1f29,#2a2f3d); padding:15px 20px; font-size:1.3em; font-weight:bold; border-bottom:1px solid #2d333b; color:gold; text-shadow:0 0 12px rgba(255,215,0,0.6);}
+  #chat { flex:1; padding:20px; overflow-y:auto; }
+  .msg { margin:10px 0; padding:12px 16px; border-radius:10px; max-width:70%; line-height:1.4; animation:fadeIn 0.3s ease;}
+  .user { background: linear-gradient(135deg,#ff6f61,#ffcc00); color:#000; margin-left:auto; text-align:right; font-weight:500;}
+  .ai { background: rgba(255,255,255,0.08); border:1px solid rgba(255,215,0,0.3); color:#f1f1f1; margin-right:auto; text-align:left;}
+  @keyframes fadeIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  #inputBox { display:flex; padding:15px; background:#1f2937; border-top:1px solid #2d333b;}
+  #userInput { flex:1; padding:12px; border-radius:8px; border:none; outline:none; font-size:1em; background:#0d1117; color:#fff; }
+  button { margin-left:10px; padding:12px 18px; border:none; border-radius:8px; font-size:1em; background:gold; color:#000; font-weight:bold; cursor:pointer; transition:0.2s; }
+  button:hover { background:#e6c300; }
+  #thinking { margin:10px; font-style:italic; color:gold; display:none; animation:pulse 1s infinite; }
+  @keyframes pulse { 0%{opacity:0.3;} 50%{opacity:1;} 100%{opacity:0.3;} }
+  #auth { width:350px; background:#161b22; padding:30px; border-radius:12px; box-shadow:0 0 20px rgba(255,215,0,0.25); text-align:center; border:1px solid rgba(255,215,0,0.3);}
+  #auth h2 { color: gold; margin-bottom:20px; }
+  #auth input { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:none; background:#0d1117; color:#fff; }
+  #auth button { width:100%; margin-top:10px; }
+  .hidden { display:none; }
+</style>
 </head>
 <body>
 
-  <div id="loader"><h1>FHP</h1></div>
-  <canvas id="starfield"></canvas>
-  <button id="soundToggle">🔊</button>
-  <audio id="ambientSound" loop>
-    <source src="ambient.mp3" type="audio/mp3" />
-  </audio>
+<div id="auth">
+  <h2>Access Portal</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
+  <p id="authMsg" style="color:red;"></p>
+</div>
 
-  <nav>
-    <ul>
-      <li><a href="#vision">Vision</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
+<div id="app" class="hidden">
+  <header>SuperIntellect – Elite Edition</header>
+  <div id="chat"></div>
+  <p id="thinking">Thinking…</p>
+  <div id="inputBox">
+    <input type="text" id="userInput" placeholder="Type your request...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
 
-  <section class="hero">
-    <video autoplay muted loop class="bg-video">
-      <source src="your-futuristic-loop.mp4" type="video/mp4" />
-    </video>
-    <div class="hero-text">
-      <h1>Farmer House Productions</h1>
-      <p>Filming in Any Style. Storytelling Without Limits.</p>
-    </div>
-  </section>
+<script>
+const chatBox = document.getElementById("chat");
+const thinkingEl = document.getElementById("thinking");
+const app = document.getElementById("app");
+const auth = document.getElementById("auth");
+const authMsg = document.getElementById("authMsg");
+const replitURL = "https://replit.com/@sonofjean2/DogWebsitepy#main.py"; // put your Replit project URL
 
-  <div class="logo"></div>
-  <div class="welcome" id="welcomeMessage"></div>
+function signup() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  if (!user || !pass) return authMsg.textContent="Fill both fields.";
+  if (localStorage.getItem(user)) return authMsg.textContent="User already exists.";
+  localStorage.setItem(user, pass);
+  authMsg.style.color="lightgreen"; authMsg.textContent="Sign up successful. Please login.";
+}
 
-  <section class="section" id="vision">
-    <h2>Our Vision</h2>
-    <p>From mythic storytelling to street-level realism, we craft visuals that move minds and shift culture. Whether it's animation, live action, or experimental formats—we make it cinematic.</p>
-  </section>
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  if (!user || !pass) return authMsg.textContent="Fill both fields.";
+  const stored = localStorage.getItem(user);
+  if(stored && stored===pass){ auth.classList.add("hidden"); app.classList.remove("hidden"); } 
+  else { authMsg.textContent="Invalid login."; }
+}
 
-  <section class="section" id="projects">
-    <h2>Featured Projects</h2>
-    <div class="gallery">
-      <div class="project-card">🎥 Lego Movie</div>
-      <div class="project-card">🎬 AI Heroes Showcase</div>
-    </div>
-  </section>
+document.getElementById("userInput").addEventListener("keypress", function(e){
+  if(e.key==="Enter") sendMessage();
+});
 
-  <footer id="contact">
-    <p>&copy; 2025 Farmer House Productions. All rights reserved.</p>
-    <p id="statusBar"></p>
-  </footer>
+async function sendMessage(){
+  const input = document.getElementById("userInput");
+  const userText = input.value.trim();
+  if(!userText) return;
+  addMessage("You", userText, "user");
+  input.value="";
+  thinkingEl.style.display="block";
 
-  <script>
-    // Typing Welcome Message
-    const welcome = document.getElementById("welcomeMessage");
-    const messages = [
-      "🎬 Welcome to the House of Vision.",
-      "🚀 Where every frame tells a story.",
-    "🎥 Farmer House: Style is limitless."
-    ];
-    let i = 0, j = 0, isDeleting = false;
-
-    function typeEffect() {
-      const current = messages[i];
-      welcome.textContent = current.substring(0, j);
-
-      if (!isDeleting && j < current.length) {
-        j++;
-        setTimeout(typeEffect, 100);
-      } else if (isDeleting && j > 0) {
-        j--;
-        setTimeout(typeEffect, 50);
-      } else {
-        isDeleting = !isDeleting;
-        if (!isDeleting) i = (i + 1) % messages.length;
-        setTimeout(typeEffect, 1000);
-      }
-    }
-    typeEffect();
-
-    // Scroll Reveal Animations
-    ScrollReveal().reveal('.section', {
-      delay: 300,
-      distance: '50px',
-      origin: 'bottom',
-      duration: 1000,
-      easing: 'ease-in-out',
-      reset: true
+  try{
+    const response = await fetch(replitURL, {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({message:userText})
     });
+    const data = await response.json();
+    addMessage("AI", data.reply, "ai");
+  } catch(err){
+    addMessage("Error", err.message, "ai");
+  } finally{
+    thinkingEl.style.display="none";
+  }
+}
 
-    ScrollReveal().reveal('.project-card', {
-      delay: 200,
-      interval: 200,
-      scale: 0.85,
-      duration: 800,
-      easing: 'ease-out',
-      reset: true
-    });
-
-    // Magnetic Hover Effect
-    document.querySelectorAll('.project-card').forEach(card => {
-      card.addEventListener('mousemove', e => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        card.style.transform = `translate(${x * 0.05}px, ${y * 0.05}px) scale(1.05)`;
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translate(0, 0) scale(1)';
-      });
-    });
-
-    // Parallax Hero Text
-    document.addEventListener("mousemove", e => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 10;
-      const y = (e.clientY / window.innerHeight - 0.5) * 10;
-      document.querySelector(".hero-text").style.transform = `translate(${x}px, ${y}px)`;
-    });
-
-    // Ambient Sound Toggle
-    const soundBtn = document.getElementById("soundToggle");
-    const ambient = document.getElementById("ambientSound");
-    let playing = false;
-
-    soundBtn.addEventListener("click", () => {
-      playing ? ambient.pause() : ambient.play();
-      playing = !playing;
-    });
-
-    // Starfield Animation
-    const canvas = document.getElementById("starfield");
-    const ctx = canvas.getContext("2d");
-    let stars = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    function createStars(count) {
-      stars = [];
-      for (let i = 0; i < count; i++) {
-        stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 1.5,
-          speed: Math.random() * 0.5 + 0.2
-        });
-      }
-    }
-    createStars(150);
-
-    function animateStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#ffffff";
-      stars.forEach(star => {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
-        star.y += star.speed;
-        if (star.y > canvas.height) {
-          star.y = 0;
-          star.x = Math.random() * canvas.width;
-        }
-      });
-      requestAnimationFrame(animateStars);
-    }
-    animateStars();
-
-    // Real-Time Clock + Location
-    const statusBar = document.getElementById("statusBar");
-    function updateTime() {
-      const now = new Date();
-      statusBar.textContent = `🕒 ${now.toLocaleTimeString()} | 📍 Allentown, PA`;
-    }
-    setInterval(updateTime, 1000);
-    updateTime();
-  </script>
+function addMessage(sender,text,cls){
+  const msg=document.createElement("div");
+  msg.className="msg "+cls;
+  msg.innerHTML=`<strong>${sender}:</strong> ${text}`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+</script>
+</body>
+</html>
