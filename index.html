@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Super Intellect Ultra Smart</title>
+<title>Super Intellect Ultra Cool</title>
 <style>
 body { font-family:"Segoe UI",sans-serif; background:#0f172a; color:#e2e8f0; display:flex; flex-direction:column; align-items:center; height:100vh; margin:0;}
 h1 { margin-top:20px; color:#38bdf8; text-shadow:0 0 15px #38bdf8;}
@@ -16,10 +16,10 @@ h1 { margin-top:20px; color:#38bdf8; text-shadow:0 0 15px #38bdf8;}
 </style>
 </head>
 <body>
-<h1>🤖 Super Intellect Ultra Smart</h1>
+<h1>🤖 Super Intellect Ultra Cool</h1>
 <div id="chat"></div>
 <div id="input-area">
-<input id="input" type="text" placeholder="Ask me anything..." />
+<input id="input" type="text" placeholder="Talk to me..." />
 <button id="send">Send</button>
 </div>
 
@@ -29,99 +29,135 @@ const input = document.getElementById("input");
 const send = document.getElementById("send");
 
 // Persistent memory
-let memory = JSON.parse(localStorage.getItem("si_memory")) || { facts: [], concepts: {} };
+let memory = JSON.parse(localStorage.getItem("si_memory")) || {
+  facts: [],         // generic facts: {subject,predicate}
+  translations: {},  // translations: word -> translated word
+  concepts: {}       // definitions: concept -> description
+};
+
 function saveMemory(){ localStorage.setItem("si_memory", JSON.stringify(memory)); }
 
-// Helper: capitalize
-function cap(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+// Helper capitalize
+function cap(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
 
-// Web search (DuckDuckGo API)
-async function webSearch(query){
-  try{
-    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
-    const data = await res.json();
-    if(data.AbstractText) return data.AbstractText;
-    if(data.Heading) return `I found: ${data.Heading}`;
-    return null;
-  }catch{return null;}
+// Deduction engine
+function deduce() {
+  let deductions = [];
+  for(let f1 of memory.facts){
+    for(let f2 of memory.facts){
+      if(f1.predicate.toLowerCase() === f2.subject.toLowerCase()){
+        const d = {subject:f1.subject, predicate:f2.predicate};
+        // avoid duplicates
+        if(!memory.facts.some(f=>f.subject===d.subject && f.predicate===d.predicate)){
+          memory.facts.push(d);
+          deductions.push(d);
+        }
+      }
+    }
+  }
+  if(deductions.length>0) saveMemory();
+  return deductions;
 }
 
-// Reasoning & response engine
+// Smart fallback responses
+function smartFallback(msg){
+  const options=[
+    `Hmm… "${msg}" sounds fascinating. Let's think together.`,
+    `Interesting! Could you clarify a bit more?`,
+    `I don’t know that yet, but I can learn if you teach me.`,
+    `Let's reason about "${msg}" and see where it leads.`
+  ];
+  return options[Math.floor(Math.random()*options.length)];
+}
+
+// Main reasoning
 async function reason(msg){
   const lower = msg.toLowerCase().trim();
 
   // 1. Greetings
-  if(/^(hi|hello|hey|good morning|good evening)/.test(lower)) return "Hello! How can I help you today?";
+  if(/^(hi|hello|hey|yo)/.test(lower)) return "Hey! Cool to see you. What shall we talk about?";
 
-  // 2. Define command
-  if(lower.startsWith("define ")){
-    const [concept, def] = msg.slice(7).split(" as ");
-    if(concept && def){
-      memory.concepts[concept.trim()] = def.trim();
-      saveMemory();
-      return `Definition stored: ${cap(concept.trim())} → ${def.trim()}.`;
-    }
-  }
-
-  // 3. Translation example
-  if(lower.startsWith("what is") && lower.includes("in french")){
-    const phrase = msg.match(/what is (.*) in french/i);
-    if(phrase && phrase[1]){
-      // simple dictionary for demo
-      const dict = { hello:"bonjour", goodbye:"au revoir", name:"nom", love:"amour", cat:"chat" };
-      const word = phrase[1].toLowerCase().trim();
-      return dict[word] ? `"${word}" in French is "${dict[word]}"` : `I don't know how to say "${word}" in French yet.`;
-    }
-  }
-
-  // 4. Learn facts
-  if(lower.includes(" is ") && !lower.startsWith("what is")){
-    const [sub,pred] = msg.split(" is ");
-    memory.facts.push({ subject: sub.trim(), predicate: pred.trim() });
+  // 2. Learn facts
+  if(lower.includes(" is ") && !lower.startsWith("what is") && !lower.includes(" in french")){
+    const [sub,pred]=msg.split(" is ");
+    memory.facts.push({subject:sub.trim(), predicate:pred.trim()});
     saveMemory();
-    return `Got it: ${sub.trim()} is ${pred.trim()}.`;
+    return `Got it: ${cap(sub.trim())} is ${pred.trim()}.`;
+  }
+
+  // 3. Learn translations dynamically
+  if(lower.includes(" in french is ")){
+    const [word,translation] = msg.split(" in french is ");
+    memory.translations[word.trim().toLowerCase()]=translation.trim().toLowerCase();
+    saveMemory();
+    return `Noted: "${word.trim()}" in French is "${translation.trim()}"`;
+  }
+
+  // 4. Ask translations
+  if(lower.includes(" in french") && lower.startsWith("what is ")){
+    const word = lower.replace("what is ","").replace(" in french","").trim().toLowerCase();
+    if(memory.translations[word]) return `"${word}" in French is "${memory.translations[word]}"`;
+    return `I don't know how to say "${word}" in French yet. You can teach me like "chicken in French is poule".`;
   }
 
   // 5. Recall memory
   if(lower.includes("remember")){
-    if(memory.facts.length === 0) return "I haven’t stored any facts yet.";
-    return "Memory: " + memory.facts.map(f=>`${f.subject} is ${f.predicate}`).join("; ");
+    let output="";
+    if(memory.facts.length>0) output+="Facts: "+memory.facts.map(f=>`${f.subject} is ${f.predicate}`).join("; ")+"\n";
+    if(Object.keys(memory.translations).length>0) output+="Translations: "+Object.entries(memory.translations).map(([w,t])=>`${w}=${t}`).join("; ");
+    if(output==="") return "I haven't stored any facts yet.";
+    return output;
   }
 
-  // 6. Simple math evaluation
+  // 6. Deduction
+  if(lower.includes("deduce")){
+    const ded = deduce();
+    if(ded.length>0) return "From deduction: "+ded.map(d=>`${d.subject} is ${d.predicate}`).join("; ");
+    return "No new deductions can be made yet.";
+  }
+
+  // 7. Definitions
+  if(lower.startsWith("define ")){
+    const [concept, def] = msg.slice(7).split(" as ");
+    if(concept && def){
+      memory.concepts[concept.trim()]=def.trim();
+      saveMemory();
+      return `Definition stored: ${concept.trim()} → ${def.trim()}.`;
+    }
+  }
+  if(lower.startsWith("what is ") && !lower.includes(" in french")){
+    const query = lower.replace("what is ","").trim();
+    if(memory.concepts[query]) return `${query} is ${memory.concepts[query]}`;
+  }
+
+  // 8. Simple math
   if(/^[\d\s\+\-\*\/\.\(\)]+$/.test(msg)){
-    try{ return `The answer is ${eval(msg)}`; }catch{ return "I can't calculate that.";}
+    try{ return `The answer is ${eval(msg)}`; }catch{return "I can't calculate that.";}
   }
 
-  // 7. Try web search fallback
-  const web = await webSearch(msg);
-  if(web) return web;
-
-  // 8. Smart fallback
-  const fallbacks = [
-    `That's an interesting topic. Can you elaborate?`,
-    `Let's reason about "${msg}" together.`,
-    `I don't know that yet, but I can learn if you teach me.`,
-    `Fascinating. Could you clarify your question?`
-  ];
-  return fallbacks[Math.floor(Math.random()*fallbacks.length)];
+  // 9. Fallback
+  return smartFallback(msg);
 }
 
-// Add chat message
-function addMessage(text,cls){ const div=document.createElement("div"); div.className="msg "+cls; div.innerText=text; chat.appendChild(div); chat.scrollTop=chat.scrollHeight; }
+// Add message
+function addMessage(text,cls){ 
+  const div=document.createElement("div"); div.className="msg "+cls; div.innerText=text; 
+  chat.appendChild(div); chat.scrollTop=chat.scrollHeight; 
+}
 
-// Handle user input
+// Handle input
 async function handleInput(){
-  const text = input.value.trim();
+  const text=input.value.trim();
   if(!text) return;
   addMessage(text,"user");
   input.value="";
-  const reply = await reason(text);
+  const reply=await reason(text);
   addMessage(reply,"bot");
 }
 
 send.addEventListener("click", handleInput);
 input.addEventListener("keydown",e=>{ if(e.key==="Enter") handleInput(); });
+
 </script>
 </body>
 </html>
