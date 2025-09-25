@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Super Intellect Ultra</title>
+  <title>Super Intellect Ultra++</title>
   <style>
     body {
       background: radial-gradient(circle at top, #020617, #000);
@@ -19,7 +19,7 @@
       margin-top: 20px;
       font-size: 2.5em;
       color: #38bdf8;
-      text-shadow: 0 0 12px #38bdf8;
+      text-shadow: 0 0 15px #38bdf8;
     }
 
     #chat {
@@ -79,10 +79,10 @@
   </style>
 </head>
 <body>
-  <h1>🤖 Super Intellect Ultra</h1>
+  <h1>🤖 Super Intellect Ultra++</h1>
   <div id="chat"></div>
   <div id="input-area">
-    <input id="input" type="text" placeholder="Ask Super Intellect Ultra anything..." />
+    <input id="input" type="text" placeholder="Talk to the smartest mind..." />
     <button id="send">Send</button>
   </div>
 
@@ -91,80 +91,109 @@
     const input = document.getElementById("input");
     const send = document.getElementById("send");
 
-    // 🧠 Super Intellect Brain
+    // 🧠 Brain with structured memory
     const memory = {
-      facts: [], // stores structured facts
-      concepts: {} // stores learned definitions
+      facts: [], // {subject, predicate}
+      concepts: {}
     };
 
     const knowledgeBase = {
-      "elon musk": "Visionary entrepreneur, founder of SpaceX, Tesla, Neuralink, and more.",
-      "ai": "Artificial intelligence is the simulation of human intelligence by machines.",
-      "life": "Life is the process of growth, change, and the pursuit of meaning."
+      "elon musk": "Elon Musk is a tech innovator who builds rockets, cars, and bold visions.",
+      "ai": "Artificial Intelligence is machines simulating human intelligence.",
+      "life": "Life is the process of growth, learning, and creating meaning."
     };
 
-    // 🔬 Reasoning Engine
+    // Utility: Find facts
+    function findFact(subject) {
+      return memory.facts.find(f => f.subject === subject);
+    }
+
+    // Utility: Deduce new facts (A is B, B is C → A is C)
+    function deduce() {
+      let deductions = [];
+      for (let f1 of memory.facts) {
+        for (let f2 of memory.facts) {
+          if (f1.predicate === f2.subject) {
+            deductions.push(`${f1.subject} is ${f2.predicate}`);
+          }
+        }
+      }
+      return [...new Set(deductions)];
+    }
+
+    // Generate varied smart responses
+    function smartFallback(message) {
+      const options = [
+        `That sparks an idea: how would you expand on "${message}"?`,
+        `Let me think… "${message}" could connect to something deeper.`,
+        `I don’t fully know, but it reminds me of logic I’ve seen before.`,
+        `Interesting angle. Can you clarify what you mean by "${message}"?`,
+        `I may not know yet — but if you teach me, I’ll never forget.`
+      ];
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    // Reasoning core
     function reason(message) {
       const lower = message.toLowerCase();
 
-      // Direct knowledge base
+      // 1. Knowledge base
       for (let key in knowledgeBase) {
-        if (lower.includes(key)) {
-          return knowledgeBase[key];
-        }
+        if (lower.includes(key)) return knowledgeBase[key];
       }
 
-      // Store facts: "X is Y"
+      // 2. Store facts: "X is Y"
       if (lower.includes(" is ")) {
         const [subject, predicate] = lower.split(" is ");
-        memory.facts.push({ subject, predicate });
-        return `Noted: ${subject.trim()} is ${predicate.trim()}.`;
+        memory.facts.push({ subject: subject.trim(), predicate: predicate.trim() });
+        return `Got it: ${subject.trim()} is ${predicate.trim()}. I’ll use this in reasoning.`;
       }
 
-      // Learn definitions: "define X as Y"
+      // 3. Learn definitions: "define X as Y"
       if (lower.startsWith("define ")) {
         const rest = message.slice(7);
         const [concept, definition] = rest.split(" as ");
         if (concept && definition) {
           memory.concepts[concept.trim()] = definition.trim();
-          return `Understood. "${concept.trim()}" means "${definition.trim()}".`;
+          return `Stored definition: ${concept.trim()} → ${definition.trim()}.`;
         }
       }
 
-      // Recall: "what is X"
+      // 4. Recall: "what is X"
       if (lower.startsWith("what is ")) {
         const query = lower.replace("what is ", "").trim();
-        if (memory.concepts[query]) {
-          return `${query} is ${memory.concepts[query]}`;
-        }
-        return knowledgeBase[query] || `I don't know what ${query} is yet. Teach me.`;
+        if (memory.concepts[query]) return `${query} is ${memory.concepts[query]}`;
+        const fact = findFact(query);
+        if (fact) return `${fact.subject} is ${fact.predicate}`;
+        return knowledgeBase[query] || `I don’t know yet — want to define "${query}"?`;
       }
 
-      // Why questions
+      // 5. Deduction: "deduce"
+      if (lower.includes("deduce")) {
+        const d = deduce();
+        return d.length > 0 ? "From my logic: " + d.join("; ") : "No new deductions yet.";
+      }
+
+      // 6. Why/How/Compare
       if (lower.startsWith("why")) {
-        return "Because every cause leads to an effect — but deeper truths often need exploration.";
+        return "Because causes ripple into effects — that’s the structure of reality.";
       }
-
-      // How questions
       if (lower.startsWith("how")) {
-        return "By applying logic, learning from patterns, and testing ideas against reality.";
+        return "Step by step: analyze, hypothesize, and test until truth emerges.";
       }
-
-      // Compare questions
       if (lower.includes(" vs ")) {
         const [a, b] = lower.split(" vs ");
-        return `Comparison: "${a}" and "${b}" both have strengths — tell me which aspect you care about.`;
+        return `Comparison of ${a} and ${b}: depends on context — strength, speed, or influence?`;
       }
 
-      // Recall facts
+      // 7. Recall facts
       if (lower.includes("remember")) {
-        return memory.facts.length > 0
-          ? "I recall: " + memory.facts.map(f => `${f.subject} is ${f.predicate}`).join("; ")
-          : "My memory is fresh, I need input to grow.";
+        if (memory.facts.length === 0) return "I haven’t stored any facts yet.";
+        return "I recall: " + memory.facts.map(f => `${f.subject} is ${f.predicate}`).join("; ");
       }
 
-      // Default adaptive response
-      return "Intriguing. Tell me more — I can learn from this.";
+      // 8. Default smart response
+      return smartFallback(message);
     }
 
     function addMessage(text, cls) {
