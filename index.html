@@ -1,111 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Super Intellect (Web Powered)</title>
-  <style>
-    body { font-family: "Segoe UI", sans-serif; background:#0f172a; color:#e2e8f0; display:flex; flex-direction:column; align-items:center; height:100vh; margin:0;}
-    h1 { margin-top:20px; color:#38bdf8; text-shadow:0 0 12px #38bdf8;}
-    #chat { flex:1; width:80%; max-width:900px; margin:20px; padding:20px; background:#1e293b; border-radius:14px; overflow-y:auto; box-shadow:0 0 20px rgba(56,189,248,0.3);}
-    .msg { margin:10px 0; line-height:1.4; }
-    .user { color:#38bdf8; text-align:right; }
-    .bot { color:#f8fafc; text-align:left; }
-    #input-area { width:80%; max-width:900px; display:flex; margin-bottom:20px;}
-    #input { flex:1; padding:12px; font-size:1em; border-radius:10px 0 0 10px; border:none; outline:none;}
-    #send { padding:12px 20px; border:none; background:#38bdf8; color:#000; border-radius:0 10px 10px 0; cursor:pointer;}
-  </style>
+<meta charset="UTF-8">
+<title>Super Intellect Ultra Smart</title>
+<style>
+body { font-family:"Segoe UI",sans-serif; background:#0f172a; color:#e2e8f0; display:flex; flex-direction:column; align-items:center; height:100vh; margin:0;}
+h1 { margin-top:20px; color:#38bdf8; text-shadow:0 0 15px #38bdf8;}
+#chat { flex:1; width:80%; max-width:900px; margin:20px; padding:20px; background:#1e293b; border-radius:14px; overflow-y:auto; box-shadow:0 0 25px rgba(56,189,248,0.4);}
+.msg { margin:10px 0; line-height:1.4; }
+.user { color:#38bdf8; text-align:right; }
+.bot { color:#f8fafc; text-align:left; }
+#input-area { width:80%; max-width:900px; display:flex; margin-bottom:20px;}
+#input { flex:1; padding:12px; font-size:1em; border-radius:10px 0 0 10px; border:none; outline:none;}
+#send { padding:12px 20px; border:none; background:#38bdf8; color:#000; border-radius:0 10px 10px 0; cursor:pointer;}
+</style>
 </head>
 <body>
-  <h1>🤖 Super Intellect</h1>
-  <div id="chat"></div>
-  <div id="input-area">
-    <input id="input" type="text" placeholder="Ask me anything..." />
-    <button id="send">Send</button>
-  </div>
+<h1>🤖 Super Intellect Ultra Smart</h1>
+<div id="chat"></div>
+<div id="input-area">
+<input id="input" type="text" placeholder="Ask me anything..." />
+<button id="send">Send</button>
+</div>
 
-  <script>
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("input");
-    const send = document.getElementById("send");
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const send = document.getElementById("send");
 
-    // 🧠 Memory
-    const memory = { facts: [], concepts: {} };
+// Persistent memory
+let memory = JSON.parse(localStorage.getItem("si_memory")) || { facts: [], concepts: {} };
+function saveMemory(){ localStorage.setItem("si_memory", JSON.stringify(memory)); }
 
-    // 🔍 Web lookup function (DuckDuckGo Instant Answer API)
-    async function webSearch(query) {
-      try {
-        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
-        const data = await res.json();
-        if (data.AbstractText) return data.AbstractText;
-        if (data.Heading) return `I found something: ${data.Heading}`;
-        return "I couldn’t find an answer online, but let’s think about it.";
-      } catch (e) {
-        return "I tried looking it up, but there was an error.";
-      }
+// Helper: capitalize
+function cap(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+
+// Web search (DuckDuckGo API)
+async function webSearch(query){
+  try{
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
+    const data = await res.json();
+    if(data.AbstractText) return data.AbstractText;
+    if(data.Heading) return `I found: ${data.Heading}`;
+    return null;
+  }catch{return null;}
+}
+
+// Reasoning & response engine
+async function reason(msg){
+  const lower = msg.toLowerCase().trim();
+
+  // 1. Greetings
+  if(/^(hi|hello|hey|good morning|good evening)/.test(lower)) return "Hello! How can I help you today?";
+
+  // 2. Define command
+  if(lower.startsWith("define ")){
+    const [concept, def] = msg.slice(7).split(" as ");
+    if(concept && def){
+      memory.concepts[concept.trim()] = def.trim();
+      saveMemory();
+      return `Definition stored: ${cap(concept.trim())} → ${def.trim()}.`;
     }
+  }
 
-    // 🧩 Reasoning
-    async function reason(message) {
-      const lower = message.toLowerCase();
-
-      // Learn "X is Y"
-      if (lower.includes(" is ")) {
-        const [sub, pred] = lower.split(" is ");
-        memory.facts.push({ subject: sub.trim(), predicate: pred.trim() });
-        return `Noted: ${sub.trim()} is ${pred.trim()}.`;
-      }
-
-      // Recall
-      if (lower.startsWith("what is ")) {
-        const query = lower.replace("what is ", "").trim();
-        const fact = memory.facts.find(f => f.subject === query);
-        if (memory.concepts[query]) return `${query} is ${memory.concepts[query]}`;
-        if (fact) return `${fact.subject} is ${fact.predicate}`;
-        return await webSearch(query);
-      }
-
-      if (lower.startsWith("define ")) {
-        const [concept, def] = message.slice(7).split(" as ");
-        if (concept && def) {
-          memory.concepts[concept.trim()] = def.trim();
-          return `Definition stored: ${concept.trim()} → ${def.trim()}.`;
-        }
-      }
-
-      if (lower.includes("remember")) {
-        if (memory.facts.length === 0) return "I don’t have stored facts yet.";
-        return "Here’s what I recall: " + memory.facts.map(f => `${f.subject} is ${f.predicate}`).join("; ");
-      }
-
-      if (lower.includes("how")) return "Step by step: analyze, hypothesize, and test until truth emerges.";
-      if (lower.includes("why")) return "Because causes ripple into effects — the structure of reality itself.";
-
-      // Fallback: Look it up
-      return await webSearch(message);
+  // 3. Translation example
+  if(lower.startsWith("what is") && lower.includes("in french")){
+    const phrase = msg.match(/what is (.*) in french/i);
+    if(phrase && phrase[1]){
+      // simple dictionary for demo
+      const dict = { hello:"bonjour", goodbye:"au revoir", name:"nom", love:"amour", cat:"chat" };
+      const word = phrase[1].toLowerCase().trim();
+      return dict[word] ? `"${word}" in French is "${dict[word]}"` : `I don't know how to say "${word}" in French yet.`;
     }
+  }
 
-    function addMessage(text, cls) {
-      const div = document.createElement("div");
-      div.className = "msg " + cls;
-      div.innerText = text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
+  // 4. Learn facts
+  if(lower.includes(" is ") && !lower.startsWith("what is")){
+    const [sub,pred] = msg.split(" is ");
+    memory.facts.push({ subject: sub.trim(), predicate: pred.trim() });
+    saveMemory();
+    return `Got it: ${sub.trim()} is ${pred.trim()}.`;
+  }
 
-    async function handleInput() {
-      const text = input.value.trim();
-      if (!text) return;
-      addMessage(text, "user");
-      input.value = "";
+  // 5. Recall memory
+  if(lower.includes("remember")){
+    if(memory.facts.length === 0) return "I haven’t stored any facts yet.";
+    return "Memory: " + memory.facts.map(f=>`${f.subject} is ${f.predicate}`).join("; ");
+  }
 
-      const reply = await reason(text);
-      addMessage(reply, "bot");
-    }
+  // 6. Simple math evaluation
+  if(/^[\d\s\+\-\*\/\.\(\)]+$/.test(msg)){
+    try{ return `The answer is ${eval(msg)}`; }catch{ return "I can't calculate that.";}
+  }
 
-    send.addEventListener("click", handleInput);
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") handleInput();
-    });
-  </script>
+  // 7. Try web search fallback
+  const web = await webSearch(msg);
+  if(web) return web;
+
+  // 8. Smart fallback
+  const fallbacks = [
+    `That's an interesting topic. Can you elaborate?`,
+    `Let's reason about "${msg}" together.`,
+    `I don't know that yet, but I can learn if you teach me.`,
+    `Fascinating. Could you clarify your question?`
+  ];
+  return fallbacks[Math.floor(Math.random()*fallbacks.length)];
+}
+
+// Add chat message
+function addMessage(text,cls){ const div=document.createElement("div"); div.className="msg "+cls; div.innerText=text; chat.appendChild(div); chat.scrollTop=chat.scrollHeight; }
+
+// Handle user input
+async function handleInput(){
+  const text = input.value.trim();
+  if(!text) return;
+  addMessage(text,"user");
+  input.value="";
+  const reply = await reason(text);
+  addMessage(reply,"bot");
+}
+
+send.addEventListener("click", handleInput);
+input.addEventListener("keydown",e=>{ if(e.key==="Enter") handleInput(); });
+</script>
 </body>
 </html>
