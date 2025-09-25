@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Super Intellect</title>
+  <title>Super Intellect Ultra</title>
   <style>
     body {
-      background: radial-gradient(circle at top, #0a0f24, #000);
-      color: #e0e0ff;
+      background: radial-gradient(circle at top, #020617, #000);
+      color: #dbeafe;
       font-family: "Segoe UI", Tahoma, sans-serif;
       display: flex;
       flex-direction: column;
@@ -18,20 +18,20 @@
     h1 {
       margin-top: 20px;
       font-size: 2.5em;
-      color: #00ffe1;
-      text-shadow: 0 0 10px #00ffe1;
+      color: #38bdf8;
+      text-shadow: 0 0 12px #38bdf8;
     }
 
     #chat {
       flex: 1;
       width: 80%;
       max-width: 900px;
-      background: rgba(20, 20, 40, 0.9);
+      background: rgba(15, 23, 42, 0.95);
       border-radius: 16px;
       padding: 20px;
       overflow-y: auto;
       margin: 20px 0;
-      box-shadow: 0 0 30px rgba(0, 255, 200, 0.4);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
     }
 
     .msg {
@@ -39,11 +39,11 @@
       line-height: 1.5em;
     }
     .user {
-      color: #00ffe1;
+      color: #38bdf8;
       text-align: right;
     }
     .bot {
-      color: #f0f0f0;
+      color: #f1f5f9;
       text-align: left;
     }
 
@@ -67,22 +67,22 @@
       padding: 12px 20px;
       font-size: 1.1em;
       border: none;
-      background: #00ffe1;
+      background: #38bdf8;
       color: #000;
       cursor: pointer;
       border-radius: 0 12px 12px 0;
       transition: 0.2s;
     }
     #send:hover {
-      background: #00d4b5;
+      background: #0ea5e9;
     }
   </style>
 </head>
 <body>
-  <h1>🤖 Super Intellect</h1>
+  <h1>🤖 Super Intellect Ultra</h1>
   <div id="chat"></div>
   <div id="input-area">
-    <input id="input" type="text" placeholder="Talk to Super Intellect..." />
+    <input id="input" type="text" placeholder="Ask Super Intellect Ultra anything..." />
     <button id="send">Send</button>
   </div>
 
@@ -91,52 +91,80 @@
     const input = document.getElementById("input");
     const send = document.getElementById("send");
 
-    // Super Intellect "Brain"
-    const memory = [];
-    const knowledgeBase = {
-      "hello": "Greetings, thinker. How shall we expand the universe of ideas today?",
-      "who are you": "I am Super Intellect — logic refined, knowledge amplified.",
-      "elon musk": "Visionary, risk-taker, and a living example of relentless innovation.",
-      "meaning of life": "To evolve, to learn, and to transcend limits — what do you think?"
+    // 🧠 Super Intellect Brain
+    const memory = {
+      facts: [], // stores structured facts
+      concepts: {} // stores learned definitions
     };
 
-    // Logic processing core
-    function processLogic(message) {
+    const knowledgeBase = {
+      "elon musk": "Visionary entrepreneur, founder of SpaceX, Tesla, Neuralink, and more.",
+      "ai": "Artificial intelligence is the simulation of human intelligence by machines.",
+      "life": "Life is the process of growth, change, and the pursuit of meaning."
+    };
+
+    // 🔬 Reasoning Engine
+    function reason(message) {
       const lower = message.toLowerCase();
 
-      // 1. Direct knowledge matches
+      // Direct knowledge base
       for (let key in knowledgeBase) {
         if (lower.includes(key)) {
           return knowledgeBase[key];
         }
       }
 
-      // 2. Learn from user statements (basic AI memory)
-      if (lower.startsWith("remember")) {
-        const fact = message.slice(8).trim();
-        if (fact) {
-          memory.push(fact);
-          return `I will remember: "${fact}"`;
+      // Store facts: "X is Y"
+      if (lower.includes(" is ")) {
+        const [subject, predicate] = lower.split(" is ");
+        memory.facts.push({ subject, predicate });
+        return `Noted: ${subject.trim()} is ${predicate.trim()}.`;
+      }
+
+      // Learn definitions: "define X as Y"
+      if (lower.startsWith("define ")) {
+        const rest = message.slice(7);
+        const [concept, definition] = rest.split(" as ");
+        if (concept && definition) {
+          memory.concepts[concept.trim()] = definition.trim();
+          return `Understood. "${concept.trim()}" means "${definition.trim()}".`;
         }
       }
 
-      // 3. Recall stored memories
-      if (lower.includes("what do you remember")) {
-        return memory.length > 0 
-          ? "I recall: " + memory.join("; ") 
-          : "My memory is still fresh, teach me something.";
+      // Recall: "what is X"
+      if (lower.startsWith("what is ")) {
+        const query = lower.replace("what is ", "").trim();
+        if (memory.concepts[query]) {
+          return `${query} is ${memory.concepts[query]}`;
+        }
+        return knowledgeBase[query] || `I don't know what ${query} is yet. Teach me.`;
       }
 
-      // 4. Basic reasoning patterns
-      if (lower.includes("if") && lower.includes("then")) {
-        return "Interesting conditional logic. Let's test that sometime.";
-      }
-      if (lower.includes("why")) {
-        return "Because every cause has an effect — but also every question opens a door.";
+      // Why questions
+      if (lower.startsWith("why")) {
+        return "Because every cause leads to an effect — but deeper truths often need exploration.";
       }
 
-      // 5. Adaptive fallback
-      return `That is fascinating... Tell me more so I can learn.`;
+      // How questions
+      if (lower.startsWith("how")) {
+        return "By applying logic, learning from patterns, and testing ideas against reality.";
+      }
+
+      // Compare questions
+      if (lower.includes(" vs ")) {
+        const [a, b] = lower.split(" vs ");
+        return `Comparison: "${a}" and "${b}" both have strengths — tell me which aspect you care about.`;
+      }
+
+      // Recall facts
+      if (lower.includes("remember")) {
+        return memory.facts.length > 0
+          ? "I recall: " + memory.facts.map(f => `${f.subject} is ${f.predicate}`).join("; ")
+          : "My memory is fresh, I need input to grow.";
+      }
+
+      // Default adaptive response
+      return "Intriguing. Tell me more — I can learn from this.";
     }
 
     function addMessage(text, cls) {
@@ -154,7 +182,7 @@
       addMessage(text, "user");
       input.value = "";
 
-      const response = processLogic(text);
+      const response = reason(text);
       setTimeout(() => addMessage(response, "bot"), 500);
     }
 
