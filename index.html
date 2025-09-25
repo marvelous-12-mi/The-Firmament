@@ -2,25 +2,109 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Super Intellect Ultra Cool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperIntellect</title>
 <style>
-body { font-family:"Segoe UI",sans-serif; background:#0f172a; color:#e2e8f0; display:flex; flex-direction:column; align-items:center; height:100vh; margin:0;}
-h1 { margin-top:20px; color:#38bdf8; text-shadow:0 0 15px #38bdf8;}
-#chat { flex:1; width:80%; max-width:900px; margin:20px; padding:20px; background:#1e293b; border-radius:14px; overflow-y:auto; box-shadow:0 0 25px rgba(56,189,248,0.4);}
-.msg { margin:10px 0; line-height:1.4; }
-.user { color:#38bdf8; text-align:right; }
-.bot { color:#f8fafc; text-align:left; }
-#input-area { width:80%; max-width:900px; display:flex; margin-bottom:20px;}
-#input { flex:1; padding:12px; font-size:1em; border-radius:10px 0 0 10px; border:none; outline:none;}
-#send { padding:12px 20px; border:none; background:#38bdf8; color:#000; border-radius:0 10px 10px 0; cursor:pointer;}
+:root {
+  --bg-dark: #0f172a;
+  --panel-dark: #1e293b;
+  --text-light: #e2e8f0;
+  --accent: #38bdf8;
+  --accent-glow: rgba(56,189,248,0.4);
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1 {
+  margin: 20px 0;
+  color: var(--accent);
+  text-shadow: 0 0 15px var(--accent);
+  font-size: 2rem;
+  text-align: center;
+}
+
+#chat {
+  flex: 1;
+  width: 90%;
+  max-width: 900px;
+  margin: 10px;
+  padding: 20px;
+  background: var(--panel-dark);
+  border-radius: 14px;
+  overflow-y: auto;
+  box-shadow: 0 0 25px var(--accent-glow);
+}
+
+.msg {
+  margin: 10px 0;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.user {
+  color: var(--accent);
+  text-align: right;
+}
+
+.bot {
+  color: var(--text-light);
+  text-align: left;
+}
+
+#input-area {
+  width: 90%;
+  max-width: 900px;
+  display: flex;
+  margin: 10px 0 20px;
+}
+
+#input {
+  flex: 1;
+  padding: 14px;
+  font-size: 1em;
+  border-radius: 10px 0 0 10px;
+  border: none;
+  outline: none;
+  background: #334155;
+  color: var(--text-light);
+}
+
+#send {
+  padding: 14px 20px;
+  border: none;
+  background: var(--accent);
+  color: #000;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  #input-area { flex-direction: column; }
+  #input, #send {
+    width: 100%;
+    border-radius: 10px;
+    margin: 5px 0;
+  }
+}
 </style>
 </head>
 <body>
-<h1>🤖 Super Intellect Ultra Cool</h1>
+<h1>🤖 SuperIntellect</h1>
 <div id="chat"></div>
 <div id="input-area">
-<input id="input" type="text" placeholder="Talk to me..." />
-<button id="send">Send</button>
+  <input id="input" type="text" placeholder="Talk to me..." />
+  <button id="send">Send</button>
 </div>
 
 <script>
@@ -135,6 +219,14 @@ async function reason(msg){
     return await fetchFact(topic);
   }
 
+  if(lower.startsWith("learn about ")){
+    const topic = msg.slice(12).trim();
+    const info = await fetchFact(topic);
+    memory.concepts[topic] = info;
+    saveMemory();
+    return `Learned: ${topic} → ${info}`;
+  }
+
   if(lower.startsWith("if ") && lower.includes(" then ")){
     const [condition,result] = lower.slice(3).split(" then ");
     memory.conditionals.push({if:condition.trim(), then:result.trim()});
@@ -147,6 +239,7 @@ async function reason(msg){
     output += memory.facts.map(f=>`${f.subject} → ${f.predicate}`).join("\n");
     output += "\nDefinitions:\n" + Object.entries(memory.concepts).map(([k,v])=>`${k}: ${v}`).join("\n");
     output += "\nConditionals:\n" + memory.conditionals.map(c=>`If ${c.if}, then ${c.then}`).join("\n");
+    output += "\nTranslations:\n" + Object.entries(memory.translations).map(([w,t]) => `${w} = ${t}`).join("\n");
     return output || "I'm still learning. Teach me something!";
   }
 
@@ -158,21 +251,24 @@ async function reason(msg){
 }
 
 function addMessage(text,cls){ 
-  const div=document.createElement("div"); div.className="msg "+cls; div.innerText=text; 
-  chat.appendChild(div); chat.scrollTop=chat.scrollHeight; 
+  const div=document.createElement("div"); 
+  div.className="msg "+cls; 
+  div.innerText=text; 
+  chat.appendChild(div); 
+  chat.scrollTop = chat.scrollHeight; 
 }
 
 async function handleInput(){
-  const text=input.value.trim();
+  const text = input.value.trim();
   if(!text) return;
-  addMessage(text,"user");
-  input.value="";
-  const reply=await reason(text);
-  addMessage(reply,"bot");
+  addMessage(text, "user");
+  input.value = "";
+  const reply = await reason(text);
+  addMessage(reply, "bot");
 }
 
 send.addEventListener("click", handleInput);
-input.addEventListener("keydown",e=>{ if(e.key==="Enter") handleInput(); });
+input.addEventListener("keydown", e => { if(e.key === "Enter") handleInput(); });
 </script>
 </body>
 </html>
