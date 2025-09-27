@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SuperIntellect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0f1115;
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, #0f1115, #050607);
       color: #e0e0e0;
       display: flex;
       flex-direction: column;
@@ -16,17 +17,27 @@
     }
 
     header {
-      background-color: #1a1c22;
+      background-color: #121417;
       padding: 1rem 2rem;
       font-size: 1.5rem;
       font-weight: bold;
-      color: #00bfff;
+      color: #00fff7;
+      border-bottom: 2px solid #00fff7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #status {
+      padding: 0.5rem 2rem;
+      font-size: 0.85rem;
+      background-color: #0f1115;
+      color: #aaa;
       border-bottom: 1px solid #333;
     }
 
     #chat {
       flex: 1;
-      padding: 1rem 2rem;
+      padding: 1rem;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -38,24 +49,29 @@
       padding: 0.75rem 1rem;
       border-radius: 8px;
       line-height: 1.5;
+      word-wrap: break-word;
+      transition: all 0.3s ease;
     }
 
     .user {
       align-self: flex-end;
-      background-color: #007acc;
-      color: white;
+      background-color: #00bfff;
+      color: #0f1115;
+      font-weight: bold;
+      box-shadow: 0 0 10px #00bfff88;
     }
 
     .bot {
       align-self: flex-start;
       background-color: #1e1f26;
-      border: 1px solid #444;
+      border-left: 4px solid #00fff7;
+      box-shadow: 0 0 10px #00fff788;
     }
 
     #input-area {
       display: flex;
-      padding: 1rem 2rem;
-      background-color: #1a1c22;
+      padding: 1rem;
+      background-color: #121417;
       border-top: 1px solid #333;
     }
 
@@ -73,7 +89,7 @@
       margin-left: 1rem;
       padding: 0.75rem 1.25rem;
       font-size: 1rem;
-      background-color: #00bfff;
+      background-color: #00fff7;
       color: #0f1115;
       border: none;
       border-radius: 4px;
@@ -82,20 +98,40 @@
     }
 
     button:hover {
-      background-color: #0099cc;
+      background-color: #00ccdd;
     }
 
     #memory {
-      padding: 1rem 2rem;
-      font-size: 0.9rem;
+      padding: 0.5rem 2rem;
+      font-size: 0.85rem;
       background-color: #0f1115;
-      border-top: 1px solid #333;
       color: #aaa;
+      border-top: 1px solid #333;
+    }
+
+    @media (max-width: 600px) {
+      header, #status, #memory, #input-area {
+        padding: 0.5rem 1rem;
+      }
+
+      .message {
+        font-size: 0.95rem;
+      }
+
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
 <body>
   <header>SuperIntellect</header>
+  <div id="status">
+    <strong>System:</strong> SuperIntellect v1.0<br/>
+    <strong>Mode:</strong> Executive Reasoning<br/>
+    <strong>Identity:</strong> AI Companion to MgnGodly
+  </div>
   <div id="chat"></div>
   <div id="input-area">
     <input id="input" placeholder="Type your command..." />
@@ -135,6 +171,22 @@
 
     async function reason(msg) {
       msg = correctTypos(msg.toLowerCase());
+
+      if (/^hello$|^hi$|^hey$/i.test(msg)) {
+        return "Welcome, Commander. SuperIntellect is online.";
+      }
+
+      if (/how are you/i.test(msg)) {
+        return "Operational. Awaiting directives. How may I assist your mission?";
+      }
+
+      if (/who is lebron james/i.test(msg)) {
+        return "LeBron James is a professional basketball player known for strategic dominance and cultural impact. Would you like a breakdown of his career or influence?";
+      }
+
+      if (/what is lebron james/i.test(msg)) {
+        return "LeBron James is not a concept — he's a living legend. Try asking 'Who is LeBron James?' for a full profile.";
+      }
 
       if (msg.startsWith("define ")) {
         const term = msg.slice(7).trim();
@@ -190,11 +242,11 @@
       }
 
       const fallback = [
-        "I'm still learning. Could you rephrase that?",
-        "That topic is intriguing. Let's explore it together.",
-        "I'm not sure yet, but I can learn if you teach me.",
-        "Let's reason through that and see what we discover.",
-        "Could you clarify that a bit more? I'm listening."
+        "I'm processing that... let's go deeper.",
+        "Interesting. Let me align that with known facts.",
+        "That deserves a precise answer. Let me reason through it.",
+        "Analyzing... this may require layered logic.",
+        "Let me cross-reference that with what I know so far."
       ];
       return fallback[Math.floor(Math.random() * fallback.length)];
     }
