@@ -6,7 +6,7 @@
   <title>SuperIntellect</title>
   <style>
     :root {
-      --bg-dark: #000;
+      --bg-dark: #0a0a0a;
       --panel-dark: #1a1a1a;
       --text-light: #fefefe;
       --accent: #facc15;
@@ -28,8 +28,9 @@
       margin: 20px 0;
       color: var(--accent);
       text-shadow: 0 0 15px var(--accent);
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       text-align: center;
+      letter-spacing: 1px;
     }
 
     #chat {
@@ -46,7 +47,7 @@
 
     .msg {
       margin: 10px 0;
-      line-height: 1.5;
+      line-height: 1.6;
       word-wrap: break-word;
     }
 
@@ -111,7 +112,7 @@
   </style>
 </head>
 <body>
-  <h1>🤖 SuperIntellect</h1>
+  <h1>SuperIntellect</h1>
   <div id="chat"></div>
   <div id="input-area">
     <input id="input" type="text" placeholder="Ask me anything..." />
@@ -144,7 +145,7 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#facc15";
       ctx.font = "18px Segoe UI";
-      ctx.fillText("🖼️ " + prompt, 20, 40);
+      ctx.fillText("Visualizing: " + prompt, 20, 40);
       ctx.strokeStyle = "#facc15";
       ctx.strokeRect(50, 80, 300, 180);
       ctx.fillText("Symbolic image frame", 120, 180);
@@ -176,7 +177,24 @@
       }
     }
 
+    function correctSpelling(text) {
+      const corrections = {
+        "defne": "define",
+        "waht": "what",
+        "imge": "image",
+        "calclate": "calculate",
+        "remeber": "remember",
+        "dedue": "deduce"
+      };
+      for (let wrong in corrections) {
+        const right = corrections[wrong];
+        text = text.replace(new RegExp(`\\b${wrong}\\b`, "gi"), right);
+      }
+      return text;
+    }
+
     async function reason(msg) {
+      msg = correctSpelling(msg);
       const lower = msg.toLowerCase().trim();
 
       if (lower.startsWith("define ")) {
@@ -217,11 +235,11 @@
       }
 
       if (lower === "show logic") {
-        let output = "🧠 Logic Inventory:\n";
-        output += memory.facts.map(f => `${f.subject} → ${f.predicate}`).join("\n");
-        output += "\nDefinitions:\n" + Object.entries(memory.definitions).map(([k, v]) => `${k}: ${v}`).join("\n");
-        output += "\nConditionals:\n" + memory.conditionals.map(c => `If ${c.if}, then ${c.then}`).join("\n");
-        return output || "I'm still learning. Teach me something!";
+        let output = "<strong>Logic Inventory:</strong><br>";
+        output += memory.facts.map(f => `${f.subject} → ${f.predicate}`).join("<br>");
+        output += "<br><strong>Definitions:</strong><br>" + Object.entries(memory.definitions).map(([k, v]) => `${k}: ${v}`).join("<br>");
+        output += "<br><strong>Conditionals:</strong><br>" + memory.conditionals.map(c => `If ${c.if}, then ${c.then}`).join("<br>");
+        return output || "I'm still learning. Teach me something.";
       }
 
       if (lower.startsWith("image of ")) {
@@ -234,26 +252,39 @@
         try {
           return `The answer is ${eval(msg)}`;
         } catch {
-          return "I can't calculate that.";
+          return "I couldn't calculate that expression.";
         }
       }
 
       const fallback = [
-        `Hmm… "${msg}" sounds interesting. Let's explore it.`,
-        `I'm not sure yet, but you can teach me.`,
-        `Let's think about "${msg}" together.`,
-        `That's a deep one. What do you think?`
+        `I'm still learning. Could you rephrase that?`,
+        `That topic is intriguing. Let's explore it together.`,
+        `I'm not sure yet, but I can learn if you teach me.`,
+        `Let's reason through that and see what we discover.`,
+        `Could you clarify that a bit more? I'm listening.`
       ];
       return fallback[Math.floor(Math.random() * fallback.length)];
     }
 
-    async function handleInput() {
+    function handleInput() {
       const text = input.value.trim();
       if (!text) return;
       addMessage(text, "user");
       input.value = "";
-      const reply = await reason(text);
-      addMessage(reply, "bot");
+      reason(text).then(reply => {
+        addMessage(reply, "bot");
+        localStorage.setItem("superintellect_memory", JSON.stringify(memory));
+      });
+    }
+
+    // Load memory from localStorage if available
+    const saved = localStorage.getItem("superintellect_memory");
+    if (saved) {
+      try {
+        memory = JSON.parse(saved);
+      } catch {
+        memory = { facts: [], definitions: {}, conditionals: [] };
+      }
     }
 
     send.addEventListener("click", handleInput);
