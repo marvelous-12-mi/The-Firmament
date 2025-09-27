@@ -2,130 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SuperIntellect</title>
   <style>
-    :root {
-      --bg-dark: #0a0a0a;
-      --panel-dark: #1a1a1a;
-      --text-light: #fefefe;
-      --accent: #facc15;
-      --accent-glow: rgba(250, 204, 21, 0.3);
-    }
-
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-light);
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f1115;
+      color: #e0e0e0;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      margin: 0;
-      min-height: 100vh;
+      height: 100vh;
     }
 
-    h1 {
-      margin: 20px 0;
-      color: var(--accent);
-      text-shadow: 0 0 15px var(--accent);
-      font-size: 2.4rem;
-      text-align: center;
-      letter-spacing: 1px;
+    header {
+      background-color: #1a1c22;
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00bfff;
+      border-bottom: 1px solid #333;
     }
 
     #chat {
       flex: 1;
-      width: 90%;
-      max-width: 900px;
-      margin: 10px;
-      padding: 20px;
-      background: var(--panel-dark);
-      border-radius: 14px;
+      padding: 1rem 2rem;
       overflow-y: auto;
-      box-shadow: 0 0 25px var(--accent-glow);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
-    .msg {
-      margin: 10px 0;
-      line-height: 1.6;
-      word-wrap: break-word;
+    .message {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      line-height: 1.5;
     }
 
     .user {
-      color: var(--accent);
-      text-align: right;
+      align-self: flex-end;
+      background-color: #007acc;
+      color: white;
     }
 
     .bot {
-      color: var(--text-light);
-      text-align: left;
+      align-self: flex-start;
+      background-color: #1e1f26;
+      border: 1px solid #444;
     }
 
     #input-area {
-      width: 90%;
-      max-width: 900px;
       display: flex;
-      margin: 20px 0;
+      padding: 1rem 2rem;
+      background-color: #1a1c22;
+      border-top: 1px solid #333;
     }
 
-    #input {
+    input {
       flex: 1;
-      padding: 14px;
-      font-size: 1em;
-      border-radius: 10px 0 0 10px;
+      padding: 0.75rem;
+      font-size: 1rem;
       border: none;
-      outline: none;
-      background: #333;
-      color: var(--text-light);
+      border-radius: 4px;
+      background-color: #2a2d35;
+      color: #e0e0e0;
     }
 
-    #send {
-      padding: 14px 20px;
+    button {
+      margin-left: 1rem;
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      background-color: #00bfff;
+      color: #0f1115;
       border: none;
-      background: var(--accent);
-      color: #000;
-      border-radius: 0 10px 10px 0;
+      border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
-      transition: background 0.3s ease;
     }
 
-    #send:hover {
-      background: #fde047;
+    button:hover {
+      background-color: #0099cc;
     }
 
-    canvas {
-      margin-top: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px var(--accent-glow);
-    }
-
-    @media screen and (max-width: 600px) {
-      h1 { font-size: 1.6rem; }
-      #input-area { flex-direction: column; }
-      #input, #send {
-        width: 100%;
-        border-radius: 10px;
-        margin: 5px 0;
-      }
+    #memory {
+      padding: 1rem 2rem;
+      font-size: 0.9rem;
+      background-color: #0f1115;
+      border-top: 1px solid #333;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <h1>SuperIntellect</h1>
+  <header>SuperIntellect</header>
   <div id="chat"></div>
   <div id="input-area">
-    <input id="input" type="text" placeholder="Ask me anything..." />
+    <input id="input" placeholder="Type your command..." />
     <button id="send">Send</button>
   </div>
-  <canvas id="canvas" width="400" height="300"></canvas>
+  <div id="memory"></div>
 
   <script>
-    const chat = document.getElementById("chat");
     const input = document.getElementById("input");
     const send = document.getElementById("send");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    const chat = document.getElementById("chat");
+    const memoryDiv = document.getElementById("memory");
 
     let memory = {
       facts: [],
@@ -133,119 +115,70 @@
       conditionals: []
     };
 
-    function addMessage(text, cls) {
+    function addMessage(text, sender) {
       const div = document.createElement("div");
-      div.className = "msg " + cls;
-      div.innerHTML = text;
+      div.className = `message ${sender}`;
+      div.textContent = text;
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function drawImage(prompt) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#facc15";
-      ctx.font = "18px Segoe UI";
-      ctx.fillText("Visualizing: " + prompt, 20, 40);
-      ctx.strokeStyle = "#facc15";
-      ctx.strokeRect(50, 80, 300, 180);
-      ctx.fillText("Symbolic image frame", 120, 180);
-    }
-
-    function deduce() {
-      let newFacts = [];
-      for (let f1 of memory.facts) {
-        for (let f2 of memory.facts) {
-          if (f1.predicate === f2.subject) {
-            const deduced = { subject: f1.subject, predicate: f2.predicate };
-            if (!memory.facts.some(f => f.subject === deduced.subject && f.predicate === deduced.predicate)) {
-              memory.facts.push(deduced);
-              newFacts.push(deduced);
-            }
-          }
-        }
-      }
-      return newFacts;
-    }
-
-    async function fetchFact(query) {
-      try {
-        const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-        const data = await res.json();
-        return data.extract || "I couldn't find anything on that.";
-      } catch {
-        return "Lookup failed. Try again later.";
-      }
-    }
-
-    function correctSpelling(text) {
-      const corrections = {
-        "defne": "define",
-        "waht": "what",
-        "imge": "image",
-        "calclate": "calculate",
-        "remeber": "remember",
-        "dedue": "deduce"
-      };
-      for (let wrong in corrections) {
-        const right = corrections[wrong];
-        text = text.replace(new RegExp(`\\b${wrong}\\b`, "gi"), right);
-      }
-      return text;
+    function correctTypos(text) {
+      return text
+        .replace(/\bwhae\b/gi, "when")
+        .replace(/\bcont\b/gi, "can't")
+        .replace(/\bkey t\b/gi, "type")
+        .replace(/\bgiv em\b/gi, "give me")
+        .replace(/\bonew\b/gi, "own")
+        .replace(/\bithe\b/gi, "it the");
     }
 
     async function reason(msg) {
-      msg = correctSpelling(msg);
-      const lower = msg.toLowerCase().trim();
+      msg = correctTypos(msg.toLowerCase());
 
-      if (lower.startsWith("define ")) {
-        const [term, def] = msg.slice(7).split(" as ");
-        if (term && def) {
-          memory.definitions[term.trim()] = def.trim();
-          return `Stored: ${term.trim()} means "${def.trim()}".`;
+      if (msg.startsWith("define ")) {
+        const term = msg.slice(7).trim();
+        return memory.definitions[term]
+          ? `${term} means ${memory.definitions[term]}`
+          : `I don't have a definition for "${term}".`;
+      }
+
+      if (msg.startsWith("learn ")) {
+        const parts = msg.slice(6).split(" means ");
+        if (parts.length === 2) {
+          const term = parts[0].trim();
+          const definition = parts[1].trim();
+          memory.definitions[term] = definition;
+          return `Learned: ${term} means "${definition}"`;
         }
-        return "Use 'define [term] as [definition]'.";
       }
 
-      if (lower.startsWith("what is ")) {
-        const term = lower.replace("what is ", "").trim();
-        if (memory.definitions[term]) {
-          return `${term} means "${memory.definitions[term]}"`;
+      if (msg.startsWith("remember ")) {
+        const parts = msg.slice(9).split(" is ");
+        if (parts.length === 2) {
+          const subject = parts[0].trim();
+          const predicate = parts[1].trim();
+          memory.facts.push({ subject, predicate });
+          return `Remembered: ${subject} is ${predicate}`;
         }
-        return await fetchFact(term);
       }
 
-      if (lower.includes(" is ") && !lower.startsWith("what is")) {
-        const [sub, pred] = msg.split(" is ");
-        memory.facts.push({ subject: sub.trim(), predicate: pred.trim() });
-        return `Got it: ${sub.trim()} is ${pred.trim()}.`;
-      }
-
-      if (lower === "deduce") {
-        const newFacts = deduce();
-        if (newFacts.length > 0) {
-          return "Deduced: " + newFacts.map(f => `${f.subject} is ${f.predicate}`).join("; ");
+      if (msg === "deduce") {
+        let newFacts = [];
+        for (let f1 of memory.facts) {
+          for (let f2 of memory.facts) {
+            if (f1.predicate === f2.subject) {
+              const deduced = { subject: f1.subject, predicate: f2.predicate };
+              if (!memory.facts.some(f => f.subject === deduced.subject && f.predicate === deduced.predicate)) {
+                memory.facts.push(deduced);
+                newFacts.push(deduced);
+              }
+            }
+          }
         }
-        return "No new deductions available.";
-      }
-
-      if (lower.startsWith("if ") && lower.includes(" then ")) {
-        const [condition, result] = lower.slice(3).split(" then ");
-        memory.conditionals.push({ if: condition.trim(), then: result.trim() });
-        return `Stored: If ${condition.trim()}, then ${result.trim()}.`;
-      }
-
-      if (lower === "show logic") {
-        let output = "<strong>Logic Inventory:</strong><br>";
-        output += memory.facts.map(f => `${f.subject} → ${f.predicate}`).join("<br>");
-        output += "<br><strong>Definitions:</strong><br>" + Object.entries(memory.definitions).map(([k, v]) => `${k}: ${v}`).join("<br>");
-        output += "<br><strong>Conditionals:</strong><br>" + memory.conditionals.map(c => `If ${c.if}, then ${c.then}`).join("<br>");
-        return output || "I'm still learning. Teach me something.";
-      }
-
-      if (lower.startsWith("image of ")) {
-        const subject = msg.slice(9).trim();
-        drawImage(subject);
-        return `Here's a symbolic image of "${subject}".`;
+        return newFacts.length
+          ? `Deduced ${newFacts.length} new fact(s).`
+          : "No new deductions.";
       }
 
       if (/^[\d\s\+\-\*\/\.\(\)]+$/.test(msg)) {
@@ -257,11 +190,11 @@
       }
 
       const fallback = [
-        `I'm still learning. Could you rephrase that?`,
-        `That topic is intriguing. Let's explore it together.`,
-        `I'm not sure yet, but I can learn if you teach me.`,
-        `Let's reason through that and see what we discover.`,
-        `Could you clarify that a bit more? I'm listening.`
+        "I'm still learning. Could you rephrase that?",
+        "That topic is intriguing. Let's explore it together.",
+        "I'm not sure yet, but I can learn if you teach me.",
+        "Let's reason through that and see what we discover.",
+        "Could you clarify that a bit more? I'm listening."
       ];
       return fallback[Math.floor(Math.random() * fallback.length)];
     }
@@ -274,14 +207,24 @@
       reason(text).then(reply => {
         addMessage(reply, "bot");
         localStorage.setItem("superintellect_memory", JSON.stringify(memory));
+        updateMemoryDisplay();
       });
     }
 
-    // Load memory from localStorage if available
+    function updateMemoryDisplay() {
+      memoryDiv.innerHTML = `
+        <strong>Memory:</strong><br/>
+        Definitions: ${Object.keys(memory.definitions).length}<br/>
+        Facts: ${memory.facts.length}<br/>
+        Conditionals: ${memory.conditionals.length}
+      `;
+    }
+
     const saved = localStorage.getItem("superintellect_memory");
     if (saved) {
       try {
         memory = JSON.parse(saved);
+        updateMemoryDisplay();
       } catch {
         memory = { facts: [], definitions: {}, conditionals: [] };
       }
