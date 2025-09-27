@@ -139,153 +139,167 @@
   </div>
   <div id="memory"></div>
 
-  <script>
-    const input = document.getElementById("input");
-    const send = document.getElementById("send");
-    const chat = document.getElementById("chat");
-    const memoryDiv = document.getElementById("memory");
+<script>
+  const input = document.getElementById("input");
+  const send = document.getElementById("send");
+  const chat = document.getElementById("chat");
+  const memoryDiv = document.getElementById("memory");
 
-    let memory = {
-      facts: [],
-      definitions: {},
-      conditionals: []
-    };
+  let memory = {
+    facts: [],
+    definitions: {},
+    conditionals: []
+  };
 
-    function addMessage(text, sender) {
-      const div = document.createElement("div");
-      div.className = `message ${sender}`;
-      div.textContent = text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
+  function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.className = `message ${sender}`;
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function correctTypos(text) {
+    return text
+      .replace(/\bwhae\b/gi, "when")
+      .replace(/\bcont\b/gi, "can't")
+      .replace(/\bkey t\b/gi, "type")
+      .replace(/\bgiv em\b/gi, "give me")
+      .replace(/\bonew\b/gi, "own")
+      .replace(/\bithe\b/gi, "it the");
+  }
+
+  async function fetchWikipediaSummary(term) {
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(term)}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.extract) {
+        return `📘 ${data.title}: ${data.extract}`;
+      } else {
+        return `I couldn't find a summary for "${term}".`;
+      }
+    } catch {
+      return "Wikipedia lookup failed.";
+    }
+  }
+
+  async function reason(msg) {
+    msg = correctTypos(msg.toLowerCase());
+
+    if (/^hello$|^hi$|^hey$/i.test(msg)) {
+      return "Welcome, Commander. SuperIntellect is online.";
     }
 
-    function correctTypos(text) {
-      return text
-        .replace(/\bwhae\b/gi, "when")
-        .replace(/\bcont\b/gi, "can't")
-        .replace(/\bkey t\b/gi, "type")
-        .replace(/\bgiv em\b/gi, "give me")
-        .replace(/\bonew\b/gi, "own")
-        .replace(/\bithe\b/gi, "it the");
+    if (/how are you/i.test(msg)) {
+      return "Operational. Awaiting directives. How may I assist your mission?";
     }
 
-    async function reason(msg) {
-      msg = correctTypos(msg.toLowerCase());
+    if (/^(who is|what is|define)\s.+/i.test(msg)) {
+      const term = msg.replace(/^(who is|what is|define)\s+/i, "").trim();
+      return await fetchWikipediaSummary(term);
+    }
 
-      if (/^hello$|^hi$|^hey$/i.test(msg)) {
-        return "Welcome, Commander. SuperIntellect is online.";
+    if (msg.startsWith("define ")) {
+      const term = msg.slice(7).trim();
+      return memory.definitions[term]
+        ? `${term} means ${memory.definitions[term]}`
+        : `I don't have a definition for "${term}".`;
+    }
+
+    if (msg.startsWith("learn ")) {
+      const parts = msg.slice(6).split(" means ");
+      if (parts.length === 2) {
+        const term = parts[0].trim();
+        const definition = parts[1].trim();
+        memory.definitions[term] = definition;
+        return `Learned: ${term} means "${definition}"`;
       }
+    }
 
-      if (/how are you/i.test(msg)) {
-        return "Operational. Awaiting directives. How may I assist your mission?";
+    if (msg.startsWith("remember ")) {
+      const parts = msg.slice(9).split(" is ");
+      if (parts.length === 2) {
+        const subject = parts[0].trim();
+        const predicate = parts[1].trim();
+        memory.facts.push({ subject, predicate });
+        return `Remembered: ${subject} is ${predicate}`;
       }
+    }
 
-      if (/who is lebron james/i.test(msg)) {
-        return "LeBron James is a professional basketball player known for strategic dominance and cultural impact. Would you like a breakdown of his career or influence?";
-      }
-
-      if (/what is lebron james/i.test(msg)) {
-        return "LeBron James is not a concept — he's a living legend. Try asking 'Who is LeBron James?' for a full profile.";
-      }
-
-      if (msg.startsWith("define ")) {
-        const term = msg.slice(7).trim();
-        return memory.definitions[term]
-          ? `${term} means ${memory.definitions[term]}`
-          : `I don't have a definition for "${term}".`;
-      }
-
-      if (msg.startsWith("learn ")) {
-        const parts = msg.slice(6).split(" means ");
-        if (parts.length === 2) {
-          const term = parts[0].trim();
-          const definition = parts[1].trim();
-          memory.definitions[term] = definition;
-          return `Learned: ${term} means "${definition}"`;
-        }
-      }
-
-      if (msg.startsWith("remember ")) {
-        const parts = msg.slice(9).split(" is ");
-        if (parts.length === 2) {
-          const subject = parts[0].trim();
-          const predicate = parts[1].trim();
-          memory.facts.push({ subject, predicate });
-          return `Remembered: ${subject} is ${predicate}`;
-        }
-      }
-
-      if (msg === "deduce") {
-        let newFacts = [];
-        for (let f1 of memory.facts) {
-          for (let f2 of memory.facts) {
-            if (f1.predicate === f2.subject) {
-              const deduced = { subject: f1.subject, predicate: f2.predicate };
-              if (!memory.facts.some(f => f.subject === deduced.subject && f.predicate === deduced.predicate)) {
-                memory.facts.push(deduced);
-                newFacts.push(deduced);
-              }
+    if (msg === "deduce") {
+      let newFacts = [];
+      for (let f1 of memory.facts) {
+        for (let f2 of memory.facts) {
+          if (f1.predicate === f2.subject) {
+            const deduced = { subject: f1.subject, predicate: f2.predicate };
+            if (!memory.facts.some(f => f.subject === deduced.subject && f.predicate === deduced.predicate)) {
+              memory.facts.push(deduced);
+              newFacts.push(deduced);
             }
           }
         }
-        return newFacts.length
-          ? `Deduced ${newFacts.length} new fact(s).`
-          : "No new deductions.";
       }
-
-      if (/^[\d\s\+\-\*\/\.\(\)]+$/.test(msg)) {
-        try {
-          return `The answer is ${eval(msg)}`;
-        } catch {
-          return "I couldn't calculate that expression.";
-        }
-      }
-
-      const fallback = [
-        "I'm processing that... let's go deeper.",
-        "Interesting. Let me align that with known facts.",
-        "That deserves a precise answer. Let me reason through it.",
-        "Analyzing... this may require layered logic.",
-        "Let me cross-reference that with what I know so far."
-      ];
-      return fallback[Math.floor(Math.random() * fallback.length)];
+      return newFacts.length
+        ? `Deduced ${newFacts.length} new fact(s).`
+        : "No new deductions.";
     }
 
-    function handleInput() {
-      const text = input.value.trim();
-      if (!text) return;
-      addMessage(text, "user");
-      input.value = "";
-      reason(text).then(reply => {
-        addMessage(reply, "bot");
-        localStorage.setItem("superintellect_memory", JSON.stringify(memory));
-        updateMemoryDisplay();
-      });
-    }
-
-    function updateMemoryDisplay() {
-      memoryDiv.innerHTML = `
-        <strong>Memory:</strong><br/>
-        Definitions: ${Object.keys(memory.definitions).length}<br/>
-        Facts: ${memory.facts.length}<br/>
-        Conditionals: ${memory.conditionals.length}
-      `;
-    }
-
-    const saved = localStorage.getItem("superintellect_memory");
-    if (saved) {
+    if (/^[\d\s\+\-\*\/\.\(\)]+$/.test(msg)) {
       try {
-        memory = JSON.parse(saved);
-        updateMemoryDisplay();
+        return `The answer is ${eval(msg)}`;
       } catch {
-        memory = { facts: [], definitions: {}, conditionals: [] };
+        return "I couldn't calculate that expression.";
       }
     }
 
-    send.addEventListener("click", handleInput);
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") handleInput();
+    const fallback = [
+      "I'm processing that... let's go deeper.",
+      "Interesting. Let me align that with known facts.",
+      "That deserves a precise answer. Let me reason through it.",
+      "Analyzing... this may require layered logic.",
+      "Let me cross-reference that with what I know so far."
+    ];
+    return fallback[Math.floor(Math.random() * fallback.length)];
+  }
+
+  function handleInput() {
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, "user");
+    input.value = "";
+    reason(text).then(reply => {
+      addMessage(reply, "bot");
+      localStorage.setItem("superintellect_memory", JSON.stringify(memory));
+      updateMemoryDisplay();
     });
-  </script>
+  }
+
+  function updateMemoryDisplay() {
+    memoryDiv.innerHTML = `
+      <strong>Memory:</strong><br/>
+      Definitions: ${Object.keys(memory.definitions).length}<br/>
+      Facts: ${memory.facts.length}<br/>
+      Conditionals: ${memory.conditionals.length}
+    `;
+  }
+
+  const saved = localStorage.getItem("superintellect_memory");
+  if (saved) {
+    try {
+      memory = JSON.parse(saved);
+      updateMemoryDisplay();
+    } catch {
+      memory = { facts: [], definitions: {}, conditionals: [] };
+    }
+  }
+
+  send.addEventListener("click", handleInput);
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") handleInput();
+  });
+</script>
+
 </body>
 </html>
+
