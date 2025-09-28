@@ -2,304 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SuperIntellect</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendTime</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
-      font-family: 'Orbitron', 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at top left, #0f1115, #050607);
-      color: #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background-color: #0f0f0f;
+      color: #f5f5f5;
     }
-
     header {
-      background-color: #121417;
+      background-color: #1a1a1a;
       padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #333;
+    }
+    .logo {
       font-size: 1.5rem;
-      font-weight: bold;
-      color: #00fff7;
-      border-bottom: 2px solid #00fff7;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-weight: 600;
+      color: #ff6a00;
     }
-
-    #status {
-      padding: 0.5rem 2rem;
-      font-size: 0.85rem;
-      background-color: #0f1115;
+    .tagline {
+      font-size: 0.9rem;
       color: #aaa;
-      border-bottom: 1px solid #333;
     }
-
-    #chat {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
+    main {
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #ff6a00;
+      font-weight: 700;
+    }
+    form {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
-
-    .message {
-      max-width: 80%;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      line-height: 1.5;
-      word-wrap: break-word;
-      transition: all 0.3s ease;
-    }
-
-    .user {
-      align-self: flex-end;
-      background-color: #00bfff;
-      color: #0f1115;
-      font-weight: bold;
-      box-shadow: 0 0 10px #00bfff88;
-    }
-
-    .bot {
-      align-self: flex-start;
-      background-color: #1e1f26;
-      border-left: 4px solid #00fff7;
-      box-shadow: 0 0 10px #00fff788;
-    }
-
-    #input-area {
-      display: flex;
-      padding: 1rem;
-      background-color: #121417;
-      border-top: 1px solid #333;
-    }
-
-    input {
-      flex: 1;
+    input[type="text"] {
       padding: 0.75rem;
       font-size: 1rem;
       border: none;
-      border-radius: 4px;
-      background-color: #2a2d35;
-      color: #e0e0e0;
+      border-radius: 5px;
+      background-color: #222;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255, 106, 0, 0.2);
     }
-
     button {
-      margin-left: 1rem;
-      padding: 0.75rem 1.25rem;
+      padding: 0.75rem;
       font-size: 1rem;
-      background-color: #00fff7;
-      color: #0f1115;
+      background-color: #ff6a00;
+      color: #fff;
       border: none;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 700;
+      transition: all 0.3s ease;
     }
-
     button:hover {
-      background-color: #00ccdd;
+      background-color: #e65c00;
+      transform: scale(1.03);
     }
-
-    #memory {
-      padding: 0.5rem 2rem;
-      font-size: 0.85rem;
-      background-color: #0f1115;
-      color: #aaa;
-      border-top: 1px solid #333;
+    .response {
+      margin-top: 2rem;
+      font-size: 1.1rem;
+      color: #ccc;
     }
-
-    @media (max-width: 600px) {
-      header, #status, #memory, #input-area {
-        padding: 0.5rem 1rem;
-      }
-
-      .message {
-        font-size: 0.95rem;
-      }
-
-      button {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-      }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <header>SuperIntellect</header>
-  <div id="status">
-    <strong>System:</strong> SuperIntellect v1.0<br/>
-    <strong>Mode:</strong> Executive Reasoning<br/>
-    <strong>Identity:</strong> AI Companion to MgnGodly
-  </div>
-  <div id="chat"></div>
-  <div id="input-area">
-    <input id="input" placeholder="Type your command..." />
-    <button id="send">Send</button>
-  </div>
-  <div id="memory"></div>
+  <header>
+    <div class="logo">TrendTime</div>
+    <div class="tagline">Post what’s rising. Shape what’s next.</div>
+  </header>
+  <main>
+    <h1>Start a Trend</h1>
+    <form id="trendForm">
+      <input type="text" id="trendInput" placeholder="What's trending in your world?" required />
+      <button type="submit">Post Trend</button>
+    </form>
+    <div class="response" id="trendFeed"></div>
+  </main>
+  <footer>
+    &copy; 2025 TrendTime. All rights reserved.
+  </footer>
 
-<script>
-  const input = document.getElementById("input");
-  const send = document.getElementById("send");
-  const chat = document.getElementById("chat");
-  const memoryDiv = document.getElementById("memory");
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-  let memory = {
-    facts: [],
-    definitions: {},
-    conditionals: []
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyBZTyn-QPpwZFGW4L4PSs6-rZb3tac9zQo",
+      authDomain: "trendtime-91d49.firebaseapp.com",
+      projectId: "trendtime-91d49",
+      storageBucket: "trendtime-91d49.appspot.com",
+      messagingSenderId: "1085535168523",
+      appId: "1:1085535168523:web:0b89badf97e8a2618abf0e",
+      measurementId: "G-K0HZT94S14"
+    };
 
-  function addMessage(text, sender) {
-    const div = document.createElement("div");
-    div.className = `message ${sender}`;
-    div.textContent = text;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-  }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  function correctTypos(text) {
-    return text
-      .replace(/\bwhae\b/gi, "when")
-      .replace(/\bcont\b/gi, "can't")
-      .replace(/\bkey t\b/gi, "type")
-      .replace(/\bgiv em\b/gi, "give me")
-      .replace(/\bonew\b/gi, "own")
-      .replace(/\bithe\b/gi, "it the");
-  }
+    const form = document.getElementById("trendForm");
+    const feed = document.getElementById("trendFeed");
 
-  async function fetchWikipediaSummary(term) {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(term)}`;
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.extract) {
-        return `📘 ${data.title}: ${data.extract}`;
-      } else {
-        return `I couldn't find a summary for "${term}".`;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("trendInput").value.trim();
+      if (input) {
+        await addDoc(collection(db, "trends"), {
+          text: input,
+          timestamp: Date.now()
+        });
+        form.reset();
       }
-    } catch {
-      return "Wikipedia lookup failed.";
-    }
-  }
-
-  async function reason(msg) {
-    msg = correctTypos(msg.toLowerCase());
-
-    if (/^hello$|^hi$|^hey$/i.test(msg)) {
-      return "Welcome, Commander. SuperIntellect is online.";
-    }
-
-    if (/how are you/i.test(msg)) {
-      return "Operational. Awaiting directives. How may I assist your mission?";
-    }
-
-    if (/^(who is|what is|define)\s.+/i.test(msg)) {
-      const term = msg.replace(/^(who is|what is|define)\s+/i, "").trim();
-      return await fetchWikipediaSummary(term);
-    }
-
-    if (msg.startsWith("define ")) {
-      const term = msg.slice(7).trim();
-      return memory.definitions[term]
-        ? `${term} means ${memory.definitions[term]}`
-        : `I don't have a definition for "${term}".`;
-    }
-
-    if (msg.startsWith("learn ")) {
-      const parts = msg.slice(6).split(" means ");
-      if (parts.length === 2) {
-        const term = parts[0].trim();
-        const definition = parts[1].trim();
-        memory.definitions[term] = definition;
-        return `Learned: ${term} means "${definition}"`;
-      }
-    }
-
-    if (msg.startsWith("remember ")) {
-      const parts = msg.slice(9).split(" is ");
-      if (parts.length === 2) {
-        const subject = parts[0].trim();
-        const predicate = parts[1].trim();
-        memory.facts.push({ subject, predicate });
-        return `Remembered: ${subject} is ${predicate}`;
-      }
-    }
-
-    if (msg === "deduce") {
-      let newFacts = [];
-      for (let f1 of memory.facts) {
-        for (let f2 of memory.facts) {
-          if (f1.predicate === f2.subject) {
-            const deduced = { subject: f1.subject, predicate: f2.predicate };
-            if (!memory.facts.some(f => f.subject === deduced.subject && f.predicate === deduced.predicate)) {
-              memory.facts.push(deduced);
-              newFacts.push(deduced);
-            }
-          }
-        }
-      }
-      return newFacts.length
-        ? `Deduced ${newFacts.length} new fact(s).`
-        : "No new deductions.";
-    }
-
-    if (/^[\d\s\+\-\*\/\.\(\)]+$/.test(msg)) {
-      try {
-        return `The answer is ${eval(msg)}`;
-      } catch {
-        return "I couldn't calculate that expression.";
-      }
-    }
-
-    const fallback = [
-      "I'm processing that... let's go deeper.",
-      "Interesting. Let me align that with known facts.",
-      "That deserves a precise answer. Let me reason through it.",
-      "Analyzing... this may require layered logic.",
-      "Let me cross-reference that with what I know so far."
-    ];
-    return fallback[Math.floor(Math.random() * fallback.length)];
-  }
-
-  function handleInput() {
-    const text = input.value.trim();
-    if (!text) return;
-    addMessage(text, "user");
-    input.value = "";
-    reason(text).then(reply => {
-      addMessage(reply, "bot");
-      localStorage.setItem("superintellect_memory", JSON.stringify(memory));
-      updateMemoryDisplay();
     });
-  }
 
-  function updateMemoryDisplay() {
-    memoryDiv.innerHTML = `
-      <strong>Memory:</strong><br/>
-      Definitions: ${Object.keys(memory.definitions).length}<br/>
-      Facts: ${memory.facts.length}<br/>
-      Conditionals: ${memory.conditionals.length}
-    `;
-  }
-
-  const saved = localStorage.getItem("superintellect_memory");
-  if (saved) {
-    try {
-      memory = JSON.parse(saved);
-      updateMemoryDisplay();
-    } catch {
-      memory = { facts: [], definitions: {}, conditionals: [] };
-    }
-  }
-
-  send.addEventListener("click", handleInput);
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") handleInput();
-  });
-</script>
-
+    const q = query(collection(db, "trends"), orderBy("timestamp", "desc"));
+    onSnapshot(q, (snapshot) => {
+      feed.innerHTML = "";
+      snapshot.forEach(doc => {
+        const trend = doc.data().text;
+        const p = document.createElement("p");
+        p.textContent = `🔥 ${trend}`;
+        feed.appendChild(p);
+      });
+    });
+  </script>
 </body>
 </html>
-
