@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TrendTime</title>
-  <link rel="icon" href="/favicon.png" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -15,163 +14,28 @@
       --gray: #999;
       --border: #333;
     }
-
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--dark);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    .navbar {
-      background-color: var(--card);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .nav-logo {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--orange);
-    }
-
-    .nav-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .nav-actions button {
-      background-color: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .nav-actions button:hover {
-      background-color: #e85c00;
-    }
-
-    .nav-actions img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--orange);
-    }
-
-    main {
-      max-width: 700px;
-      margin: auto;
-      padding: 2rem 1rem;
-    }
-
-    .composer {
-      margin-bottom: 2rem;
-      background: var(--card);
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(255,106,0,0.15);
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    textarea, input {
-      background-color: #222;
-      border: none;
-      border-radius: 8px;
-      padding: 1rem;
-      color: #fff;
-      font-size: 1rem;
-      resize: none;
-    }
-
-    button[type="submit"] {
-      background-color: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button[type="submit"]:hover {
-      background-color: #e85c00;
-    }
-
-    .feed {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .trend-card {
-      background-color: var(--card);
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .trend-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .trend-header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--orange);
-    }
-
-    .trend-user {
-      font-weight: 600;
-      font-size: 1rem;
-    }
-
-    .trend-time {
-      font-size: 0.8rem;
-      color: var(--gray);
-    }
-
-    .trend-text {
-      font-size: 1rem;
-    }
-
-    .trend-card video {
-      width: 100%;
-      max-height: 400px;
-      border-radius: 8px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.8rem;
-      color: var(--gray);
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-    }
+    body { margin:0; font-family:'Poppins',sans-serif; background:var(--dark); color:var(--text); line-height:1.6;}
+    .navbar{background:var(--card);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;}
+    .nav-logo{font-size:1.6rem;font-weight:700;color:var(--orange);}
+    .nav-actions{display:flex;gap:1rem;align-items:center;}
+    .nav-actions button{background:var(--orange);color:#fff;border:none;border-radius:6px;padding:0.5rem 1rem;font-weight:600;cursor:pointer;transition:background 0.3s;}
+    .nav-actions button:hover{background:#e85c00;}
+    .nav-actions img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);}
+    main{max-width:700px;margin:auto;padding:2rem 1rem;}
+    .composer{margin-bottom:2rem;background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 0 15px rgba(255,106,0,0.15);}
+    form{display:flex;flex-direction:column;gap:1rem;}
+    textarea,input{background:#222;border:none;border-radius:8px;padding:1rem;color:#fff;font-size:1rem;resize:none;}
+    button[type="submit"]{background:var(--orange);color:#fff;border:none;border-radius:8px;padding:0.75rem;font-weight:600;cursor:pointer;transition:background 0.3s;}
+    button[type="submit"]:hover{background:#e85c00;}
+    .feed{display:flex;flex-direction:column;gap:2rem;}
+    .trend-card{background:var(--card);border-radius:12px;padding:1rem;box-shadow:0 0 15px rgba(0,0,0,0.4);display:flex;flex-direction:column;gap:0.75rem;}
+    .trend-header{display:flex;align-items:center;gap:0.75rem;}
+    .trend-header img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);}
+    .trend-user{font-weight:600;font-size:1rem;}
+    .trend-time{font-size:0.8rem;color:var(--gray);}
+    .trend-text{font-size:1rem;}
+    .trend-card video{width:100%;max-height:400px;border-radius:8px;}
+    footer{text-align:center;padding:1rem;font-size:0.8rem;color:var(--gray);border-top:1px solid var(--border);margin-top:3rem;}
   </style>
 </head>
 <body>
@@ -196,16 +60,14 @@
     <section id="trendFeed" class="feed"></section>
   </main>
 
-  <footer>
-    &copy; 2025 TrendTime. Built by MgnGodly.
-  </footer>
+  <footer>&copy; 2025 TrendTime. Built by MgnGodly.</footer>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
     const supabase = createClient(
       'https://kpdgmbjdaynplyjacuxd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // replace with your real anon key
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // replace with your anon key
     )
 
     const loginBtn = document.getElementById("loginBtn")
@@ -215,20 +77,16 @@
     const feed = document.getElementById("trendFeed")
     const composer = document.querySelector(".composer")
 
-    // Login with Magic Link (with redirect)
+    // Login with Magic Link
     loginBtn.onclick = async () => {
       const email = prompt("Enter your email")
       if (!email) return
-
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: "https://thefmt.com" } // <-- replace with your live site
+        options: { emailRedirectTo: "https://thefmt.com.com" } // replace with your site
       })
-      if (error) {
-        alert("Error: " + error.message)
-      } else {
-        alert("Check your email for a login link!")
-      }
+      if (error) alert("Error: " + error.message)
+      else alert("Check your email for a login link!")
     }
 
     // Logout
@@ -237,28 +95,29 @@
       location.reload()
     }
 
+    // Complete login automatically if coming from magic link
+    async function handleMagicLink() {
+      const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true })
+      if (error) console.error("Magic link error:", error)
+      else if (data.session) console.log("Logged in via magic link:", data.session.user.email)
+    }
+
     // Post trend
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", async e => {
       e.preventDefault()
       const text = document.getElementById("trendText").value.trim()
       const video_url = document.getElementById("videoUrl").value.trim()
-
       const { data: { session } } = await supabase.auth.getSession()
       const userId = session?.user?.id
       if (!userId) return alert("You must be signed in to post.")
-
       const { error } = await supabase.from("trends").insert([
         { text, video_url: video_url || null, timestamp: new Date().toISOString(), user_id: userId }
       ])
-      if (error) {
-        console.error(error)
-        return alert("Error posting trend")
-      }
-
-      form.reset()
+      if (error) alert("Error posting trend")
+      else form.reset()
     })
 
-    // Auth check
+    // Check auth and display composer/avatar
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession()
       const user = session?.user
@@ -268,90 +127,44 @@
         avatar.style.display = "inline-block"
         avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
         composer.style.display = "block"
-      } else {
-        composer.style.display = "none"
-      }
+      } else composer.style.display = "none"
     }
 
     // Render trend card
     function renderTrend(trend, profile) {
-      const card = document.createElement("div")
-      card.className = "trend-card"
-
-      const header = document.createElement("div")
-      header.className = "trend-header"
-
-      const userAvatar = document.createElement("img")
-      userAvatar.src = profile?.avatar_url || "https://placehold.co/40x40"
-      header.appendChild(userAvatar)
-
-      const info = document.createElement("div")
-      const userTag = document.createElement("div")
-      userTag.className = "trend-user"
-      userTag.textContent = profile?.username || "Anonymous"
-      const timeTag = document.createElement("div")
-      timeTag.className = "trend-time"
-      timeTag.textContent = new Date(trend.timestamp).toLocaleString()
-      info.appendChild(userTag)
-      info.appendChild(timeTag)
-
-      header.appendChild(info)
-      card.appendChild(header)
-
-      const text = document.createElement("div")
-      text.className = "trend-text"
-      text.textContent = trend.text
-      card.appendChild(text)
-
-      if (trend.video_url) {
-        const video = document.createElement("video")
-        video.src = trend.video_url
-        video.controls = true
-        card.appendChild(video)
-      }
-
+      const card = document.createElement("div"); card.className="trend-card"
+      const header = document.createElement("div"); header.className="trend-header"
+      const userAvatar=document.createElement("img"); userAvatar.src=profile?.avatar_url||"https://placehold.co/40x40"; header.appendChild(userAvatar)
+      const info=document.createElement("div")
+      const userTag=document.createElement("div"); userTag.className="trend-user"; userTag.textContent=profile?.username||"Anonymous"
+      const timeTag=document.createElement("div"); timeTag.className="trend-time"; timeTag.textContent=new Date(trend.timestamp).toLocaleString()
+      info.appendChild(userTag); info.appendChild(timeTag)
+      header.appendChild(info); card.appendChild(header)
+      const text=document.createElement("div"); text.className="trend-text"; text.textContent=trend.text; card.appendChild(text)
+      if(trend.video_url){const video=document.createElement("video"); video.src=trend.video_url; video.controls=true; card.appendChild(video)}
       feed.prepend(card)
     }
 
     // Load trends
     async function loadTrends() {
-      const { data: trends, error } = await supabase
-        .from("trends")
-        .select("text,video_url,user_id,timestamp")
-        .order("timestamp", { ascending: false })
-
-      if (error) {
-        console.error(error)
-        return
-      }
-
-      feed.innerHTML = ""
-      for (const trend of trends) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username,avatar_url")
-          .eq("id", trend.user_id)
-          .single()
-        renderTrend(trend, profile)
+      const { data: trends } = await supabase.from("trends").select("text,video_url,user_id,timestamp").order("timestamp",{ascending:false})
+      feed.innerHTML=""
+      for(const trend of trends){
+        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
+        renderTrend(trend,profile)
       }
     }
 
-    // Realtime subscription
+    // Realtime
     supabase.channel("realtime-trends")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" }, async (payload) => {
-        const trend = payload.new
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username,avatar_url")
-          .eq("id", trend.user_id)
-          .single()
-        renderTrend(trend, profile)
-      })
-      .subscribe()
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"trends"}, async payload=>{
+        const trend=payload.new
+        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
+        renderTrend(trend,profile)
+      }).subscribe()
 
-    // Run on page load
-    checkAuth()
-    loadTrends()
+    // Initialize
+    handleMagicLink().then(()=>{checkAuth(); loadTrends()})
   </script>
 </body>
 </html>
