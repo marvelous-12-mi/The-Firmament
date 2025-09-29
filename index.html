@@ -32,7 +32,6 @@
     .trend-header{display:flex;align-items:center;gap:0.75rem;}
     .trend-header img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);}
     .trend-user{font-weight:600;font-size:1rem;}
-    .trend-time{font-size:0.8rem;color:var(--gray);}
     .trend-text{font-size:1rem;}
     .trend-card video{width:100%;max-height:400px;border-radius:8px;}
     footer{text-align:center;padding:1rem;font-size:0.8rem;color:var(--gray);border-top:1px solid var(--border);margin-top:3rem;}
@@ -56,6 +55,7 @@
         <button type="submit">Post Trend</button>
       </form>
     </section>
+
     <section id="trendFeed" class="feed"></section>
   </main>
 
@@ -96,9 +96,17 @@
 
     // Complete login automatically if coming from magic link
     async function handleMagicLink() {
-      const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true })
-      if (error) console.error("Magic link error:", error)
-      else if (data.session) console.log("Logged in via magic link:", data.session.user.email)
+      const { data } = await supabase.auth.getSessionFromUrl({ storeSession: true })
+      const user = data.session?.user
+      if (user) console.log("Logged in via magic link:", user.email)
+    }
+
+    // Ensure profile exists
+    async function ensureProfile(user) {
+      const { data: existing } = await supabase.from("profiles").select().eq("id", user.id).single()
+      if (!existing) {
+        await supabase.from("profiles").insert([{ id: user.id, username: user.user_metadata?.name || "Anonymous", avatar_url: user.user_metadata?.avatar_url || "" }])
+      }
     }
 
     // Post trend
@@ -107,17 +115,19 @@
       const text = document.getElementById("trendText").value.trim()
       const video_url = document.getElementById("videoUrl").value.trim()
       const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
-      if (!userId) return alert("You must be signed in to post.")
+      const user = session?.user
+      if (!user) return alert("You must be signed in to post.")
+
+      await ensureProfile(user)
 
       const { error } = await supabase.from("trends").insert([
-        { text, video_url: video_url || null, user_id: userId }
+        { text, video_url: video_url || null, user_id: user.id }
       ])
-      if (error) console.error(error) || alert("Error posting trend: " + error.message)
-      else form.reset()
+      if (error) alert("Error posting trend: " + error.message)
+      else { form.reset(); loadTrends() }
     })
 
-    // Check auth and display composer/avatar
+    // Check auth
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession()
       const user = session?.user
@@ -127,45 +137,44 @@
         avatar.style.display = "inline-block"
         avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
         composer.style.display = "block"
+        await ensureProfile(user)
       } else composer.style.display = "none"
     }
 
-    // Render trend card
+    // Render trend
     function renderTrend(trend, profile) {
       const card = document.createElement("div"); card.className="trend-card"
       const header = document.createElement("div"); header.className="trend-header"
-      const userAvatar=document.createElement("img"); userAvatar.src=profile?.avatar_url||"https://placehold.co/40x40"; header.appendChild(userAvatar)
-      const info=document.createElement("div")
-      const userTag=document.createElement("div"); userTag.className="trend-user"; userTag.textContent=profile?.username||"Anonymous"
-      const timeTag=document.createElement("div"); timeTag.className="trend-time"; timeTag.textContent=new Date(trend.created_at).toLocaleString()
-      info.appendChild(userTag); info.appendChild(timeTag)
-      header.appendChild(info); card.appendChild(header)
-      const text=document.createElement("div"); text.className="trend-text"; text.textContent=trend.text; card.appendChild(text)
+      const userAvatar = document.createElement("img"); userAvatar.src = profile?.avatar_url || "https://placehold.co/40x40"; header.appendChild(userAvatar)
+      const info = document.createElement("div")
+      const userTag = document.createElement("div"); userTag.className="trend-user"; userTag.textContent = profile?.username || "Anonymous"
+      info.appendChild(userTag)
+      header.appendChild(info)
+      card.appendChild(header)
+      const textEl = document.createElement("div"); textEl.className="trend-text"; textEl.textContent = trend.text; card.appendChild(textEl)
       if(trend.video_url){const video=document.createElement("video"); video.src=trend.video_url; video.controls=true; card.appendChild(video)}
       feed.prepend(card)
     }
 
     // Load trends
     async function loadTrends() {
-      const { data: trends, error } = await supabase.from("trends").select("text,video_url,user_id,created_at").order("created_at",{ascending:false})
-      if(error){console.error(error); return}
-      feed.innerHTML=""
+      const { data: trends } = await supabase.from("trends").select("text,video_url,user_id").order("id", { ascending: false })
+      feed.innerHTML = ""
       for(const trend of trends){
-        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
-        renderTrend(trend,profile)
+        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
+        renderTrend(trend, profile)
       }
     }
 
-    // Realtime
+    // Realtime listener
     supabase.channel("realtime-trends")
-      .on("postgres_changes",{event:"INSERT",schema:"public",table:"trends"}, async payload=>{
-        const trend=payload.new
-        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
-        renderTrend(trend,profile)
+      .on("postgres_changes", { event:"INSERT", schema:"public", table:"trends" }, async payload => {
+        const trend = payload.new
+        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
+        renderTrend(trend, profile)
       }).subscribe()
 
-    // Initialize
-    handleMagicLink().then(()=>{checkAuth(); loadTrends()})
+    handleMagicLink().then(() => { checkAuth(); loadTrends() })
   </script>
 </body>
 </html>
