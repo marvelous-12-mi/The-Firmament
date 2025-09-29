@@ -179,7 +179,7 @@
     <div class="nav-logo">TrendTime</div>
     <div class="nav-actions">
       <img id="avatar" src="" alt="Profile" style="display:none;" />
-      <button id="loginBtn">Sign In with Google</button>
+      <button id="loginBtn">Sign In with Email</button>
       <button id="logoutBtn" style="display:none;">Logout</button>
     </div>
   </nav>
@@ -205,7 +205,7 @@
 
     const supabase = createClient(
       'https://kpdgmbjdaynplyjacuxd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // replace with your real anon key
     )
 
     const loginBtn = document.getElementById("loginBtn")
@@ -215,9 +215,17 @@
     const feed = document.getElementById("trendFeed")
     const composer = document.querySelector(".composer")
 
-    // Login
+    // Login with Magic Link
     loginBtn.onclick = async () => {
-      await supabase.auth.signInWithOAuth({ provider: 'google' })
+      const email = prompt("Enter your email")
+      if (!email) return
+
+      const { error } = await supabase.auth.signInWithOtp({ email })
+      if (error) {
+        alert("Error: " + error.message)
+      } else {
+        alert("Check your email for a login link!")
+      }
     }
 
     // Logout
@@ -237,7 +245,7 @@
       if (!userId) return alert("You must be signed in to post.")
 
       const { error } = await supabase.from("trends").insert([
-        { text, video_url: video_url || null, timestamp: Date.now(), user_id: userId }
+        { text, video_url: video_url || null, timestamp: new Date().toISOString(), user_id: userId }
       ])
       if (error) {
         console.error(error)
@@ -254,22 +262,8 @@
         loginBtn.style.display = "none"
         logoutBtn.style.display = "inline-block"
         avatar.style.display = "inline-block"
-        avatar.src = user.user_metadata?.avatar_url || ""
+        avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
         composer.style.display = "block"
-
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single()
-
-        if (!profile && !error) {
-          await supabase.from("profiles").insert([{
-            id: user.id,
-            username: user.user_metadata?.name || "Anonymous",
-            avatar_url: user.user_metadata?.avatar_url || ""
-          }])
-        }
       } else {
         composer.style.display = "none"
       }
@@ -290,7 +284,7 @@
       const info = document.createElement("div")
       const userTag = document.createElement("div")
       userTag.className = "trend-user"
-      userTag.textContent = profile?.username || "Unknown"
+      userTag.textContent = profile?.username || "Anonymous"
       const timeTag = document.createElement("div")
       timeTag.className = "trend-time"
       timeTag.textContent = new Date(trend.timestamp).toLocaleString()
