@@ -215,12 +215,15 @@
     const feed = document.getElementById("trendFeed")
     const composer = document.querySelector(".composer")
 
-    // Login with Magic Link
+    // Login with Magic Link (with redirect)
     loginBtn.onclick = async () => {
       const email = prompt("Enter your email")
       if (!email) return
 
-      const { error } = await supabase.auth.signInWithOtp({ email })
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: "https://thefmt.com" } // <-- replace with your live site
+      })
       if (error) {
         alert("Error: " + error.message)
       } else {
@@ -257,7 +260,8 @@
 
     // Auth check
     async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (user) {
         loginBtn.style.display = "none"
         logoutBtn.style.display = "inline-block"
@@ -306,10 +310,10 @@
         card.appendChild(video)
       }
 
-      feed.prepend(card) // prepend so newest is first
+      feed.prepend(card)
     }
 
-    // Load existing trends
+    // Load trends
     async function loadTrends() {
       const { data: trends, error } = await supabase
         .from("trends")
@@ -345,6 +349,7 @@
       })
       .subscribe()
 
+    // Run on page load
     checkAuth()
     loadTrends()
   </script>
