@@ -66,7 +66,7 @@
 
     const supabase = createClient(
       'https://kpdgmbjdaynplyjacuxd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // replace with your anon key
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
     )
 
     const loginBtn = document.getElementById("loginBtn")
@@ -76,32 +76,28 @@
     const feed = document.getElementById("trendFeed")
     const composer = document.querySelector(".composer")
 
-    // Login with Magic Link
     loginBtn.onclick = async () => {
       const email = prompt("Enter your email")
       if (!email) return
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: "https://thefmt.com" }
+        options: { emailRedirectTo: location.href }
       })
       if (error) alert("Error: " + error.message)
       else alert("Check your email for a login link!")
     }
 
-    // Logout
     logoutBtn.onclick = async () => {
       await supabase.auth.signOut()
       location.reload()
     }
 
-    // Handle magic link
     async function handleMagicLink() {
       const { data } = await supabase.auth.getSessionFromUrl({ storeSession: true })
       const user = data.session?.user
       if (user) console.log("Logged in via magic link:", user.email)
     }
 
-    // Ensure profile exists
     async function ensureProfile(user) {
       const { data: existing } = await supabase.from("profiles").select().eq("id", user.id).single()
       if (!existing) {
@@ -109,7 +105,6 @@
       }
     }
 
-    // Post trend
     form.addEventListener("submit", async e => {
       e.preventDefault()
       const text = document.getElementById("trendText").value.trim()
@@ -117,9 +112,7 @@
       const { data: { session } } = await supabase.auth.getSession()
       const user = session?.user
       if (!user) return alert("You must be signed in to post.")
-
       await ensureProfile(user)
-
       const { error } = await supabase.from("trends").insert([
         { text, video_url: video_url || null, user_id: user.id }
       ])
@@ -127,7 +120,6 @@
       else { form.reset(); loadTrends() }
     })
 
-    // Check auth
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession()
       const user = session?.user
@@ -141,7 +133,6 @@
       } else composer.style.display = "none"
     }
 
-    // Render trend
     function renderTrend(trend, profile) {
       const card = document.createElement("div"); card.className="trend-card"
       const header = document.createElement("div"); header.className="trend-header"
@@ -156,31 +147,50 @@
       feed.prepend(card)
     }
 
-    // Load trends
     async function loadTrends() {
-      const { data: trends, error } = await supabase.from("trends").select("text, video_url, user_id").order("id", { ascending: false })
-      if (error) { console.error("Error fetching trends:", error); return }
+      const { data: trends, error } = await supabase
+        .from("trends")
+        .select("id, text, video_url, user_id")
+        .order("id", { ascending: false })
+
+      if (error) {
+        console.error("Error fetching trends:", error)
+        return
+      }
 
       feed.innerHTML = ""
       for (const trend of trends) {
         let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-        const { data } = await supabase.from("profiles").select("username, avatar_url").eq("id", trend.user_id).single()
-        if (data) profile = data
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("username, avatar_url")
+          .eq("id", trend.user_id)
+          .single()
+        if (profileData) profile = profileData
         renderTrend(trend, profile)
       }
     }
 
     // Realtime listener
     supabase.channel("realtime-trends")
-      .on("postgres_changes", { event:"INSERT", schema:"public", table:"trends" }, async payload => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" }, async payload => {
         const trend = payload.new
         let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-        const { data } = await supabase.from("profiles").select("username, avatar_url").eq("id", trend.user_id).single()
-        if (data) profile = data
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("username, avatar_url")
+          .eq("id", trend.user_id)
+          .single()
+        if (profileData) profile = profileData
         renderTrend(trend, profile)
-      }).subscribe()
+      })
+      .subscribe()
 
-    handleMagicLink().then(() => { checkAuth(); loadTrends() })
+    // Initialize
+    handleMagicLink().then(() => {
+      checkAuth()
+      loadTrends()
+    })
   </script>
 </body>
 </html>
