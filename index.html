@@ -99,49 +99,47 @@
     &copy; 2025 TrendTime. All rights reserved.
   </footer>
 
-  <!-- Firebase SDK -->
+  <!-- Supabase SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBZTyn-QPpwZFGW4L4PSs6-rZb3tac9zQo",
-      authDomain: "trendtime-91d49.firebaseapp.com",
-      projectId: "trendtime-91d49",
-      storageBucket: "trendtime-91d49.appspot.com",
-      messagingSenderId: "1085535168523",
-      appId: "1:1085535168523:web:0b89badf97e8a2618abf0e",
-      measurementId: "G-K0HZT94S14"
-    };
+    const supabaseUrl = 'https://kpdgmbjdaynplyjacuxd.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // Replace with your actual anon key
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const form = document.getElementById("trendForm");
-    const feed = document.getElementById("trendFeed");
+    const form = document.getElementById("trendForm")
+    const feed = document.getElementById("trendFeed")
 
     form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const input = document.getElementById("trendInput").value.trim();
+      e.preventDefault()
+      const input = document.getElementById("trendInput").value.trim()
       if (input) {
-        await addDoc(collection(db, "trends"), {
-          text: input,
-          timestamp: Date.now()
-        });
-        form.reset();
+        await supabase.from("trends").insert([{ text: input, timestamp: Date.now() }])
+        form.reset()
+        loadTrends()
       }
-    });
+    })
 
-    const q = query(collection(db, "trends"), orderBy("timestamp", "desc"));
-    onSnapshot(q, (snapshot) => {
-      feed.innerHTML = "";
-      snapshot.forEach(doc => {
-        const trend = doc.data().text;
-        const p = document.createElement("p");
-        p.textContent = `🔥 ${trend}`;
-        feed.appendChild(p);
-      });
-    });
+    async function loadTrends() {
+      const { data, error } = await supabase
+        .from("trends")
+        .select("text,timestamp")
+        .order("timestamp", { ascending: false })
+
+      if (error) {
+        console.error("Error loading trends:", error)
+        return
+      }
+
+      feed.innerHTML = ""
+      data.forEach(item => {
+        const p = document.createElement("p")
+        p.textContent = `🔥 ${item.text}`
+        feed.appendChild(p)
+      })
+    }
+
+    loadTrends()
   </script>
 </body>
 </html>
