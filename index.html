@@ -66,7 +66,7 @@
 
     const supabase = createClient(
       'https://kpdgmbjdaynplyjacuxd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // replace with your anon key
     )
 
     const loginBtn = document.getElementById("loginBtn")
@@ -94,7 +94,7 @@
       location.reload()
     }
 
-    // Complete login automatically if coming from magic link
+    // Handle magic link
     async function handleMagicLink() {
       const { data } = await supabase.auth.getSessionFromUrl({ storeSession: true })
       const user = data.session?.user
@@ -158,14 +158,14 @@
 
     // Load trends
     async function loadTrends() {
-      const { data: trends } = await supabase.from("trends").select("text,video_url,user_id").order("id", { ascending: false })
+      const { data: trends, error } = await supabase.from("trends").select("text, video_url, user_id").order("id", { ascending: false })
+      if (error) { console.error("Error fetching trends:", error); return }
+
       feed.innerHTML = ""
-      for(const trend of trends){
+      for (const trend of trends) {
         let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-        try {
-          const { data } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
-          if (data) profile = data
-        } catch {}
+        const { data } = await supabase.from("profiles").select("username, avatar_url").eq("id", trend.user_id).single()
+        if (data) profile = data
         renderTrend(trend, profile)
       }
     }
@@ -173,12 +173,11 @@
     // Realtime listener
     supabase.channel("realtime-trends")
       .on("postgres_changes", { event:"INSERT", schema:"public", table:"trends" }, async payload => {
+        const trend = payload.new
         let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-        try {
-          const { data } = await supabase.from("profiles").select("username,avatar_url").eq("id", payload.new.user_id).single()
-          if (data) profile = data
-        } catch {}
-        renderTrend(payload.new, profile)
+        const { data } = await supabase.from("profiles").select("username, avatar_url").eq("id", trend.user_id).single()
+        if (data) profile = data
+        renderTrend(trend, profile)
       }).subscribe()
 
     handleMagicLink().then(() => { checkAuth(); loadTrends() })
