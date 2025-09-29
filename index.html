@@ -56,7 +56,6 @@
         <button type="submit">Post Trend</button>
       </form>
     </section>
-
     <section id="trendFeed" class="feed"></section>
   </main>
 
@@ -67,7 +66,7 @@
 
     const supabase = createClient(
       'https://kpdgmbjdaynplyjacuxd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ' // replace with your anon key
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
     )
 
     const loginBtn = document.getElementById("loginBtn")
@@ -83,7 +82,7 @@
       if (!email) return
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: "https://thefmt.com.com" } // replace with your site
+        options: { emailRedirectTo: "https://thefmt.com" }
       })
       if (error) alert("Error: " + error.message)
       else alert("Check your email for a login link!")
@@ -110,10 +109,11 @@
       const { data: { session } } = await supabase.auth.getSession()
       const userId = session?.user?.id
       if (!userId) return alert("You must be signed in to post.")
+
       const { error } = await supabase.from("trends").insert([
-        { text, video_url: video_url || null, timestamp: new Date().toISOString(), user_id: userId }
+        { text, video_url: video_url || null, user_id: userId }
       ])
-      if (error) alert("Error posting trend")
+      if (error) console.error(error) || alert("Error posting trend: " + error.message)
       else form.reset()
     })
 
@@ -137,7 +137,7 @@
       const userAvatar=document.createElement("img"); userAvatar.src=profile?.avatar_url||"https://placehold.co/40x40"; header.appendChild(userAvatar)
       const info=document.createElement("div")
       const userTag=document.createElement("div"); userTag.className="trend-user"; userTag.textContent=profile?.username||"Anonymous"
-      const timeTag=document.createElement("div"); timeTag.className="trend-time"; timeTag.textContent=new Date(trend.timestamp).toLocaleString()
+      const timeTag=document.createElement("div"); timeTag.className="trend-time"; timeTag.textContent=new Date(trend.created_at).toLocaleString()
       info.appendChild(userTag); info.appendChild(timeTag)
       header.appendChild(info); card.appendChild(header)
       const text=document.createElement("div"); text.className="trend-text"; text.textContent=trend.text; card.appendChild(text)
@@ -147,7 +147,8 @@
 
     // Load trends
     async function loadTrends() {
-      const { data: trends } = await supabase.from("trends").select("text,video_url,user_id,timestamp").order("timestamp",{ascending:false})
+      const { data: trends, error } = await supabase.from("trends").select("text,video_url,user_id,created_at").order("created_at",{ascending:false})
+      if(error){console.error(error); return}
       feed.innerHTML=""
       for(const trend of trends){
         const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
