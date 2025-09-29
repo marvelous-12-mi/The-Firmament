@@ -161,7 +161,11 @@
       const { data: trends } = await supabase.from("trends").select("text,video_url,user_id").order("id", { ascending: false })
       feed.innerHTML = ""
       for(const trend of trends){
-        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
+        let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
+        try {
+          const { data } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
+          if (data) profile = data
+        } catch {}
         renderTrend(trend, profile)
       }
     }
@@ -169,9 +173,12 @@
     // Realtime listener
     supabase.channel("realtime-trends")
       .on("postgres_changes", { event:"INSERT", schema:"public", table:"trends" }, async payload => {
-        const trend = payload.new
-        const { data: profile } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
-        renderTrend(trend, profile)
+        let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
+        try {
+          const { data } = await supabase.from("profiles").select("username,avatar_url").eq("id", payload.new.user_id).single()
+          if (data) profile = data
+        } catch {}
+        renderTrend(payload.new, profile)
       }).subscribe()
 
     handleMagicLink().then(() => { checkAuth(); loadTrends() })
