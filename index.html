@@ -42,12 +42,6 @@
       margin-bottom: 2rem;
     }
 
-    .composer h2 {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      color: var(--orange);
-    }
-
     form {
       display: flex;
       flex-direction: column;
@@ -64,7 +58,7 @@
       resize: none;
     }
 
-    button[type="submit"] {
+    button {
       background-color: var(--orange);
       color: #fff;
       border: none;
@@ -72,11 +66,12 @@
       padding: 0.75rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
 
-    button[type="submit"]:hover {
-      background-color: #e65c00;
+    video {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 1rem;
     }
 
     .feed {
@@ -100,31 +95,6 @@
     .trend-card video {
       width: 100%;
       max-height: 400px;
-      border-radius: 8px;
-      margin-top: 0.5rem;
-    }
-
-    .actions {
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
-
-    .actions button {
-      background: none;
-      border: none;
-      color: var(--orange);
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .comments {
-      margin-top: 1rem;
-    }
-
-    .comments p {
-      font-size: 0.9rem;
-      margin: 0.25rem 0;
     }
 
     footer {
@@ -140,11 +110,11 @@
 
   <main>
     <section class="composer">
-      <h2>Start a Trend</h2>
       <form id="trendForm">
         <textarea id="trendText" placeholder="What's trending?" required></textarea>
-        <input type="url" id="videoUrl" placeholder="Video URL (MP4/WebM)" />
-        <button type="submit">Post</button>
+        <button type="button" id="startRecord">🎥 Record Video</button>
+        <video id="preview" autoplay muted playsinline style="display:none;"></video>
+        <button type="submit">Post Trend</button>
       </form>
     </section>
 
@@ -161,23 +131,68 @@
     const supabase = createClient('https://kpdgmbjdaynplyjacuxd.supabase.co', 'YOUR_ANON_KEY_HERE')
 
     const form = document.getElementById("trendForm")
+    const preview = document.getElementById("preview")
     const feed = document.getElementById("trendFeed")
+    const startRecord = document.getElementById("startRecord")
+
+    let mediaStream = null
+    let recorder = null
+    let recordedChunks = []
+    let videoBlobUrl = ""
+
+    startRecord.onclick = async () => {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      preview.srcObject = mediaStream
+      preview.style.display = "block"
+
+      recorder = new MediaRecorder(mediaStream)
+      recordedChunks = []
+
+      recorder.ondataavailable = e => recordedChunks.push(e.data)
+      recorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: "video/webm" })
+        videoBlobUrl = URL.createObjectURL(blob)
+        preview.srcObject = null
+        preview.src = videoBlobUrl
+        preview.controls = true
+      }
+
+      recorder.start()
+      setTimeout(() => {
+        recorder.stop()
+        mediaStream.getTracks().forEach(t => t.stop())
+      }, 10000) // Record for 10 seconds
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault()
       const text = document.getElementById("trendText").value.trim()
-      const video_url = document.getElementById("videoUrl").value.trim()
-      if (!text) return
+      if (!text || !videoBlobUrl) return alert("Please record a video first.")
 
-      await supabase.from("trends").insert([{ text, video_url, timestamp: Date.now() }])
+      const blob = await fetch(videoBlobUrl).then(r => r.blob())
+      const filename = `trend-${Date.now()}.webm`
+
+      const { data, error } = await supabase.storage
+        .from("videos")
+        .upload(filename, blob, { contentType: "video/webm" })
+
+      if (error) return alert("Upload failed.")
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("videos")
+        .getPublicUrl(filename)
+
+      await supabase.from("trends").insert([{ text, video_url: publicUrl, timestamp: Date.now() }])
       form.reset()
+      preview.style.display = "none"
+      videoBlobUrl = ""
       loadTrends()
     })
 
     async function loadTrends() {
       const { data: trends } = await supabase
         .from("trends")
-        .select("id,text,video_url")
+        .select("text,video_url")
         .order("timestamp", { ascending: false })
 
       feed.innerHTML = ""
@@ -189,63 +204,10 @@
         text.textContent = trend.text
         card.appendChild(text)
 
-        if (trend.video_url) {
-          const video = document.createElement("video")
-          video.src = trend.video_url
-          video.controls = true
-          card.appendChild(video)
-        }
-
-        const actions = document.createElement("div")
-        actions.className = "actions"
-
-        const likeBtn = document.createElement("button")
-        likeBtn.textContent = "❤️ Like"
-        likeBtn.onclick = async () => {
-          await supabase.from("likes").insert([{ trend_id: trend.id, timestamp: Date.now() }])
-          loadTrends()
-        }
-        actions.appendChild(likeBtn)
-
-        const commentForm = document.createElement("form")
-        commentForm.innerHTML = `
-          <input type="text" placeholder="Add a comment" required />
-          <button type="submit">💬</button>
-        `
-        commentForm.onsubmit = async (e) => {
-          e.preventDefault()
-          const text = commentForm.querySelector("input").value.trim()
-          if (text) {
-            await supabase.from("comments").insert([{ trend_id: trend.id, text, timestamp: Date.now() }])
-            loadTrends()
-          }
-        }
-        actions.appendChild(commentForm)
-        card.appendChild(actions)
-
-        const { data: comments } = await supabase
-          .from("comments")
-          .select("text")
-          .eq("trend_id", trend.id)
-          .order("timestamp", { ascending: true })
-
-        const commentBox = document.createElement("div")
-        commentBox.className = "comments"
-        comments.forEach(c => {
-          const p = document.createElement("p")
-          p.textContent = `💬 ${c.text}`
-          commentBox.appendChild(p)
-        })
-        card.appendChild(commentBox)
-
-        const { data: likes } = await supabase
-          .from("likes")
-          .select("id")
-          .eq("trend_id", trend.id)
-
-        const likeCount = document.createElement("p")
-        likeCount.textContent = `❤️ ${likes.length} likes`
-        card.appendChild(likeCount)
+        const video = document.createElement("video")
+        video.src = trend.video_url
+        video.controls = true
+        card.appendChild(video)
 
         feed.appendChild(card)
       }
