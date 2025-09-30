@@ -6,7 +6,7 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
 )
 
-// DOM
+// DOM elements
 const openAuthBtn = document.getElementById("openAuthBtn")
 const authModal = document.getElementById("authModal")
 const closeAuthBtn = document.getElementById("closeAuthBtn")
@@ -37,7 +37,7 @@ signUpBtn.onclick = async () => {
   if (!email || !password) return alert("Enter email & password")
   const { error } = await supabase.auth.signUp({ email, password })
   if (error) return alert("Sign Up Error: " + error.message)
-  alert("Sign Up successful! Check your email for verification, it will be displayed as Superbase Auth")
+  alert("Sign Up successful! Check your email for verification.")
   authModal.style.display = "none"
   handleAuth()
 }
@@ -115,19 +115,18 @@ trendForm.addEventListener("submit", async e => {
 
 // Load trends
 async function loadTrends() {
-  const { data: trends, error } = await supabase.from("trends").select("id,text,video_url,user_id").order("id", { ascending: false })
-  if (error) return console.error(error)
+  const { data: trends } = await supabase.from("trends").select("id,text,video_url,user_id").order("id", { ascending: false })
   feed.innerHTML = ""
   for (const trend of trends) {
     let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
     const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
     if (profileData) profile = profileData
-    renderTrend(trend, profile)
+    await renderTrend(trend, profile)
   }
 }
 
 // Render trend
-function renderTrend(trend, profile) {
+async function renderTrend(trend, profile) {
   const card = document.createElement("div"); card.className = "trend-card"
   const header = document.createElement("div"); header.className = "trend-header"
   const userAvatar = document.createElement("img"); userAvatar.src = profile.avatar_url
@@ -135,69 +134,125 @@ function renderTrend(trend, profile) {
   const userTag = document.createElement("div"); userTag.className = "trend-user"; userTag.textContent = profile.username
   header.appendChild(userTag); card.appendChild(header)
   const textEl = document.createElement("div"); textEl.className = "trend-text"; textEl.textContent = trend.text; card.appendChild(textEl)
+
   if (trend.video_url) {
-    if (trend.video_url.includes("youtube.com") || trend.video_url.includes("youtu.be")) {
-      let id = trend.video_url.includes("youtu.be") ? trend.video_url.split("/").pop() : new URL(trend.video_url).searchParams.get("v")
-      const iframe = document.createElement("iframe")
-      iframe.src = `https://www.youtube.com/embed/${id}`
-      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      iframe.allowFullscreen = true
-      iframe.height = 300
-      card.appendChild(iframe)
-    } else {
-      const video = document.createElement("video"); video.src = trend.video_url; video.controls = true; video.muted = true
-      video.onmouseenter = () => video.play(); video.onmouseleave = () => video.pause()
-      card.appendChild(video)
-    }
+    const video = document.createElement("video")
+    video.src = trend.video_url
+    video.controls = true
+    video.muted = true
+    video.onmouseenter = () => video.play()
+    video.onmouseleave = () => video.pause()
+    card.appendChild(video)
   }
+
+  // Likes
+  const likeBtn = document.createElement("button")
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
+  const { count } = await supabase.from("likes").select("*", { count: "exact", head: true }).eq("trend_id", trend.id)
+  likeBtn.textContent = `❤️ Like (${count})`
+  likeBtn.onclick = async () => {
+    if (!user) return alert("Sign in first")
+    const { data: existing } = await supabase.from("likes").select().eq("trend_id", trend.id).eq("user_id", user.id).single()
+    if (existing) {
+      await supabase.from("likes").delete().eq("id", existing.id)
+    } else {
+      await supabase.from("likes").insert([{ trend_id: trend.id, user_id: user.id }])
+    }
+    loadTrends()
+  }
+
+  // Comments
+  const commentInput = document.createElement("input")
+  commentInput.placeholder = "💬 Add a comment"
+  const commentBtn = document.createElement("button")
+  commentBtn.textContent = "Post"
+  commentBtn.onclick = async () => {
+    if (!user) return alert("Sign in first")
+    const text = commentInput.value.trim()
+    if (!text) return
+    await supabase.from("comments").insert([{ trend_id: trend.id, user_id: user.id, text }])
+    commentInput.value = ""
+    loadTrends()
+  }
+
+  const commentSection = document.createElement("div")
+  const { data: comments } = await supabase.from("comments").select("text,user_id").eq("trend_id", trend.id).order("id", { ascending: true })
+  for (const comment of comments) {
+    const { data: commenter } = await supabase.from("profiles").select("username").eq("id", comment.user_id).single()
+    const commentEl = document.createElement("div")
+    commentEl.textContent = `${commenter?.username || "User"}: ${comment.text}`
+    commentSection.appendChild(commentEl)
+  }
+
+  const actions = document.createElement("div"); actions.className = "trend-actions"
+  actions.appendChild(likeBtn)
+  card.appendChild(actions)
+
+  const commentBox = document.createElement("div")
+  commentBox.style.marginTop = "1rem"
+  commentBox.appendChild(commentInput)
+  commentBox.appendChild(commentBtn)
+  card.appendChild(commentBox)
+
+  const commentList = document.createElement("div")
+  commentList.style.marginTop = "0.5rem"
+  commentList.appendChild(commentSection)
+  card.appendChild(commentList)
+
   feed.appendChild(card)
 }
-
-// Realtime updates
-supabase.channel("realtime-trends").on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" }, async payload => {
-  const trend = payload.new
-  let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-  const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
-  if (profileData) profile = profileData
-  renderTrend(trend, profile)
-}).subscribe()
-
-// Video recording
+supabase.channel("realtime-trends").on(
+  "postgres_changes",
+  { event: "INSERT", schema: "public", table: "trends" },
+  async payload => {
+    const trend = payload.new
+    let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
+    const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
+    if (profileData) profile = profileData
+    await renderTrend(trend, profile)
+  }
+).subscribe()
 let mediaRecorder, recordedChunks = []
 startRecordingBtn.onclick = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-  recorderPreview.srcObject = stream
-  recorderPreview.style.display = "block"
-  recorderPreview.play()
-  mediaRecorder = new MediaRecorder(stream)
-  recordedChunks = []
-  mediaRecorder.ondataavailable = e => recordedChunks.push(e.data)
-  mediaRecorder.onstop = async () => {
-    const blob = new Blob(recordedChunks, { type: "video/webm" })
-    const fileName = `trend-${Date.now()}.webm`
-    const { data, error } = await supabase.storage.from("videos").upload(fileName, blob, { contentType: "video/webm" })
-    if (error) return alert("Upload error: " + error.message)
-    const { data: fileInfo, error: urlError } = await supabase.storage
-      .from("videos")
-      .getPublicUrl(fileName)
-
-    if (urlError) return alert("Error getting video URL: " + urlError.message)
-
-    videoUrl.value = fileInfo.publicUrl
-    recorderPreview.srcObject.getTracks().forEach(track => track.stop())
-    recorderPreview.src = fileInfo.publicUrl
-    recorderPreview.play()
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    recorderPreview.srcObject = stream
     recorderPreview.style.display = "block"
-    alert("✅ Video uploaded and ready to post!")
+    recorderPreview.play()
+    mediaRecorder = new MediaRecorder(stream)
+    recordedChunks = []
+    mediaRecorder.ondataavailable = e => recordedChunks.push(e.data)
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(recordedChunks, { type: "video/webm" })
+      const fileName = `trend-${Date.now()}.webm`
+      const { error } = await supabase.storage.from("videos").upload(fileName, blob, { contentType: "video/webm" })
+      if (error) return alert("Upload error: " + error.message)
+      const { data: fileInfo, error: urlError } = await supabase.storage.from("videos").getPublicUrl(fileName)
+      if (urlError) return alert("Error getting video URL: " + urlError.message)
+      videoUrl.value = fileInfo.publicUrl
+      recorderPreview.srcObject.getTracks().forEach(track => track.stop())
+      recorderPreview.srcObject = null
+      recorderPreview.src = fileInfo.publicUrl
+      recorderPreview.play()
+      recorderPreview.style.display = "block"
+      alert("✅ Video uploaded and ready to post!")
+    }
+    mediaRecorder.start()
+    startRecordingBtn.style.display = "none"
+    stopRecordingBtn.style.display = "inline-block"
+  } catch (err) {
+    console.error("Recording error:", err)
+    alert("🎥 Unable to access camera/mic. Make sure you're on HTTPS and permissions are granted.")
   }
-
-  mediaRecorder.start()
-  startRecordingBtn.style.display = "none"
-  stopRecordingBtn.style.display = "inline-block"
 }
 
 stopRecordingBtn.onclick = () => {
-  mediaRecorder.stop()
-  startRecordingBtn.style.display = "inline-block"
-  stopRecordingBtn.style.display = "none"
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop()
+    startRecordingBtn.style.display = "inline-block"
+    stopRecordingBtn.style.display = "none"
+  }
 }
+handleAuth()
+loadTrends()
