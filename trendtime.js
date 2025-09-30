@@ -27,8 +27,8 @@ const stopRecordingBtn = document.getElementById("stopRecordingBtn")
 const recorderPreview = document.getElementById("recorderPreview")
 
 // Auth modal
-openAuthBtn.onclick = () => authModal.style.display = "flex"
-closeAuthBtn.onclick = () => authModal.style.display = "none"
+openAuthBtn.onclick = () => (authModal.style.display = "flex")
+closeAuthBtn.onclick = () => (authModal.style.display = "none")
 
 // Sign Up
 signUpBtn.onclick = async () => {
@@ -80,7 +80,12 @@ async function handleAuth() {
 
 // Ensure profile
 async function ensureProfile(user) {
-  const { data: existing } = await supabase.from("profiles").select().eq("id", user.id).single()
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select()
+    .eq("id", user.id)
+    .single()
+
   if (!existing) {
     await supabase.from("profiles").insert([{
       id: user.id,
@@ -110,16 +115,29 @@ trendForm.addEventListener("submit", async e => {
     user_id: user.id
   }])
   if (error) alert("Error posting: " + error.message)
-  else trendForm.reset(), loadTrends()
+  else trendForm.reset()
 })
 
 // Load trends
 async function loadTrends() {
-  const { data: trends } = await supabase.from("trends").select("id,text,video_url,user_id").order("id", { ascending: false })
+  const { data: trends, error } = await supabase
+    .from("trends")
+    .select("id,text,video_url,user_id")
+    .order("id", { ascending: false })
+
+  if (error) {
+    console.error("Load trends error:", error.message)
+    return
+  }
+
   feed.innerHTML = ""
   for (const trend of trends) {
     let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-    const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("username,avatar_url")
+      .eq("id", trend.user_id)
+      .single()
     if (profileData) profile = profileData
     await renderTrend(trend, profile)
   }
@@ -127,13 +145,24 @@ async function loadTrends() {
 
 // Render trend
 async function renderTrend(trend, profile) {
-  const card = document.createElement("div"); card.className = "trend-card"
-  const header = document.createElement("div"); header.className = "trend-header"
-  const userAvatar = document.createElement("img"); userAvatar.src = profile.avatar_url
+  const card = document.createElement("div")
+  card.className = "trend-card"
+
+  const header = document.createElement("div")
+  header.className = "trend-header"
+  const userAvatar = document.createElement("img")
+  userAvatar.src = profile.avatar_url
   header.appendChild(userAvatar)
-  const userTag = document.createElement("div"); userTag.className = "trend-user"; userTag.textContent = profile.username
-  header.appendChild(userTag); card.appendChild(header)
-  const textEl = document.createElement("div"); textEl.className = "trend-text"; textEl.textContent = trend.text; card.appendChild(textEl)
+  const userTag = document.createElement("div")
+  userTag.className = "trend-user"
+  userTag.textContent = profile.username
+  header.appendChild(userTag)
+  card.appendChild(header)
+
+  const textEl = document.createElement("div")
+  textEl.className = "trend-text"
+  textEl.textContent = trend.text
+  card.appendChild(textEl)
 
   if (trend.video_url) {
     const video = document.createElement("video")
@@ -149,11 +178,19 @@ async function renderTrend(trend, profile) {
   const likeBtn = document.createElement("button")
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
-  const { count } = await supabase.from("likes").select("*", { count: "exact", head: true }).eq("trend_id", trend.id)
+  const { count } = await supabase
+    .from("likes")
+    .select("*", { count: "exact", head: true })
+    .eq("trend_id", trend.id)
   likeBtn.textContent = `❤️ Like (${count})`
   likeBtn.onclick = async () => {
     if (!user) return alert("Sign in first")
-    const { data: existing } = await supabase.from("likes").select().eq("trend_id", trend.id).eq("user_id", user.id).single()
+    const { data: existing } = await supabase
+      .from("likes")
+      .select()
+      .eq("trend_id", trend.id)
+      .eq("user_id", user.id)
+      .single()
     if (existing) {
       await supabase.from("likes").delete().eq("id", existing.id)
     } else {
@@ -177,15 +214,25 @@ async function renderTrend(trend, profile) {
   }
 
   const commentSection = document.createElement("div")
-  const { data: comments } = await supabase.from("comments").select("text,user_id").eq("trend_id", trend.id).order("id", { ascending: true })
+  const { data: comments } = await supabase
+    .from("comments")
+    .select("text,user_id")
+    .eq("trend_id", trend.id)
+    .order("id", { ascending: true })
+
   for (const comment of comments) {
-    const { data: commenter } = await supabase.from("profiles").select("username").eq("id", comment.user_id).single()
+    const { data: commenter } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", comment.user_id)
+      .single()
     const commentEl = document.createElement("div")
     commentEl.textContent = `${commenter?.username || "User"}: ${comment.text}`
     commentSection.appendChild(commentEl)
   }
 
-  const actions = document.createElement("div"); actions.className = "trend-actions"
+  const actions = document.createElement("div")
+  actions.className = "trend-actions"
   actions.appendChild(likeBtn)
   card.appendChild(actions)
 
@@ -202,17 +249,26 @@ async function renderTrend(trend, profile) {
 
   feed.appendChild(card)
 }
-supabase.channel("realtime-trends").on(
-  "postgres_changes",
-  { event: "INSERT", schema: "public", table: "trends" },
-  async payload => {
-    const trend = payload.new
-    let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-    const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id", trend.user_id).single()
-    if (profileData) profile = profileData
-    await renderTrend(trend, profile)
-  }
-).subscribe()
+
+// Realtime subscription
+supabase
+  .channel("realtime-trends")
+  .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" },
+    async payload => {
+      const trend = payload.new
+      let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("username,avatar_url")
+        .eq("id", trend.user_id)
+        .single()
+      if (profileData) profile = profileData
+      await renderTrend(trend, profile)
+    }
+  )
+  .subscribe()
+
+// Video recording
 let mediaRecorder, recordedChunks = []
 startRecordingBtn.onclick = async () => {
   try {
@@ -220,24 +276,35 @@ startRecordingBtn.onclick = async () => {
     recorderPreview.srcObject = stream
     recorderPreview.style.display = "block"
     recorderPreview.play()
-    mediaRecorder = new MediaRecorder(stream)
+
+    const mimeType = MediaRecorder.isTypeSupported("video/mp4")
+      ? "video/mp4"
+      : "video/webm"
+    mediaRecorder = new MediaRecorder(stream, { mimeType })
     recordedChunks = []
     mediaRecorder.ondataavailable = e => recordedChunks.push(e.data)
+
     mediaRecorder.onstop = async () => {
-      const blob = new Blob(recordedChunks, { type: "video/webm" })
-      const fileName = `trend-${Date.now()}.webm`
-      const { error } = await supabase.storage.from("videos").upload(fileName, blob, { contentType: "video/webm" })
-      if (error) return alert("Upload error: " + error.message)
-      const { data: fileInfo, error: urlError } = await supabase.storage.from("videos").getPublicUrl(fileName)
+      const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
+      const fileName = `trend-${Date.now()}.${mimeType.split("/")[1]}`
+      const { error: uploadError } = await supabase
+        .storage
+        .from("videos")
+        .upload(fileName, blob, { contentType: mediaRecorder.mimeType })
+      if (uploadError) return alert("Upload error: " + uploadError.message)
+
+      const { data, error: urlError } = supabase.storage.from("videos").getPublicUrl(fileName)
       if (urlError) return alert("Error getting video URL: " + urlError.message)
-      videoUrl.value = fileInfo.publicUrl
+
+      videoUrl.value = data.publicUrl
       recorderPreview.srcObject.getTracks().forEach(track => track.stop())
       recorderPreview.srcObject = null
-      recorderPreview.src = fileInfo.publicUrl
+      recorderPreview.src = data.publicUrl
       recorderPreview.play()
       recorderPreview.style.display = "block"
       alert("✅ Video uploaded and ready to post!")
     }
+
     mediaRecorder.start()
     startRecordingBtn.style.display = "none"
     stopRecordingBtn.style.display = "inline-block"
@@ -254,5 +321,6 @@ stopRecordingBtn.onclick = () => {
     stopRecordingBtn.style.display = "none"
   }
 }
+
 handleAuth()
 loadTrends()
