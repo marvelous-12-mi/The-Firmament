@@ -37,7 +37,7 @@ signUpBtn.onclick = async () => {
   if (!email || !password) return alert("Enter email & password")
   const { error } = await supabase.auth.signUp({ email, password })
   if (error) return alert("Sign Up Error: " + error.message)
-  alert("Sign Up successful!")
+  alert("Sign Up successful! Check your email for verification, it will be displayed as Superbase Auth")
   authModal.style.display = "none"
   handleAuth()
 }
