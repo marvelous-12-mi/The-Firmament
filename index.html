@@ -1,388 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime</title>
-  <link rel="icon" href="https://placehold.co/32x32/ff6a00/ffffff?text=T" type="image/png" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --orange: #ff6a00;
-      --dark: #0f0f0f;
-      --card: #1a1a1a;
-      --text: #f5f5f5;
-      --gray: #999;
-      --border: #333;
-      --glow: 0 0 10px rgba(255,106,0,0.6);
-    }
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-    .navbar {
-      background: var(--card);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .nav-logo {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--orange);
-      animation: fadeIn 1s ease-out;
-    }
-    .nav-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-    .nav-actions button {
-      background: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: var(--glow);
-      transition: transform 0.3s;
-    }
-    .nav-actions button:hover {
-      transform: scale(1.05);
-    }
-    .nav-actions img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--orange);
-      box-shadow: 0 0 6px rgba(255,106,0,0.5);
-      animation: pulse 2s infinite;
-    }
-    main {
-      max-width: 700px;
-      margin: auto;
-      padding: 2rem 1rem;
-    }
-    .composer {
-      margin-bottom: 2rem;
-      background: var(--card);
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: var(--glow);
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    textarea, input {
-      background: #222;
-      border: none;
-      border-radius: 8px;
-      padding: 1rem;
-      color: #fff;
-      font-size: 1rem;
-      resize: none;
-    }
-    button[type="submit"] {
-      background: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: var(--glow);
-      transition: transform 0.3s;
-    }
-    button[type="submit"]:hover {
-      transform: scale(1.05);
-    }
-    .feed {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-    .trend-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      animation: fadeInUp 0.6s ease-out;
-    }
-    .trend-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .trend-header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--orange);
-      box-shadow: var(--glow);
-    }
-    .trend-user {
-      font-weight: 600;
-      font-size: 1rem;
-    }
-    .trend-text {
-      font-size: 1rem;
-    }
-    .trend-card video, .trend-card iframe {
-      width: 100%;
-      max-height: 400px;
-      border-radius: 8px;
-      transition: transform 0.3s;
-    }
-    .trend-card video:hover {
-      transform: scale(1.01);
-    }
-    .floating-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
-      font-size: 2rem;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: var(--glow);
-      z-index: 1001;
-    }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.8rem;
-      color: var(--gray);
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255,106,0,0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(255,106,0,0); }
-      100% { box-shadow: 0 0 0 0 rgba(255,106,0,0); }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TrendTime</title>
+<link rel="icon" href="https://placehold.co/32x32/ff6a00/ffffff?text=T" type="image/png" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --orange: #ff6a00;
+    --dark: #0f0f0f;
+    --card: #1a1a1a;
+    --text: #f5f5f5;
+    --gray: #999;
+    --border: #333;
+    --glow: 0 0 10px rgba(255,106,0,0.6);
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Poppins',sans-serif; background: linear-gradient(to bottom, #0f0f0f, #1a1a1a); color:var(--text); line-height:1.6; overflow-x:hidden; }
+  .navbar { background: var(--card); padding: 1rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:1000; }
+  .nav-logo { font-size:1.8rem; font-weight:700; color:var(--orange); animation: fadeIn 1s ease-out; }
+  .nav-actions { display:flex; gap:1rem; align-items:center; }
+  .nav-actions button { background:var(--orange); color:#fff; border:none; border-radius:6px; padding:0.5rem 1rem; font-weight:600; cursor:pointer; box-shadow:var(--glow); transition: transform 0.3s; }
+  .nav-actions button:hover { transform: scale(1.05); }
+  .nav-actions img { width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid var(--orange); box-shadow:0 0 6px rgba(255,106,0,0.5); animation:pulse 2s infinite; }
+  main { max-width:700px; margin:auto; padding:2rem 1rem; }
+  .composer { margin-bottom:2rem; background:var(--card); padding:1rem; border-radius:12px; box-shadow:var(--glow); }
+  form { display:flex; flex-direction:column; gap:1rem; }
+  textarea,input { background:#222; border:none; border-radius:8px; padding:1rem; color:#fff; font-size:1rem; resize:none; }
+  button[type="submit"] { background:var(--orange); color:#fff; border:none; border-radius:8px; padding:0.75rem; font-weight:600; cursor:pointer; box-shadow:var(--glow); transition: transform 0.3s; }
+  button[type="submit"]:hover { transform: scale(1.05); }
+  .feed { display:flex; flex-direction:column; gap:2rem; }
+  .trend-card { background:var(--card); border-radius:12px; padding:1rem; box-shadow:0 0 15px rgba(0,0,0,0.4); display:flex; flex-direction:column; gap:0.75rem; animation:fadeInUp 0.6s ease-out; }
+  .trend-header { display:flex; align-items:center; gap:0.75rem; }
+  .trend-header img { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--orange); box-shadow:var(--glow); }
+  .trend-user { font-weight:600; font-size:1rem; }
+  .trend-text { font-size:1rem; }
+  .trend-card video, .trend-card iframe { width:100%; max-height:400px; border-radius:8px; transition: transform 0.3s; }
+  .trend-card video:hover { transform: scale(1.01); }
+  .floating-btn { position:fixed; bottom:20px; right:20px; background:var(--orange); color:#fff; border:none; border-radius:50%; width:56px; height:56px; font-size:2rem; font-weight:bold; cursor:pointer; box-shadow:var(--glow); z-index:1001; }
+  footer { text-align:center; padding:1rem; font-size:0.8rem; color:var(--gray); border-top:1px solid var(--border); margin-top:3rem; }
+  .login-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2000; }
+  .login-overlay h2 { color:var(--orange); margin-bottom:1rem; }
+  .login-overlay button { background:var(--orange); padding:1rem 2rem; font-weight:700; font-size:1.2rem; border:none; border-radius:12px; cursor:pointer; box-shadow:var(--glow); }
+  @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes fadeInUp { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes pulse { 0% { box-shadow:0 0 0 0 rgba(255,106,0,0.4);} 70% { box-shadow:0 0 0 10px rgba(255,106,0,0);} 100% { box-shadow:0 0 0 0 rgba(255,106,0,0);} }
+</style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-logo">TrendTime</div>
-    <div class="nav-actions">
-      <img id="avatar" src="" alt="Profile" style="display:none;" />
-      <button id="loginBtn">Sign In</button>
-      <button id="logoutBtn" style="display:none;">Logout</button>
-    </div>
-  </nav>
 
-  <main>
-    <section class="composer">
-      <form id="trendForm">
-        <textarea id="trendText" placeholder="What's trending?" required></textarea>
-        <input type="url" id="videoUrl" placeholder="Video URL or YouTube link" />
-        <button type="submit">Post Trend</button>
-      </form>
-    </section>
+<nav class="navbar">
+  <div class="nav-logo">TrendTime</div>
+  <div class="nav-actions">
+    <img id="avatar" src="" alt="Profile" style="display:none;" />
+    <button id="loginBtn">Sign In</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
+  </div>
+</nav>
 
-    <section id="trendFeed" class="feed"></section>
-  </main>
+<div id="loginOverlay" class="login-overlay" style="display:flex;">
+  <h2>Sign In to see Trends</h2>
+  <button id="overlayLoginBtn">Sign In</button>
+</div>
 
-  <button class="floating-btn" onclick="document.querySelector('.composer').scrollIntoView({ behavior: 'smooth' })">+</button>
+<main style="display:none;">
+  <section class="composer">
+    <form id="trendForm">
+      <textarea id="trendText" placeholder="What's trending?" required></textarea>
+      <input type="url" id="videoUrl" placeholder="Video URL or YouTube link" />
+      <button type="submit">Post Trend</button>
+    </form>
+  </section>
 
-  <footer>&copy; 2025 TrendTime. Built by MgnGodly.</footer>
+  <section id="trendFeed" class="feed"></section>
+</main>
+
+<button class="floating-btn" onclick="document.querySelector('.composer').scrollIntoView({ behavior: 'smooth' })">+</button>
+
+<footer>&copy; 2025 TrendTime. Built by MgnGodly.</footer>
 
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const supabase = createClient(
-    'https://kpdgmbjdaynplyjacuxd.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
-  )
+const supabase = createClient(
+  'https://kpdgmbjdaynplyjacuxd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
+)
 
-  const loginBtn = document.getElementById("loginBtn")
-  const logoutBtn = document.getElementById("logoutBtn")
-  const avatar = document.getElementById("avatar")
-  const form = document.getElementById("trendForm")
-  const feed = document.getElementById("trendFeed")
-  const composer = document.querySelector(".composer")
+const loginBtn = document.getElementById("loginBtn")
+const logoutBtn = document.getElementById("logoutBtn")
+const overlayLoginBtn = document.getElementById("overlayLoginBtn")
+const avatar = document.getElementById("avatar")
+const form = document.getElementById("trendForm")
+const feed = document.getElementById("trendFeed")
+const composer = document.querySelector(".composer")
+const loginOverlay = document.getElementById("loginOverlay")
+const mainContent = document.querySelector("main")
 
-  loginBtn.onclick = async () => {
-    const email = prompt("Enter your email")
-    if (!email) return
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: location.href }
-    })
-    if (error) alert("Error: " + error.message)
-    else alert("Check your email for a login link!")
+async function signIn() {
+  const email = prompt("Enter your email")
+  if(!email) return
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: location.href }
+  })
+  if(error) alert("Error: "+error.message)
+  else alert("Check your email for a login link!")
+}
+
+loginBtn.onclick = signIn
+overlayLoginBtn.onclick = signIn
+logoutBtn.onclick = async () => { await supabase.auth.signOut(); location.reload(); }
+
+async function handleMagicLink() {
+  const { data } = await supabase.auth.getSessionFromUrl({ storeSession: true })
+  const user = data.session?.user
+  if(user) console.log("Logged in via magic link:", user.email)
+}
+
+async function ensureProfile(user) {
+  const { data: existing } = await supabase.from("profiles").select().eq("id", user.id).single()
+  if(!existing){
+    await supabase.from("profiles").insert([{ id:user.id, username:user.user_metadata?.name || "Anonymous", avatar_url:user.user_metadata?.avatar_url || "" }])
   }
+}
 
-  logoutBtn.onclick = async () => {
-    await supabase.auth.signOut()
-    location.reload()
-  }
-
-  async function handleMagicLink() {
-    const { data } = await supabase.auth.getSessionFromUrl({ storeSession: true })
-    const user = data.session?.user
-    if (user) console.log("Logged in via magic link:", user.email)
-  }
-
-  async function ensureProfile(user) {
-    const { data: existing } = await supabase.from("profiles").select().eq("id", user.id).single()
-    if (!existing) {
-      await supabase.from("profiles").insert([{
-        id: user.id,
-        username: user.user_metadata?.name || "Anonymous",
-        avatar_url: user.user_metadata?.avatar_url || ""
-      }])
-    }
-  }
-
-  form.addEventListener("submit", async e => {
-    e.preventDefault()
-    const text = document.getElementById("trendText").value.trim()
-    const video_url = document.getElementById("videoUrl").value.trim()
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
-    if (!user) return alert("You must be signed in to post.")
+async function checkAuth() {
+  const { data:{session} } = await supabase.auth.getSession()
+  const user = session?.user
+  if(user){
+    loginOverlay.style.display = "none"
+    mainContent.style.display = "block"
+    loginBtn.style.display = "none"
+    logoutBtn.style.display = "inline-block"
+    avatar.style.display = "inline-block"
+    avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
+    composer.style.display = "block"
     await ensureProfile(user)
-    const { error } = await supabase.from("trends").insert([
-      { text, video_url: video_url || null, user_id: user.id }
-    ])
-    if (error) alert("Error posting trend: " + error.message)
-    else { form.reset(); loadTrends() }
-  })
-
-  async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
-    if (user) {
-      loginBtn.style.display = "none"
-      logoutBtn.style.display = "inline-block"
-      avatar.style.display = "inline-block"
-      avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
-      composer.style.display = "block"
-      await ensureProfile(user)
-    } else composer.style.display = "none"
+  } else {
+    loginOverlay.style.display = "flex"
+    mainContent.style.display = "none"
+    composer.style.display = "none"
   }
+}
 
-  function isYouTube(url) {
-    return url.includes("youtube.com") || url.includes("youtu.be")
+form.addEventListener("submit", async e=>{
+  e.preventDefault()
+  const text = document.getElementById("trendText").value.trim()
+  const video_url = document.getElementById("videoUrl").value.trim()
+  const { data:{session} } = await supabase.auth.getSession()
+  const user = session?.user
+  if(!user) return alert("You must be signed in to post.")
+  await ensureProfile(user)
+  const { error } = await supabase.from("trends").insert([{ text, video_url:video_url||null, user_id:user.id }])
+  if(error) alert("Error posting trend: "+error.message)
+  else { form.reset(); loadTrends() }
+})
+
+function isYouTube(url){ return url.includes("youtube.com") || url.includes("youtu.be") }
+
+function renderTrend(trend, profile){
+  const card = document.createElement("div"); card.className="trend-card"
+  const header = document.createElement("div"); header.className="trend-header"
+  const userAvatar = document.createElement("img"); userAvatar.src=profile?.avatar_url || "https://placehold.co/40x40"; header.appendChild(userAvatar)
+  const info = document.createElement("div")
+  const userTag = document.createElement("div"); userTag.className="trend-user"; userTag.textContent = profile?.username || "Anonymous"
+  info.appendChild(userTag); header.appendChild(info); card.appendChild(header)
+  const textEl = document.createElement("div"); textEl.className="trend-text"; textEl.textContent = trend.text; card.appendChild(textEl)
+  if(trend.video_url){
+    if(isYouTube(trend.video_url)){
+      let id=""; if(trend.video_url.includes("youtu.be")) id=trend.video_url.split("/").pop()
+      else id=new URL(trend.video_url).searchParams.get("v")
+      const iframe=document.createElement("iframe")
+      iframe.src=`https://www.youtube.com/embed/${id}`
+      iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      iframe.allowFullscreen=true; iframe.height=300; card.appendChild(iframe)
+    } else { const video=document.createElement("video"); video.src=trend.video_url; video.controls=true; video.muted=true; video.onmouseenter=()=>video.play(); video.onmouseleave=()=>video.pause(); card.appendChild(video) }
   }
+  feed.prepend(card)
+}
 
-  function renderTrend(trend, profile) {
-    const card = document.createElement("div")
-    card.className = "trend-card"
-
-    const header = document.createElement("div")
-    header.className = "trend-header"
-
-    const userAvatar = document.createElement("img")
-    userAvatar.src = profile?.avatar_url || "https://placehold.co/40x40"
-    header.appendChild(userAvatar)
-
-    const info = document.createElement("div")
-    const userTag = document.createElement("div")
-    userTag.className = "trend-user"
-    userTag.textContent = profile?.username || "Anonymous"
-    info.appendChild(userTag)
-    header.appendChild(info)
-    card.appendChild(header)
-
-    const textEl = document.createElement("div")
-    textEl.className = "trend-text"
-    textEl.textContent = trend.text
-    card.appendChild(textEl)
-
-    if (trend.video_url) {
-      if (isYouTube(trend.video_url)) {
-        let id = ""
-        if (trend.video_url.includes("youtu.be")) id = trend.video_url.split("/").pop()
-        else id = new URL(trend.video_url).searchParams.get("v")
-        const iframe = document.createElement("iframe")
-        iframe.src = `https://www.youtube.com/embed/${id}`
-        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        iframe.allowFullscreen = true
-        iframe.height = 300
-        card.appendChild(iframe)
-      } else {
-        const video = document.createElement("video")
-        video.src = trend.video_url
-        video.controls = true
-        video.muted = true
-        video.onmouseenter = () => video.play()
-        video.onmouseleave = () => video.pause()
-        card.appendChild(video)
-      }
-    }
-
-    feed.prepend(card)
+async function loadTrends(){
+  const { data:trends, error } = await supabase.from("trends").select("id, text, video_url, user_id").order("id",{ascending:false})
+  if(error){ console.error(error); return }
+  feed.innerHTML=""
+  for(const trend of trends){
+    let profile={username:"Anonymous",avatar_url:"https://placehold.co/40x40"}
+    const { data:profileData } = await supabase.from("profiles").select("username, avatar_url").eq("id",trend.user_id).single()
+    if(profileData) profile=profileData
+    renderTrend(trend, profile)
   }
+}
 
-  async function loadTrends() {
-    const { data: trends, error } = await supabase
-      .from("trends")
-      .select("id, text, video_url, user_id")
-      .order("id", { ascending: false })
+supabase.channel("realtime-trends")
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"trends"}, async payload=>{
+    const trend=payload.new
+    let profile={username:"Anonymous",avatar_url:"https://placehold.co/40x40"}
+    const { data: profileData } = await supabase.from("profiles").select("username, avatar_url").eq("id",trend.user_id).single()
+    if(profileData) profile=profileData
+    renderTrend(trend,profile)
+  }).subscribe()
 
-    if (error) { console.error(error); return }
-
-    feed.innerHTML = ""
-    for (const trend of trends) {
-      let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-      const { data: profileData } = await supabase.from("profiles").select("username, avatar_url").eq("id", trend.user_id).single()
-      if (profileData) profile = profileData
-      renderTrend(trend, profile)
-    }
-  }
-
-  supabase.channel("realtime-trends")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" }, async payload => {
-      const trend = payload.new
-      let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-      const { data: profileData } = await supabase.from("profiles").select("username, avatar_url").eq("id", trend.user_id).single()
-      if (profileData) profile = profileData
-      renderTrend(trend, profile)
-    })
-    .subscribe()
-
-  handleMagicLink().then(() => {
-    checkAuth()
-    loadTrends()
-  })
-
-  console.log("TrendTime: Built for Mars 🚀")
+handleMagicLink().then(()=>{ checkAuth(); loadTrends() })
 </script>
 
 </body>
