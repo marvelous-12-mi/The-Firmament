@@ -27,7 +27,7 @@ body { margin:0; font-family:'Poppins',sans-serif; background: linear-gradient(t
 main { max-width:700px; margin:auto; padding:2rem 1rem; }
 .composer { margin-bottom:2rem; background:var(--card); padding:1rem; border-radius:12px; box-shadow:var(--glow); }
 form { display:flex; flex-direction:column; gap:1rem; }
-textarea,input { background:#222; border:none; border-radius:8px; padding:1rem; color:#fff; font-size:1rem; resize:none; }
+input, textarea { background:#222; border:none; border-radius:8px; padding:1rem; color:#fff; font-size:1rem; resize:none; }
 button[type="submit"] { background:var(--orange); color:#fff; border:none; border-radius:8px; padding:0.75rem; font-weight:600; cursor:pointer; box-shadow:var(--glow); transition: transform 0.3s; }
 button[type="submit"]:hover { transform: scale(1.05); }
 .feed { display:flex; flex-direction:column; gap:2rem; }
@@ -40,9 +40,14 @@ button[type="submit"]:hover { transform: scale(1.05); }
 .trend-card video:hover { transform: scale(1.01); }
 .floating-btn { position:fixed; bottom:20px; right:20px; background:var(--orange); color:#fff; border:none; border-radius:50%; width:56px; height:56px; font-size:2rem; font-weight:bold; cursor:pointer; box-shadow:var(--glow); z-index:1001; }
 footer { text-align:center; padding:1rem; font-size:0.8rem; color:var(--gray); border-top:1px solid var(--border); margin-top:3rem; }
-.login-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2000; }
+
+.login-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2000; }
 .login-overlay h2 { color:var(--orange); margin-bottom:1rem; text-align:center; }
-.login-overlay button { background:var(--orange); padding:1rem 2rem; font-weight:700; font-size:1.2rem; border:none; border-radius:12px; cursor:pointer; box-shadow:var(--glow); }
+.login-overlay form { display:flex; flex-direction:column; gap:1rem; width:300px; }
+.login-overlay input { width:100%; padding:0.75rem; border-radius:8px; border:none; background:#222; color:#fff; }
+.login-overlay button { padding:0.75rem; border-radius:8px; border:none; background:var(--orange); font-weight:600; cursor:pointer; transition: transform 0.3s; box-shadow:var(--glow); }
+.login-overlay button:hover { transform: scale(1.05); }
+
 @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
 @keyframes fadeInUp { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
 @keyframes pulse { 0% { box-shadow:0 0 0 0 rgba(255,106,0,0.4);} 70% { box-shadow:0 0 0 10px rgba(255,106,0,0);} 100% { box-shadow:0 0 0 0 rgba(255,106,0,0);} }
@@ -54,14 +59,17 @@ footer { text-align:center; padding:1rem; font-size:0.8rem; color:var(--gray); b
   <div class="nav-logo">TrendTime</div>
   <div class="nav-actions">
     <img id="avatar" src="" alt="Profile" style="display:none;">
-    <button id="loginBtn">Sign In with Google</button>
     <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 </nav>
 
-<div id="loginOverlay" class="login-overlay" style="display:flex;">
-  <h2>Sign in with Google to see and post Trends</h2>
-  <button id="overlayLoginBtn">Sign In with Google</button>
+<div id="loginOverlay" class="login-overlay">
+  <h2>Sign Up / Sign In</h2>
+  <form id="authForm">
+    <input type="email" id="authEmail" placeholder="Email" required>
+    <input type="password" id="authPassword" placeholder="Password" required>
+    <button type="submit" id="authSubmit">Sign Up / Sign In</button>
+  </form>
 </div>
 
 <main style="display:none;">
@@ -75,7 +83,7 @@ footer { text-align:center; padding:1rem; font-size:0.8rem; color:var(--gray); b
   <section id="trendFeed" class="feed"></section>
 </main>
 
-<button class="floating-btn" onclick="document.querySelector('.composer').scrollIntoView({ behavior: 'smooth' })">+</button>
+<button class="floating-btn" onclick="document.querySelector('.composer').scrollIntoView({behavior:'smooth'})">+</button>
 
 <footer>&copy; 2025 TrendTime. Built by MgnGodly.</footer>
 
@@ -87,41 +95,36 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
 )
 
-const loginBtn = document.getElementById("loginBtn")
-const overlayLoginBtn = document.getElementById("overlayLoginBtn")
+const loginOverlay = document.getElementById("loginOverlay")
+const authForm = document.getElementById("authForm")
+const authEmail = document.getElementById("authEmail")
+const authPassword = document.getElementById("authPassword")
+const authSubmit = document.getElementById("authSubmit")
 const logoutBtn = document.getElementById("logoutBtn")
 const avatar = document.getElementById("avatar")
+const mainContent = document.querySelector("main")
 const form = document.getElementById("trendForm")
 const feed = document.getElementById("trendFeed")
 const composer = document.querySelector(".composer")
-const loginOverlay = document.getElementById("loginOverlay")
-const mainContent = document.querySelector("main")
-
-async function googleSignIn() {
-  const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href } })
-  if(error) alert("Error signing in: "+error.message)
-}
-
-loginBtn.onclick = googleSignIn
-overlayLoginBtn.onclick = googleSignIn
-logoutBtn.onclick = async () => { await supabase.auth.signOut(); location.reload() }
 
 async function handleAuth() {
-  const { data:{ session } } = await supabase.auth.getSession()
+  const { data:{session} } = await supabase.auth.getSession()
   const user = session?.user
   if(user){
     loginOverlay.style.display = "none"
     mainContent.style.display = "block"
-    loginBtn.style.display = "none"
-    overlayLoginBtn.style.display = "none"
+    composer.style.display = "block"
     logoutBtn.style.display = "inline-block"
     avatar.style.display = "inline-block"
     avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
     await ensureProfile(user)
+    loadTrends()
   } else {
     loginOverlay.style.display = "flex"
     mainContent.style.display = "none"
     composer.style.display = "none"
+    logoutBtn.style.display = "none"
+    avatar.style.display = "none"
   }
 }
 
@@ -132,18 +135,21 @@ async function ensureProfile(user){
   }
 }
 
-form.addEventListener("submit", async e=>{
+authForm.addEventListener("submit", async e=>{
   e.preventDefault()
-  const text = document.getElementById("trendText").value.trim()
-  const video_url = document.getElementById("videoUrl").value.trim()
-  const { data:{session} } = await supabase.auth.getSession()
-  const user = session?.user
-  if(!user) return alert("Sign in to post trends!")
-  await ensureProfile(user)
-  const { error } = await supabase.from("trends").insert([{ text, video_url:video_url||null, user_id:user.id }])
-  if(error) alert("Error posting trend: "+error.message)
-  else { form.reset(); loadTrends() }
+  const email = authEmail.value.trim()
+  const password = authPassword.value.trim()
+  // Try sign up first
+  let { data, error } = await supabase.auth.signUp({ email, password })
+  if(error && error.message.includes("already registered")) {
+    // Try login
+    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+    if(loginError) return alert("Login error: "+loginError.message)
+  } else if(error) return alert("Sign up error: "+error.message)
+  handleAuth()
 })
+
+logoutBtn.onclick = async ()=>{ await supabase.auth.signOut(); handleAuth() }
 
 function isYouTube(url){ return url.includes("youtube.com") || url.includes("youtu.be") }
 
@@ -174,11 +180,24 @@ async function loadTrends(){
   feed.innerHTML=""
   for(const trend of trends){
     let profile={username:"Anonymous",avatar_url:"https://placehold.co/40x40"}
-    const { data:profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
+    const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
     if(profileData) profile=profileData
     renderTrend(trend, profile)
   }
 }
+
+form.addEventListener("submit", async e=>{
+  e.preventDefault()
+  const text = document.getElementById("trendText").value.trim()
+  const video_url = document.getElementById("videoUrl").value.trim()
+  const { data:{session} } = await supabase.auth.getSession()
+  const user = session?.user
+  if(!user) return alert("Sign in to post trends!")
+  await ensureProfile(user)
+  const { error } = await supabase.from("trends").insert([{ text, video_url:video_url||null, user_id:user.id }])
+  if(error) alert("Error posting trend: "+error.message)
+  else { form.reset(); loadTrends() }
+})
 
 supabase.channel("realtime-trends")
   .on("postgres_changes",{event:"INSERT",schema:"public",table:"trends"}, async payload=>{
@@ -189,7 +208,7 @@ supabase.channel("realtime-trends")
     renderTrend(trend, profile)
   }).subscribe()
 
-handleAuth().then(()=>{ loadTrends() })
+handleAuth()
 </script>
 
 </body>
