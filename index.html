@@ -232,7 +232,198 @@ footer {
 
 <!-- keep your same script block -->
 <script type="module">
-  /* your JavaScript logic from before stays here */
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+// --- Supabase client ---
+const supabase = createClient(
+  'https://kpdgmbjdaynplyjacuxd.supabase.co', // your project URL
+  'YOUR_SUPABASE_ANON_KEY'                     // your anon key
+)
+
+// --- DOM elements ---
+const openAuthBtn = document.getElementById("openAuthBtn")
+const authModal = document.getElementById("authModal")
+const closeAuthBtn = document.getElementById("closeAuthBtn")
+const signUpBtn = document.getElementById("signUpBtn")
+const signInBtn = document.getElementById("signInBtn")
+const authEmail = document.getElementById("authEmail")
+const authPassword = document.getElementById("authPassword")
+const logoutBtn = document.getElementById("logoutBtn")
+const avatar = document.getElementById("avatar")
+const composerSection = document.getElementById("composerSection")
+const trendForm = document.getElementById("trendForm")
+const feed = document.getElementById("trendFeed")
+
+// --- Premium button (frontend unlock) ---
+const premiumBtn = document.createElement("button")
+premiumBtn.textContent = "⭐ Unlock Premium"
+premiumBtn.style.marginLeft = "1rem"
+premiumBtn.onclick = unlockPremium
+
+// --- Event handlers ---
+openAuthBtn.onclick = () => authModal.style.display = "flex"
+closeAuthBtn.onclick = () => authModal.style.display = "none"
+
+// Sign Up
+signUpBtn.onclick = async () => {
+  const email = authEmail.value.trim()
+  const password = authPassword.value.trim()
+  if(!email || !password) return alert("Enter email & password")
+  const { error } = await supabase.auth.signUp({ email, password })
+  if(error) return alert("Sign Up Error: "+error.message)
+  alert("Sign Up successful! Check email if verification required.")
+  authModal.style.display="none"
+  handleAuth()
+}
+
+// Sign In
+signInBtn.onclick = async () => {
+  const email = authEmail.value.trim()
+  const password = authPassword.value.trim()
+  if(!email || !password) return alert("Enter email & password")
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if(error) return alert("Sign In Error: "+error.message)
+  authModal.style.display="none"
+  handleAuth()
+}
+
+// Logout
+logoutBtn.onclick = async () => {
+  await supabase.auth.signOut()
+  handleAuth()
+}
+
+// --- Handle user session ---
+async function handleAuth() {
+  const { data } = await supabase.auth.getSession()
+  const user = data.session?.user
+  if(user){
+    avatar.style.display = "inline-block"
+    avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
+    logoutBtn.style.display = "inline-block"
+    openAuthBtn.style.display = "none"
+    composerSection.style.display = "block"
+
+    // Add premium button
+    if(!document.getElementById("premiumBtn")) {
+      premiumBtn.id = "premiumBtn"
+      document.querySelector(".nav-actions").appendChild(premiumBtn)
+    }
+
+    await ensureProfile(user)
+    checkPremium(user)
+  } else {
+    avatar.style.display = "none"
+    logoutBtn.style.display = "none"
+    openAuthBtn.style.display = "inline-block"
+    composerSection.style.display = "none"
+    const btn = document.getElementById("premiumBtn")
+    if(btn) btn.remove()
+    document.body.classList.remove("premium")
+  }
+}
+
+// --- Ensure profile exists ---
+async function ensureProfile(user){
+  const { data: existing } = await supabase.from("profiles").select().eq("id", user.id).single()
+  if(!existing) await supabase.from("profiles").insert([{ id:user.id, username:"Anonymous", avatar_url:"", is_premium:false }])
+}
+
+// --- Check premium status ---
+async function checkPremium(user){
+  const { data: profile } = await supabase.from("profiles").select("is_premium").eq("id", user.id).single()
+  if(profile?.is_premium){
+    document.body.classList.add("premium")
+    premiumBtn.textContent = "⭐ Premium Active"
+    premiumBtn.disabled = true
+  }
+}
+
+// --- Unlock premium ---
+async function unlockPremium(){
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
+  if(!user) return alert("Sign in first!")
+
+  const { error } = await supabase.from("profiles").update({ is_premium:true }).eq("id", user.id)
+  if(error) alert("Error unlocking premium: "+error.message)
+  else {
+    alert("✅ Premium Unlocked!")
+    document.body.classList.add("premium")
+    premiumBtn.textContent = "⭐ Premium Active"
+    premiumBtn.disabled = true
+  }
+}
+
+// --- Posting trends ---
+trendForm.addEventListener("submit", async e=>{
+  e.preventDefault()
+  const { data:{ session } } = await supabase.auth.getSession()
+  const user = session?.user
+  if(!user) return alert("Sign in first")
+  const text = document.getElementById("trendText").value.trim()
+  const video_url = document.getElementById("videoUrl").value.trim()
+  await ensureProfile(user)
+  const { error } = await supabase.from("trends").insert([{ text, video_url:video_url||null, user_id:user.id }])
+  if(error) alert("Error posting: "+error.message)
+  else trendForm.reset(), loadTrends()
+})
+
+// --- Load trends ---
+async function loadTrends(){
+  const { data: trends, error } = await supabase.from("trends").select("id,text,video_url,user_id").order("id",{ascending:false})
+  if(error) return console.error(error)
+  feed.innerHTML=""
+  for(const trend of trends){
+    let profile={username:"Anonymous", avatar_url:"https://placehold.co/40x40"}
+    const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
+    if(profileData) profile=profileData
+    renderTrend(trend, profile)
+  }
+}
+
+// --- Render trend ---
+function isYouTube(url){ return url.includes("youtube.com") || url.includes("youtu.be") }
+function renderTrend(trend, profile){
+  const card = document.createElement("div"); card.className="trend-card"
+  const header = document.createElement("div"); header.className="trend-header"
+  const userAvatar = document.createElement("img"); userAvatar.src = profile?.avatar_url || "https://placehold.co/40x40"
+  header.appendChild(userAvatar)
+  const userTag = document.createElement("div"); userTag.className="trend-user"; userTag.textContent = profile?.username || "Anonymous"
+  header.appendChild(userTag); card.appendChild(header)
+  const textEl = document.createElement("div"); textEl.className="trend-text"; textEl.textContent = trend.text; card.appendChild(textEl)
+  if(trend.video_url){
+    if(isYouTube(trend.video_url)){
+      let id = trend.video_url.includes("youtu.be") ? trend.video_url.split("/").pop() : new URL(trend.video_url).searchParams.get("v")
+      const iframe = document.createElement("iframe")
+      iframe.src=`https://www.youtube.com/embed/${id}`
+      iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      iframe.allowFullscreen=true
+      iframe.height=300
+      card.appendChild(iframe)
+    } else {
+      const video = document.createElement("video"); video.src=trend.video_url; video.controls=true; video.muted=true
+      video.onmouseenter=()=>video.play(); video.onmouseleave=()=>video.pause()
+      card.appendChild(video)
+    }
+  }
+  feed.prepend(card)
+}
+
+// --- Realtime updates ---
+supabase.channel("realtime-trends").on("postgres_changes",{event:"INSERT", schema:"public", table:"trends"}, async payload=>{
+  const trend = payload.new
+  let profile={username:"Anonymous", avatar_url:"https://placehold.co/40x40"}
+  const { data: profileData } = await supabase.from("profiles").select("username,avatar_url").eq("id",trend.user_id).single()
+  if(profileData) profile=profileData
+  renderTrend(trend, profile)
+}).subscribe()
+
+// --- Initial load ---
+handleAuth()
+loadTrends()
+
 </script>
 </body>
 </html>
+
