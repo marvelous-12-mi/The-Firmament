@@ -143,7 +143,22 @@
       header.appendChild(info)
       card.appendChild(header)
       const textEl = document.createElement("div"); textEl.className="trend-text"; textEl.textContent = trend.text; card.appendChild(textEl)
-      if(trend.video_url){const video=document.createElement("video"); video.src=trend.video_url; video.controls=true; card.appendChild(video)}
+
+      if (trend.video_url) {
+        const video = document.createElement("video")
+        video.controls = true
+        video.style.width = "100%"
+        video.style.maxHeight = "400px"
+        video.style.borderRadius = "8px"
+
+        const source = document.createElement("source")
+        source.src = trend.video_url
+        source.type = trend.video_url.endsWith(".webm") ? "video/webm" : "video/mp4"
+
+        video.appendChild(source)
+        card.appendChild(video)
+      }
+
       feed.prepend(card)
     }
 
@@ -171,7 +186,6 @@
       }
     }
 
-    // Realtime listener
     supabase.channel("realtime-trends")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" }, async payload => {
         const trend = payload.new
@@ -186,8 +200,6 @@
       })
       .subscribe()
 
-    loadTrends()
-    // Initialize
     handleMagicLink().then(() => {
       checkAuth()
       loadTrends()
@@ -195,5 +207,3 @@
   </script>
 </body>
 </html>
-
-
