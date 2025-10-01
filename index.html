@@ -39,9 +39,13 @@ header button:hover{background:var(--pink);color:white;}
 
 /* Auth Modal */
 .auth-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center;z-index:300;}
-.auth-content{background:var(--card);padding:2rem;border-radius:16px;width:320px;display:flex;flex-direction:column;gap:1rem;}
+.auth-content{background:var(--card);padding:2rem;border-radius:16px;width:320px;display:flex;flex-direction:column;gap:1rem;animation:fadeIn 0.3s;}
 .auth-content input{padding:.8rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;}
 .auth-content button{background:linear-gradient(90deg,var(--orange),var(--pink));padding:.8rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;color:white;}
+@keyframes fadeIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+
+/* Recording */
+#recorderPreview{display:none;border-radius:12px;margin-top:.5rem;}
 </style>
 </head>
 <body>
@@ -61,7 +65,7 @@ header button:hover{background:var(--pink);color:white;}
   <button id="postSubmit">Post</button>
   <hr>
   <h3>Record Video</h3>
-  <video id="recorderPreview" width="100%" controls muted style="display:none;"></video>
+  <video id="recorderPreview" width="100%" controls muted></video>
   <button id="startRecordingBtn">🎥 Record</button>
   <button id="stopRecordingBtn" style="display:none;">⏹️ Stop & Upload</button>
 </div>
@@ -86,64 +90,109 @@ const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const menuBtn = document.getElementById("menuBtn");
-const sidePanel = document.getElementById("sidePanel");
-const authBtn = document.getElementById("authBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const userEmail = document.getElementById("userEmail");
-const feed = document.querySelector(".feed");
-const postBtn = document.getElementById("postBtn");
-const postUrl = document.getElementById("postUrl");
-const postCaption = document.getElementById("postCaption");
-const postSubmit = document.getElementById("postSubmit");
+// Elements
+const menuBtn=document.getElementById("menuBtn");
+const sidePanel=document.getElementById("sidePanel");
+const authBtn=document.getElementById("authBtn");
+const logoutBtn=document.getElementById("logoutBtn");
+const userEmail=document.getElementById("userEmail");
+const feed=document.querySelector(".feed");
+const postBtn=document.getElementById("postBtn");
+const postUrl=document.getElementById("postUrl");
+const postCaption=document.getElementById("postCaption");
+const postSubmit=document.getElementById("postSubmit");
 
-const authModal = document.getElementById("authModal");
-const authEmail = document.getElementById("authEmail");
-const authPassword = document.getElementById("authPassword");
-const signUpBtn = document.getElementById("signUpBtn");
-const signInBtn = document.getElementById("signInBtn");
-const closeAuthBtn = document.getElementById("closeAuthBtn");
+const authModal=document.getElementById("authModal");
+const authEmail=document.getElementById("authEmail");
+const authPassword=document.getElementById("authPassword");
+const signUpBtn=document.getElementById("signUpBtn");
+const signInBtn=document.getElementById("signInBtn");
+const closeAuthBtn=document.getElementById("closeAuthBtn");
 
-const startRecordingBtn = document.getElementById("startRecordingBtn");
-const stopRecordingBtn = document.getElementById("stopRecordingBtn");
-const recorderPreview = document.getElementById("recorderPreview");
-let mediaRecorder, recordedChunks = [];
+const startRecordingBtn=document.getElementById("startRecordingBtn");
+const stopRecordingBtn=document.getElementById("stopRecordingBtn");
+const recorderPreview=document.getElementById("recorderPreview");
+let mediaRecorder, recordedChunks=[];
 
-// Side Panel toggle
+// Panel Toggle
 menuBtn.addEventListener("click", ()=>sidePanel.classList.toggle("active"));
 document.addEventListener("click", e=>{if(sidePanel.classList.contains("active")&&!sidePanel.contains(e.target)&&e.target!==menuBtn){sidePanel.classList.remove("active");}});
 
-// Auth
+// Auth Modal
 authBtn.addEventListener("click", ()=>authModal.style.display="flex");
 closeAuthBtn.addEventListener("click", ()=>authModal.style.display="none");
-signUpBtn.addEventListener("click", async()=>{
-  const email = authEmail.value.trim(); const password = authPassword.value.trim();
-  if(!email||!password)return alert("Enter email & password");
-  const {error} = await supabase.auth.signUp({email,password});
-  if(error)return alert("Sign Up Error: "+error.message);
-  alert("✅ Sign Up successful! Check email."); authModal.style.display="none"; handleAuth();
-});
-signInBtn.addEventListener("click", async()=>{
-  const email = authEmail.value.trim(); const password = authPassword.value.trim();
-  if(!email||!password)return alert("Enter email & password");
-  const {error} = await supabase.auth.signInWithPassword({email,password});
-  if(error)return alert("Sign In Error: "+error.message);
-  authModal.style.display="none"; handleAuth();
-});
-logoutBtn.addEventListener("click", async()=>{await supabase.auth.signOut(); handleAuth();});
 
-async function handleAuth(){
+// Sign Up
+signUpBtn.addEventListener("click", async ()=>{
+  const email=authEmail.value.trim(), password=authPassword.value.trim();
+  if(!email||!password)return alert("Enter email & password");
+  const {error}=await supabase.auth.signUp({email,password});
+  if(error)return alert(error.message);
+  alert("✅ Check your email to confirm!"); authModal.style.display="none"; updateUserUI();
+});
+
+// Sign In
+signInBtn.addEventListener("click", async ()=>{
+  const email=authEmail.value.trim(), password=authPassword.value.trim();
+  if(!email||!password)return alert("Enter email & password");
+  const {error}=await supabase.auth.signInWithPassword({email,password});
+  if(error)return alert(error.message);
+  authModal.style.display="none"; updateUserUI();
+});
+
+// Logout
+logoutBtn.addEventListener("click", async()=>{await supabase.auth.signOut(); updateUserUI();});
+
+// Update UI
+async function updateUserUI(){
   const {data} = await supabase.auth.getSession();
   const user = data.session?.user;
   if(user){userEmail.textContent=user.email; authBtn.style.display="none"; logoutBtn.style.display="block";}
   else{userEmail.textContent="Not logged in"; authBtn.style.display="block"; logoutBtn.style.display="none";}
 }
-supabase.auth.onAuthStateChange((_e,s)=>handleAuth());
+supabase.auth.onAuthStateChange(()=>updateUserUI());
 
-// Load Feed
+// Post Trend
+postSubmit.addEventListener("click", async()=>{
+  const {data:session}=await supabase.auth.getSession();
+  if(!session?.user)return alert("Login first!");
+  const url=postUrl.value.trim(), caption=postCaption.value.trim();
+  if(!url)return alert("Enter URL");
+  const type=url.includes("youtube.com")?"youtube":"video";
+  const {error}=await supabase.from("trends").insert([{url,caption,type,username:session.user.email.split("@")[0]}]);
+  if(error)console.error(error.message); else {postUrl.value=""; postCaption.value=""; loadFeed();}
+});
+
+// Floating Post Btn
+postBtn.addEventListener("click", ()=>sidePanel.classList.add("active"));
+
+// Video Recording
+startRecordingBtn.addEventListener("click", async()=>{
+  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  recorderPreview.srcObject=stream; recorderPreview.style.display="block";
+  mediaRecorder=new MediaRecorder(stream); recordedChunks=[];
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0) recordedChunks.push(e.data);}
+  mediaRecorder.start(); startRecordingBtn.style.display="none"; stopRecordingBtn.style.display="block";
+});
+stopRecordingBtn.addEventListener("click", async()=>{
+  mediaRecorder.stop(); stopRecordingBtn.style.display="none"; startRecordingBtn.style.display="block";
+  mediaRecorder.onstop=async()=>{
+    const blob=new Blob(recordedChunks,{type:"video/mp4"});
+    const file=new File([blob],"trend_"+Date.now()+".mp4",{type:"video/mp4"});
+    const {data:session}=await supabase.auth.getSession();
+    if(!session?.user)return alert("Login first!");
+    const {data,error}=await supabase.storage.from("trends").upload(file.name,file);
+    if(error)return alert(error.message);
+    const url=supabase.storage.from("trends").getPublicUrl(file.name).publicUrl;
+    const {error:err}=await supabase.from("trends").insert([{url,type:"video",username:session.user.email.split("@")[0],caption:"New recorded trend"}]);
+    if(err)alert(err.message); else loadFeed();
+  }
+});
+
+// Swipe Feed
 let posts=[], currentIndex=0;
 async function loadFeed(){
-  const {data:trends,error} = await supabase.from("trends").select("*").order("created_at",{ascending:false});
+  const {data:trends,error}=await supabase.from("trends").select("*").order("created_at",{ascending:false});
   if(error){console.error(error.message); return;}
   posts=trends; currentIndex=0; feed.innerHTML="";
   posts.forEach((post,i)=>{
@@ -159,7 +208,6 @@ async function loadFeed(){
   playCurrentVideo();
 }
 
-// Swipe Feed
 let startY=0;
 feed.addEventListener("touchstart", e=>{startY=e.touches[0].clientY;});
 feed.addEventListener("touchend", e=>{
@@ -167,55 +215,13 @@ feed.addEventListener("touchend", e=>{
   if(endY-startY>50) prevVideo();
   if(startY-endY>50) nextVideo();
 });
-function updateFeedPosition(){
-  const cards=document.querySelectorAll(".trend-card");
-  cards.forEach((card,i)=>{card.style.transform=`translateY(${(i-currentIndex)*100}%)`;});
-  playCurrentVideo();
-}
+function updateFeedPosition(){document.querySelectorAll(".trend-card").forEach((card,i)=>{card.style.transform=`translateY(${(i-currentIndex)*100}%)`;}); playCurrentVideo();}
 function nextVideo(){if(currentIndex<posts.length-1){currentIndex++; updateFeedPosition();}}
 function prevVideo(){if(currentIndex>0){currentIndex--; updateFeedPosition();}}
-function playCurrentVideo(){
-  document.querySelectorAll(".trend-card video").forEach((v,i)=>{if(i===currentIndex)v.play().catch(()=>{});else v.pause();});
-}
-
-// Post
-postSubmit.addEventListener("click", async()=>{
-  const session=(await supabase.auth.getSession()).data.session;
-  if(!session){alert("Login first!"); return;}
-  const url=postUrl.value.trim(); const caption=postCaption.value.trim();
-  if(!url)return alert("Enter video/YouTube URL");
-  const type=url.includes("youtube.com")?"youtube":"video";
-  const {error}=await supabase.from("trends").insert([{url,caption,type,username:session.user.email.split("@")[0]}]);
-  if(error)console.error(error.message); else {postUrl.value=""; postCaption.value=""; loadFeed();}
-});
-postBtn.addEventListener("click", ()=>sidePanel.classList.add("active"));
-
-// Recording
-startRecordingBtn.addEventListener("click", async()=>{
-  const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  recorderPreview.srcObject=stream; recorderPreview.style.display="block";
-  mediaRecorder = new MediaRecorder(stream);
-  recordedChunks = [];
-  mediaRecorder.ondataavailable = e=>{if(e.data.size>0) recordedChunks.push(e.data);};
-  mediaRecorder.onstop = ()=>{stopRecordingBtn.style.display="none"; startRecordingBtn.style.display="block";}
-  mediaRecorder.start();
-  startRecordingBtn.style.display="none"; stopRecordingBtn.style.display="block";
-});
-stopRecordingBtn.addEventListener("click", async()=>{
-  mediaRecorder.stop();
-  const blob = new Blob(recordedChunks,{type:"video/mp4"});
-  const file = new File([blob],"trend_"+Date.now()+".mp4",{type:"video/mp4"});
-  const session=(await supabase.auth.getSession()).data.session;
-  if(!session){alert("Login first!"); return;}
-  const {data,error}=await supabase.storage.from("trends").upload(file.name,file);
-  if(error){alert("Upload failed: "+error.message); return;}
-  const url = supabase.storage.from("trends").getPublicUrl(file.name).publicUrl;
-  const {error:err}=await supabase.from("trends").insert([{url,type:"video",username:session.user.email.split("@")[0],caption:"New recorded trend"}]);
-  if(err){alert("Insert failed: "+err.message);} else loadFeed();
-});
+function playCurrentVideo(){document.querySelectorAll(".trend-card video").forEach((v,i)=>{if(i===currentIndex)v.play().catch(()=>{}); else v.pause();});}
 
 // Init
-handleAuth(); loadFeed();
+updateUserUI(); loadFeed();
 </script>
 </body>
 </html>
