@@ -1,248 +1,172 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+// === Import Supabase ===
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// 🔑 Supabase config
-const supabase = createClient(
-  'https://kpdgmbjdaynplyjacuxd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ'
-)
+// Replace with your Supabase project credentials
+const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 🎯 DOM elements
-const openAuthBtn = document.getElementById("openAuthBtn")
-const authModal = document.getElementById("authModal")
-const closeAuthBtn = document.getElementById("closeAuthBtn")
-const signUpBtn = document.getElementById("signUpBtn")
-const signInBtn = document.getElementById("signInBtn")
-const authEmail = document.getElementById("authEmail")
-const authPassword = document.getElementById("authPassword")
-const logoutBtn = document.getElementById("logoutBtn")
-const avatar = document.getElementById("avatar")
-const composerSection = document.getElementById("composerSection")
-const trendForm = document.getElementById("trendForm")
-const feed = document.getElementById("trendFeed")
-const usernameInput = document.getElementById("usernameInput")
-const avatarInput = document.getElementById("avatarInput")
-const videoUrl = document.getElementById("videoUrl")
-const startRecordingBtn = document.getElementById("startRecordingBtn")
-const stopRecordingBtn = document.getElementById("stopRecordingBtn")
-const recorderPreview = document.getElementById("recorderPreview")
+// === Elements ===
+const menuBtn = document.getElementById("menuBtn");
+const sidePanel = document.getElementById("sidePanel");
+const authBtn = document.getElementById("authBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const userEmail = document.getElementById("userEmail");
+const feed = document.querySelector(".feed");
+const postBtn = document.getElementById("postBtn");
+const postUrl = document.getElementById("postUrl");
+const postCaption = document.getElementById("postCaption");
+const postSubmit = document.getElementById("postSubmit");
 
-// ===================== AUTH =====================
-openAuthBtn.onclick = () => (authModal.style.display = "flex")
-closeAuthBtn.onclick = () => (authModal.style.display = "none")
+// === Menu Panel Toggle ===
+menuBtn.addEventListener("click", () => {
+  sidePanel.classList.toggle("active");
+});
+document.addEventListener("click", (e) => {
+  if (
+    sidePanel.classList.contains("active") &&
+    !sidePanel.contains(e.target) &&
+    e.target !== menuBtn
+  ) {
+    sidePanel.classList.remove("active");
+  }
+});
 
-signUpBtn.onclick = async () => {
-  const email = authEmail.value.trim()
-  const password = authPassword.value.trim()
-  if (!email || !password) return alert("Enter email & password")
-  const { error } = await supabase.auth.signUp({ email, password })
-  if (error) return alert("Sign Up Error: " + error.message)
-  alert("✅ Sign Up successful! Check your email.")
-  authModal.style.display = "none"
-  handleAuth()
-}
+// === Auth ===
+authBtn.addEventListener("click", async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+  });
+  if (error) console.error("Login error:", error.message);
+});
 
-signInBtn.onclick = async () => {
-  const email = authEmail.value.trim()
-  const password = authPassword.value.trim()
-  if (!email || !password) return alert("Enter email & password")
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) return alert("Sign In Error: " + error.message)
-  authModal.style.display = "none"
-  handleAuth()
-}
+logoutBtn.addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  updateUserUI(null);
+});
 
-logoutBtn.onclick = async () => {
-  await supabase.auth.signOut()
-  handleAuth()
-}
-
-// ===================== SESSION HANDLER =====================
-async function handleAuth() {
-  const { data } = await supabase.auth.getSession()
-  const user = data.session?.user
-  if (user) {
-    avatar.style.display = "inline-block"
-    avatar.src = user.user_metadata?.avatar_url || "https://placehold.co/36x36"
-    logoutBtn.style.display = "inline-block"
-    openAuthBtn.style.display = "none"
-    composerSection.style.display = "block"
-    await ensureProfile(user)
+// Update UI based on user session
+async function updateUserUI(session) {
+  if (session?.user) {
+    userEmail.textContent = session.user.email;
+    authBtn.style.display = "none";
+    logoutBtn.style.display = "block";
   } else {
-    avatar.style.display = "none"
-    logoutBtn.style.display = "none"
-    openAuthBtn.style.display = "inline-block"
-    composerSection.style.display = "none"
+    userEmail.textContent = "Not logged in";
+    authBtn.style.display = "block";
+    logoutBtn.style.display = "none";
   }
 }
 
-// ===================== PROFILES =====================
-async function ensureProfile(user) {
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select()
-    .eq("id", user.id)
-    .maybeSingle()
+supabase.auth.onAuthStateChange((_event, session) => {
+  updateUserUI(session);
+});
 
-  if (!existing) {
-    await supabase.from("profiles").insert([{
-      id: user.id,
-      username: usernameInput.value || "Anonymous",
-      avatar_url: avatarInput.value || "https://placehold.co/40x40"
-    }])
-  }
-}
-
-// ===================== POST TREND =====================
-trendForm.addEventListener("submit", async e => {
-  e.preventDefault()
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) return alert("Sign in first")
-
-  const text = document.getElementById("trendText").value.trim()
-  const video = videoUrl.value.trim()
-
-  const { error } = await supabase.from("trends").insert([{
-    text,
-    video_url: video || null,
-    user_id: user.id
-  }])
-  if (error) alert("Error posting: " + error.message)
-  else trendForm.reset()
-})
-
-// ===================== LOAD TRENDS =====================
-async function loadTrends() {
-  const { data: trends, error } = await supabase
+// === Feed Loader ===
+async function loadFeed() {
+  const { data, error } = await supabase
     .from("trends")
-    .select("id,text,video_url,user_id")
-    .order("id", { ascending: false })
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  if (error) return console.error("Load trends error:", error.message)
-
-  feed.innerHTML = ""
-  for (const trend of trends) {
-    let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("username,avatar_url")
-      .eq("id", trend.user_id)
-      .maybeSingle()
-    if (profileData) profile = profileData
-    renderTrend(trend, profile)
-  }
-}
-
-// ===================== RENDER TREND =====================
-async function renderTrend(trend, profile) {
-  const card = document.createElement("div")
-  card.className = "trend-card"
-
-  const header = document.createElement("div")
-  header.className = "trend-header"
-  const userAvatar = document.createElement("img")
-  userAvatar.src = profile.avatar_url
-  header.appendChild(userAvatar)
-  const userTag = document.createElement("div")
-  userTag.className = "trend-user"
-  userTag.textContent = profile.username
-  header.appendChild(userTag)
-  card.appendChild(header)
-
-  const textEl = document.createElement("div")
-  textEl.className = "trend-text"
-  textEl.textContent = trend.text
-  card.appendChild(textEl)
-
-  if (trend.video_url) {
-    const video = document.createElement("video")
-    video.src = trend.video_url
-    video.controls = true
-    video.muted = true
-    video.onmouseenter = () => video.play()
-    video.onmouseleave = () => video.pause()
-    card.appendChild(video)
+  if (error) {
+    console.error("Feed load error:", error.message);
+    return;
   }
 
-  feed.appendChild(card)
-}
+  feed.innerHTML = "";
+  data.forEach((post) => {
+    const card = document.createElement("div");
+    card.className = "trend-card";
 
-// ===================== REALTIME FEED =====================
-supabase
-  .channel("realtime-trends")
-  .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" },
-    async payload => {
-      const trend = payload.new
-      let profile = { username: "Anonymous", avatar_url: "https://placehold.co/40x40" }
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("username,avatar_url")
-        .eq("id", trend.user_id)
-        .maybeSingle()
-      if (profileData) profile = profileData
-      renderTrend(trend, profile)
+    let media;
+    if (post.type === "youtube") {
+      media = document.createElement("iframe");
+      media.src = post.url;
+      media.setAttribute("allowfullscreen", true);
+    } else {
+      media = document.createElement("video");
+      media.src = post.url;
+      media.autoplay = true;
+      media.loop = true;
+      media.muted = true;
     }
-  )
-  .subscribe()
+    media.className = "trend-media";
+    card.appendChild(media);
 
-// ===================== VIDEO RECORDING =====================
-let mediaRecorder, recordedChunks = []
+    const info = document.createElement("div");
+    info.className = "trend-info";
+    info.innerHTML = `<h2>@${post.username || "anon"}</h2><p>${post.caption || ""}</p>`;
+    card.appendChild(info);
 
-startRecordingBtn.onclick = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    recorderPreview.srcObject = stream
-    recorderPreview.style.display = "block"
-    recorderPreview.play()
+    const actions = document.createElement("div");
+    actions.className = "trend-actions";
+    actions.innerHTML = `
+      <div class="action-btn">❤️</div>
+      <div class="action-btn">💬</div>
+      <div class="action-btn">🔗</div>
+    `;
+    card.appendChild(actions);
 
-    const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9")
-      ? "video/webm; codecs=vp9"
-      : "video/webm"
+    feed.appendChild(card);
+  });
 
-    mediaRecorder = new MediaRecorder(stream, { mimeType })
-    recordedChunks = []
-
-    mediaRecorder.ondataavailable = e => {
-      if (e.data.size > 0) recordedChunks.push(e.data)
-    }
-
-    mediaRecorder.onstop = async () => {
-      const blob = new Blob(recordedChunks, { type: mimeType })
-      const fileName = `trend-${Date.now()}.webm`
-
-      const { error: uploadError } = await supabase
-        .storage
-        .from("videos")
-        .upload(fileName, blob, { contentType: mimeType })
-      if (uploadError) return alert("Upload error: " + uploadError.message)
-
-      const { data } = supabase.storage.from("videos").getPublicUrl(fileName)
-      videoUrl.value = data.publicUrl
-
-      recorderPreview.srcObject.getTracks().forEach(track => track.stop())
-      recorderPreview.srcObject = null
-      recorderPreview.src = data.publicUrl
-      recorderPreview.play()
-      alert("✅ Video uploaded and ready to post!")
-    }
-
-    mediaRecorder.start()
-    startRecordingBtn.style.display = "none"
-    stopRecordingBtn.style.display = "inline-block"
-  } catch (err) {
-    console.error("Recording error:", err)
-    alert("🎥 Unable to access camera/mic. Use HTTPS and allow permissions.")
-  }
+  initVideoObserver();
 }
 
-stopRecordingBtn.onclick = () => {
-  if (mediaRecorder && mediaRecorder.state === "recording") {
-    mediaRecorder.stop()
-    startRecordingBtn.style.display = "inline-block"
-    stopRecordingBtn.style.display = "none"
+// === Post Submit ===
+postSubmit.addEventListener("click", async () => {
+  const session = (await supabase.auth.getSession()).data.session;
+  if (!session) {
+    alert("You must be logged in to post!");
+    return;
   }
+
+  const url = postUrl.value.trim();
+  const caption = postCaption.value.trim();
+  if (!url) {
+    alert("Please enter a video or YouTube URL");
+    return;
+  }
+
+  const type = url.includes("youtube.com") ? "youtube" : "video";
+
+  const { error } = await supabase.from("trends").insert([
+    {
+      url,
+      caption,
+      type,
+      username: session.user.email.split("@")[0],
+    },
+  ]);
+
+  if (error) {
+    console.error("Post error:", error.message);
+  } else {
+    postUrl.value = "";
+    postCaption.value = "";
+    loadFeed();
+  }
+});
+
+// === Video Auto Play ===
+function initVideoObserver() {
+  const videos = document.querySelectorAll(".trend-card video");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.play().catch(() => {});
+        } else {
+          entry.target.pause();
+        }
+      });
+    },
+    { threshold: 0.6 }
+  );
+  videos.forEach((video) => observer.observe(video));
 }
 
-// ===================== INIT =====================
+// === Initialize ===
 handleAuth()
-loadTrends()
+loadFeed();
