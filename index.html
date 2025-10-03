@@ -21,15 +21,15 @@ header h1{font-size:1.6rem;font-weight:700;letter-spacing:1px;text-shadow:0 0 10
 header button{background:white;color:var(--dark);border:none;padding:0.5rem 1rem;border-radius:999px;cursor:pointer;font-weight:bold;transition:0.3s;}
 header button:hover{background:var(--secondary);color:white;}
 
-/* Popup */
-.popup-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:500;}
-.popup{background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:500px;box-shadow:0 0 25px rgba(30,144,255,0.4);position:relative;}
-.popup h2{color:var(--accent);margin-bottom:1rem;}
-.popup input, .popup textarea, .popup button{width:100%;margin:0.5rem 0;padding:0.7rem;border-radius:10px;border:none;background:#222;color:white;}
-.popup input::placeholder, .popup textarea::placeholder{color:#aaa;}
-.popup button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
-.popup button:hover{opacity:0.9;}
-.popup .close-btn{position:absolute;top:10px;right:10px;background:red;color:white;width:30px;height:30px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;}
+/* Modal background */
+.modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:500;}
+.modal{background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:450px;box-shadow:0 0 25px rgba(30,144,255,0.4);position:relative;}
+.modal h2{color:var(--accent);margin-bottom:1rem;text-align:center;}
+.modal input, .modal textarea, .modal button{width:100%;margin:0.5rem 0;padding:0.7rem;border-radius:10px;border:none;background:#222;color:white;}
+.modal input::placeholder, .modal textarea::placeholder{color:#aaa;}
+.modal button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
+.modal button:hover{opacity:0.9;}
+.modal .close-btn{position:absolute;top:10px;right:10px;background:red;color:white;width:30px;height:30px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;}
 
 /* Feed */
 .feed{display:flex;flex-direction:column;gap:2rem;padding:1rem;max-width:900px;margin:auto;}
@@ -52,70 +52,88 @@ header button:hover{background:var(--secondary);color:white;}
 
 <header>
   <h1>🔥 TrendTime AI</h1>
-  <button id="authBtn">Login</button>
+  <button id="loginBtn">Login / Signup</button>
 </header>
 
-<div class="popup-bg" id="popupBg">
-  <div class="popup">
-    <div class="close-btn" id="closePopup">×</div>
+<!-- Login Modal -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <div class="close-btn" id="closeLogin">×</div>
+    <h2>Login / Signup</h2>
+    <input type="text" id="loginUsername" placeholder="Username"/>
+    <input type="email" id="loginEmail" placeholder="Email"/>
+    <input type="password" id="loginPassword" placeholder="Password (optional)"/>
+    <button id="loginMagicLink">Send Magic Link</button>
+    <button id="loginBtnModal">Login / Signup</button>
+  </div>
+</div>
+
+<!-- Post Modal -->
+<div class="modal-bg" id="postModal">
+  <div class="modal">
+    <div class="close-btn" id="closePost">×</div>
     <h2>Post a Trend</h2>
-    <input type="text" id="popupUsername" placeholder="Username"/>
-    <input type="email" id="popupEmail" placeholder="Email"/>
-    <input type="password" id="popupPassword" placeholder="Password (optional)"/>
-    <button id="popupMagicLink">Send Magic Link</button>
-    <textarea id="popupCaption" placeholder="Caption..."></textarea>
-    <input type="text" id="popupPrompt" placeholder="AI Image Prompt..."/>
-    <button id="popupGenImage">Generate Image</button>
-    <div id="popupPreview" style="margin-top:1rem;"></div>
-    <button id="popupPost">Post Trend</button>
+    <textarea id="postCaption" placeholder="Caption..."></textarea>
+    <input type="text" id="postPrompt" placeholder="AI Image Prompt..."/>
+    <button id="generateImage">Generate Image</button>
+    <div id="postPreview" style="margin-top:1rem;"></div>
+    <button id="submitPost">Post Trend</button>
   </div>
 </div>
 
 <main class="feed"></main>
-<div class="post-btn" id="postBtn">➕</div>
+<div class="post-btn" id="openPostBtn">➕</div>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
 const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
 const supabase=createClient(supabaseUrl,supabaseKey);
 
-const postBtn=document.getElementById("postBtn");
-const popupBg=document.getElementById("popupBg");
-const closePopup=document.getElementById("closePopup");
-const popupUsername=document.getElementById("popupUsername");
-const popupEmail=document.getElementById("popupEmail");
-const popupPassword=document.getElementById("popupPassword");
-const popupMagicLink=document.getElementById("popupMagicLink");
-const popupCaption=document.getElementById("popupCaption");
-const popupPrompt=document.getElementById("popupPrompt");
-const popupGenImage=document.getElementById("popupGenImage");
-const popupPreview=document.getElementById("popupPreview");
-const popupPost=document.getElementById("popupPost");
-const authBtn=document.getElementById("authBtn");
+const loginBtn=document.getElementById("loginBtn");
+const loginModal=document.getElementById("loginModal");
+const closeLogin=document.getElementById("closeLogin");
+const loginMagicLink=document.getElementById("loginMagicLink");
+const loginBtnModal=document.getElementById("loginBtnModal");
+const loginUsername=document.getElementById("loginUsername");
+const loginEmail=document.getElementById("loginEmail");
+const loginPassword=document.getElementById("loginPassword");
+
+const openPostBtn=document.getElementById("openPostBtn");
+const postModal=document.getElementById("postModal");
+const closePost=document.getElementById("closePost");
+const postCaption=document.getElementById("postCaption");
+const postPrompt=document.getElementById("postPrompt");
+const generateImageBtn=document.getElementById("generateImage");
+const postPreview=document.getElementById("postPreview");
+const submitPost=document.getElementById("submitPost");
+
 const feed=document.querySelector(".feed");
 
 let currentUser=null;
 let generatedImage=null;
 
-// Open popup
-postBtn.onclick=()=>{popupBg.style.display="flex";}
-closePopup.onclick=()=>{popupBg.style.display="none";popupPreview.innerHTML="";generatedImage=null;};
+// Modal toggles
+loginBtn.onclick=()=>loginModal.style.display="flex";
+closeLogin.onclick=()=>loginModal.style.display="none";
+openPostBtn.onclick=()=>postModal.style.display="flex";
+closePost.onclick=()=>{postModal.style.display="none"; postPreview.innerHTML=""; generatedImage=null;};
 
 // Magic link
-popupMagicLink.onclick=async()=>{
-  const email=popupEmail.value.trim();
-  const username=popupUsername.value.trim();
+loginMagicLink.onclick=async()=>{
+  const email=loginEmail.value.trim();
+  const username=loginUsername.value.trim();
   if(!email||!username){alert("Enter email & username"); return;}
   const { error }=await supabase.auth.signInWithOtp({email,options:{data:{username}}});
-  if(error){alert(error.message);} else{alert("Magic link sent! Check your email.");}
+  if(error){alert(error.message);} else{alert("Magic link sent!"); loginModal.style.display="none";}
 }
 
-// Signup/Login
-authBtn.onclick=async()=>{
-  const email=popupEmail.value.trim();
-  const password=popupPassword.value.trim();
-  const username=popupUsername.value.trim();
+// Login/signup with password
+loginBtnModal.onclick=async()=>{
+  const email=loginEmail.value.trim();
+  const password=loginPassword.value.trim();
+  const username=loginUsername.value.trim();
   if(!email||!username){alert("Enter email & username"); return;}
   let { data,error }=await supabase.auth.signInWithPassword({email,password});
   if(error){
@@ -125,18 +143,19 @@ authBtn.onclick=async()=>{
   }
   currentUser=(await supabase.auth.getUser()).data.user;
   alert("Logged in as "+currentUser.user_metadata.username);
+  loginModal.style.display="none";
 }
 
-// Generate AI image
-popupGenImage.onclick=()=>{
-  const prompt=popupPrompt.value.trim();
-  if(!prompt){alert("Enter a prompt"); return;}
+// AI image generation
+generateImageBtn.onclick=()=>{
+  const prompt=postPrompt.value.trim();
+  if(!prompt){alert("Enter prompt"); return;}
   generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  popupPreview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;">`;
+  postPreview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;">`;
 }
 
 // Post trend
-popupPost.onclick=async()=>{
+submitPost.onclick=async()=>{
   if(!currentUser){alert("Login first"); return;}
   let url=generatedImage||null;
   if(url){
@@ -148,9 +167,9 @@ popupPost.onclick=async()=>{
     url=supabase.storage.from("trend-media").getPublicUrl(fileName).data.publicUrl;
     generatedImage=null;
   }
-  const caption=popupCaption.value.trim();
+  const caption=postCaption.value.trim();
   await supabase.from("trends").insert([{username:currentUser.user_metadata.username,url,caption,type:"image"}]);
-  popupCaption.value=""; popupPrompt.value=""; popupPreview.innerHTML=""; popupBg.style.display="none";
+  postCaption.value=""; postPrompt.value=""; postPreview.innerHTML=""; postModal.style.display="none";
   alert("Trend posted!");
   loadFeed();
 }
