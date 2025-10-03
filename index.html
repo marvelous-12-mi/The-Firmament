@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TrendTime AI ✨</title>
+<title>TrendTime AI 🔥</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -18,7 +18,7 @@
 body{background:#f0f2f5;color:#333;}
 header{background:var(--bg-gradient);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 header h1{font-size:1.6rem;}
-header button{background:white;color:var(--purple);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;}
+header button{background:white;color:var(--purple);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;margin-left:0.5rem;}
 header button:hover{background:var(--blue);color:white;}
 main{max-width:700px;margin:2rem auto;padding:0 1rem;}
 #auth,#composer{background:var(--card);border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:var(--shadow);}
@@ -33,7 +33,7 @@ main{max-width:700px;margin:2rem auto;padding:0 1rem;}
 <body>
 
 <header>
-  <h1>TrendTime AI ✨</h1>
+  <h1>TrendTime AI 🔥</h1>
   <div>
     <button id="postBtn" style="display:none;">Post</button>
     <button id="signOutBtn" style="display:none;">Sign Out</button>
@@ -45,8 +45,12 @@ main{max-width:700px;margin:2rem auto;padding:0 1rem;}
     <h2>Sign In / Sign Up</h2>
     <input type="text" id="username" placeholder="Choose a username"/>
     <input type="email" id="email" placeholder="Email"/>
-    <button id="authBtn">Send Magic Link</button>
-    <p style="font-size:0.85rem;color:#666;">Enter email to get a login link.</p>
+    <input type="password" id="password" placeholder="Password (optional for magic link)"/>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button id="authBtn">Sign In / Up</button>
+      <button id="magicLinkBtn">Send Magic Link</button>
+    </div>
+    <p style="font-size:0.85rem;color:#666;">Password optional: leave blank for magic link login.</p>
   </section>
 
   <section id="composer" style="display:none;">
@@ -79,20 +83,44 @@ const supabase = createClient(supabaseUrl,supabaseKey);
 
 let currentUser=null, generatedImage=null, recordedVideoBlob=null;
 
-// AUTH
+// AUTH ELEMENTS
 const authBtn=document.getElementById("authBtn");
+const magicLinkBtn=document.getElementById("magicLinkBtn");
 const emailInput=document.getElementById("email");
 const usernameInput=document.getElementById("username");
+const passwordInput=document.getElementById("password");
 const authSection=document.getElementById("auth");
 const composerSection=document.getElementById("composer");
 const signOutBtn=document.getElementById("signOutBtn");
 const postBtn=document.getElementById("postBtn");
 
+// Password login/signup
 authBtn.onclick=async()=>{
   const email=emailInput.value.trim();
+  const password=passwordInput.value.trim();
   const username=usernameInput.value.trim();
-  if(!email||!username){alert("Enter email & username"); return;}
-  const { error } = await supabase.auth.signInWithOtp({email});
+  if(!email || !username){alert("Enter email & username"); return;}
+  let { data,error } = await supabase.auth.signInWithPassword({email,password});
+  if(error){
+    // Try signup
+    let { error: signUpError } = await supabase.auth.signUp({email,password,options:{data:{username}}});
+    if(signUpError){alert(signUpError.message); return;}
+    await supabase.auth.signInWithPassword({email,password});
+  }
+  currentUser=(await supabase.auth.getUser()).data.user;
+  authSection.style.display="none";
+  composerSection.style.display="block";
+  signOutBtn.style.display="inline-block";
+  postBtn.style.display="inline-block";
+  loadFeed();
+}
+
+// Magic Link login
+magicLinkBtn.onclick=async()=>{
+  const email=emailInput.value.trim();
+  const username=usernameInput.value.trim();
+  if(!email || !username){alert("Enter email & username"); return;}
+  const { error } = await supabase.auth.signInWithOtp({email,options:{data:{username}}});
   if(error){alert(error.message); return;}
   alert("Magic link sent to your email!");
 }
@@ -135,7 +163,7 @@ document.getElementById("recordVideoBtn").onclick=async()=>{
   setTimeout(()=>recorder.stop(),5000);
 }
 
-// POST
+// POST POPUP
 const postPopup=document.getElementById("postPopup");
 const popupInfo=document.getElementById("popupInfo");
 const confirmPostBtn=document.getElementById("confirmPostBtn");
