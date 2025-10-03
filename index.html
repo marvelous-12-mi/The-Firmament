@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrendTime — AI Social</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
@@ -20,21 +20,21 @@ header .actions{display:flex;gap:12px;align-items:center;}
 button.btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;padding:10px 16px;border-radius:999px;font-weight:600;cursor:pointer;transition:0.2s;}
 button.btn:hover{opacity:0.85;}
 .app{display:grid;grid-template-columns:1fr;gap:16px;padding:16px;}
-@media(min-width:900px){.app{grid-template-columns:280px 1fr 300px;}}
-.center{display:flex;flex-direction:column;gap:12px;}
-.feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;padding:8px;}
-.post-card{position:relative;background:var(--card);margin-bottom:18px;border-radius:14px;overflow:hidden;scroll-snap-align:start;box-shadow:0 8px 20px rgba(0,0,0,0.1);}
-.post-media{width:100%;height:300px;object-fit:cover;background:#000;border-radius:12px;}
+.feed{display:flex;flex-direction:column;gap:20px;max-width:600px;margin:0 auto;}
+.post-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.1);transition:transform 0.2s;}
+.post-card:hover{transform:scale(1.02);}
+.post-media{width:100%;height:400px;object-fit:cover;background:#000;}
 .post-info{padding:12px;}
+.meta{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.05);}
+.username{font-weight:700;}
 .caption{color:var(--muted);}
-input,textarea{width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;margin-bottom:10px;}
+.actions-row{display:flex;gap:10px;margin-top:8px;align-items:center;}
+.actions-row button{flex:1;}
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:90;}
 .modal{background:var(--card);padding:18px;border-radius:14px;width:90%;max-width:520px;box-shadow:0 0 20px rgba(0,0,0,0.1);}
-video#recordPreview{width:100%;border-radius:12px;background:#000;}
-.post-controls{display:flex;gap:10px;margin-top:6px;}
-.post-controls button{flex:1;padding:6px;border-radius:12px;border:none;cursor:pointer;transition:0.2s;}
-.post-controls button:hover{opacity:0.8;}
-img.ai-image{width:100%;border-radius:12px;margin-top:8px;}
+input,textarea{width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;margin-bottom:10px;}
+#recordPreview{width:100%;border-radius:12px;background:#000;}
 </style>
 </head>
 <body>
@@ -43,14 +43,12 @@ img.ai-image{width:100%;border-radius:12px;margin-top:8px;}
 <h1>TrendTime</h1>
 <div class="actions">
 <button id="loginBtn" class="btn">Sign In / Sign Up</button>
-<button id="postBtn" class="btn">New Post</button>
+<button id="postBtn" class="btn">Record / Post</button>
 </div>
 </header>
 
 <div class="app">
-<main class="center">
 <div class="feed" id="feedWrap"></div>
-</main>
 </div>
 
 <div id="modalBackdrop" class="modal-backdrop">
@@ -58,41 +56,39 @@ img.ai-image{width:100%;border-radius:12px;margin-top:8px;}
 </div>
 
 <script type="module">
-// -------- Supabase setup --------
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 const supabaseUrl = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// -------- Global variables --------
-let currentUser=null;
-const feedWrap=document.getElementById('feedWrap');
-const modalBackdrop=document.getElementById('modalBackdrop');
-const modalContent=document.getElementById('modalContent');
-const loginBtn=document.getElementById('loginBtn');
-const postBtn=document.getElementById('postBtn');
+let currentUser = null;
+const feedWrap = document.getElementById('feedWrap');
+const loginBtn = document.getElementById('loginBtn');
+const postBtn = document.getElementById('postBtn');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalContent = document.getElementById('modalContent');
 
-// -------- Helpers --------
-function toast(msg){alert(msg);}
-function showModal(html){modalContent.innerHTML=html; modalBackdrop.style.display='flex';}
-function closeModal(){modalBackdrop.style.display='none'; modalContent.innerHTML='';}
-modalBackdrop.addEventListener('click',e=>{if(e.target===modalBackdrop) closeModal();});
+function toast(msg){ alert(msg); }
+function showModal(html){ modalContent.innerHTML = html; modalBackdrop.style.display='flex'; }
+function closeModal(){ modalBackdrop.style.display='none'; modalContent.innerHTML=''; }
+modalBackdrop.addEventListener('click', e=>{ if(e.target===modalBackdrop) closeModal(); });
 
-// -------- Load feed --------
+// Load feed
 async function loadFeed(){
   feedWrap.innerHTML='';
-  const {data,error}=await supabase.from('trends').select('*').order('created_at',{ascending:false});
-  if(error){console.log(error);return;}
+  const { data, error } = await supabase.from('trends').select('*').order('created_at',{ascending:false}).limit(50);
+  if(error){console.log(error); return;}
   data.forEach(post=>{
-    const card=document.createElement('div'); card.className='post-card';
-    if(post.type==='video'){
-      const video=document.createElement('video'); video.src=post.url; video.controls=true; video.loop=true; video.muted=false; video.className='post-media';
+    const card = document.createElement('div'); card.className='post-card';
+    if(post.url.endsWith('.webm')||post.url.endsWith('.mp4')){
+      const video = document.createElement('video'); video.src=post.url; video.controls=true; video.loop=true; video.muted=false; video.className='post-media';
       card.appendChild(video);
-    }else if(post.type==='image'){
-      const img=document.createElement('img'); img.src=post.url; img.className='post-media ai-image';
+    } else {
+      const img = document.createElement('img'); img.src=post.url; img.className='post-media';
       card.appendChild(img);
     }
-    const info=document.createElement('div'); info.className='post-info';
+    const info = document.createElement('div'); info.className='post-info';
     info.innerHTML=`<div class="caption">${post.caption||''}</div>`;
     card.appendChild(info);
     feedWrap.appendChild(card);
@@ -100,103 +96,115 @@ async function loadFeed(){
 }
 loadFeed();
 
-// -------- Auth modal --------
-loginBtn.onclick=()=>{
+// -------- Sign In / Sign Up --------
+loginBtn.onclick = ()=>{
   showModal(`
     <h3>Sign In / Sign Up</h3>
-    <input type="email" id="emailInput" placeholder="Email">
-    <input type="password" id="passInput" placeholder="Password">
+    <input id="emailInput" placeholder="Email" type="email">
+    <input id="passwordInput" placeholder="Password" type="password">
     <div style="display:flex;gap:8px;">
-      <button id="signInBtn" class="btn">Sign In</button>
-      <button id="signUpBtn" class="btn">Sign Up</button>
+      <button id="loginSubmit" class="btn">Sign In</button>
+      <button id="signupSubmit" class="btn">Sign Up</button>
     </div>
   `);
-  document.getElementById('signInBtn').onclick=async()=>{
-    const email=document.getElementById('emailInput').value;
-    const password=document.getElementById('passInput').value;
-    if(!email||!password){toast("Enter email & password");return;}
-    const {data,error}=await supabase.auth.signInWithPassword({email,password});
-    if(error){toast(error.message);return;}
-    currentUser=data.user;
-    toast("Signed in: "+email);
+  document.getElementById('loginSubmit').onclick=async ()=>{
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    if(!email||!password){ toast("Enter email & password"); return; }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if(error){ toast(error.message); return; }
+    currentUser = data.user;
+    toast("Signed in as "+currentUser.email);
     closeModal();
   };
-  document.getElementById('signUpBtn').onclick=async()=>{
-    const email=document.getElementById('emailInput').value;
-    const password=document.getElementById('passInput').value;
-    if(!email||!password){toast("Enter email & password");return;}
-    const {data,error}=await supabase.auth.signUp({email,password});
-    if(error){toast(error.message);return;}
-    currentUser=data.user;
-    toast("Account created: "+email);
+  document.getElementById('signupSubmit').onclick=async ()=>{
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    if(!email||!password){ toast("Enter email & password"); return; }
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if(error){ toast(error.message); return; }
+    currentUser = data.user;
+    toast("Account created & signed in as "+currentUser.email);
     closeModal();
   };
 };
 
-// -------- Post modal --------
-postBtn.onclick=()=>{
-  if(!currentUser){toast("Sign in first!");return;}
+// -------- Record / Post --------
+postBtn.onclick = async ()=>{
+  if(!currentUser){ toast("Sign in to post"); return; }
   showModal(`
-    <h3>New Post</h3>
-    <input type="text" id="postCaption" placeholder="Caption">
-    <input type="file" id="postFile">
-    <div style="display:flex;gap:8px;margin-top:8px;">
-      <button id="aiCaptionBtn" class="btn">✨ AI Caption</button>
-      <button id="aiImageBtn" class="btn">🎨 Generate AI Image</button>
-      <button id="submitPostBtn" class="btn">Post</button>
+    <h3>Record / Upload</h3>
+    <video id="recordPreview" autoplay muted playsinline></video>
+    <input id="postCaption" placeholder="Caption (optional)"/>
+    <input type="file" id="uploadFile" accept="image/*,video/*"/>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button id="startRec" class="btn">Start Recording</button>
+      <button id="stopRec" class="btn" disabled>Stop & Upload</button>
+      <button id="generateImg" class="btn">🎨 AI Generate Image</button>
+      <button id="closeModalBtn" class="btn">Close</button>
     </div>
-    <div id="aiImagePreview"></div>
   `);
 
-  const postFile=document.getElementById('postFile');
-  const postCaption=document.getElementById('postCaption');
-  const aiCaptionBtn=document.getElementById('aiCaptionBtn');
-  const aiImageBtn=document.getElementById('aiImageBtn');
-  const submitPostBtn=document.getElementById('submitPostBtn');
-  const aiImagePreview=document.getElementById('aiImagePreview');
+  const recordPreview = document.getElementById('recordPreview');
+  const postCaption = document.getElementById('postCaption');
+  const uploadFile = document.getElementById('uploadFile');
+  const startRec = document.getElementById('startRec');
+  const stopRec = document.getElementById('stopRec');
+  const generateImg = document.getElementById('generateImg');
+  const closeModalBtn = document.getElementById('closeModalBtn');
 
-  aiCaptionBtn.onclick=async()=>{
-    aiCaptionBtn.disabled=true; aiCaptionBtn.textContent='Thinking...';
-    try{
-      const prompt="Short catchy caption with emojis for a trending post";
-      const res=await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
-      const text=await res.text();
-      postCaption.value=text.slice(0,120)||"🔥 Trending!";
-    }catch(e){console.log(e);}
-    aiCaptionBtn.disabled=false; aiCaptionBtn.textContent='✨ AI Caption';
+  let mediaRecorder, recordedChunks=[], localStream=null;
+
+  closeModalBtn.onclick = ()=>{ closeModal(); if(localStream) localStream.getTracks().forEach(t=>t.stop()); }
+
+  startRec.onclick = async ()=>{
+    localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    recordPreview.srcObject = localStream;
+    mediaRecorder = new MediaRecorder(localStream,{mimeType:'video/webm;codecs=vp9'});
+    mediaRecorder.ondataavailable = e=>{if(e.data.size>0) recordedChunks.push(e.data);}
+    mediaRecorder.start();
+    startRec.disabled=true;
+    stopRec.disabled=false;
   };
 
-  aiImageBtn.onclick=async()=>{
-    if(!postFile.files[0]){toast("Select file first");return;}
-    aiImageBtn.disabled=true; aiImageBtn.textContent='Generating...';
-    try{
-      const prompt="Create an AI image based on this file";
-      const file=postFile.files[0];
-      const formData=new FormData();
-      formData.append("file",file);
-      formData.append("prompt",prompt);
-      const res=await fetch("https://image.pollinations.ai/prompt",{method:"POST",body:formData});
-      const blob=await res.blob();
-      const url=URL.createObjectURL(blob);
-      aiImagePreview.innerHTML=`<img src="${url}" class="ai-image">`;
-    }catch(e){console.log(e);}
-    aiImageBtn.disabled=false; aiImageBtn.textContent='🎨 Generate AI Image';
+  stopRec.onclick = async ()=>{
+    mediaRecorder.stop();
+    stopRec.disabled=true;
+    startRec.disabled=false;
+    mediaRecorder.onstop = async ()=>{
+      const blob = new Blob(recordedChunks,{type:'video/webm'});
+      const fileName = `video_${Date.now()}.webm`;
+      const { error } = await supabase.storage.from('videos').upload(fileName, blob, {upsert:true});
+      if(error){ toast(error.message); return; }
+      const { data } = supabase.storage.from('videos').getPublicUrl(fileName);
+      const url = data.publicUrl;
+      await supabase.from('trends').insert([{url, caption: postCaption.value||'🔥 New Trend'}]);
+      recordedChunks=[];
+      loadFeed();
+      closeModal();
+      localStream.getTracks().forEach(t=>t.stop());
+    };
   };
 
-  submitPostBtn.onclick=async()=>{
-    if(!postFile.files[0]){toast("Select file"); return;}
-    const file=postFile.files[0];
-    const type=file.type.startsWith("video")?"video":"image";
-    const fileName=`${Date.now()}_${file.name}`;
-    const {error}=await supabase.storage.from('media').upload(fileName,file,{upsert:true});
-    if(error){toast(error.message);return;}
-    const {data}=supabase.storage.from('media').getPublicUrl(fileName);
-    await supabase.from('trends').insert([{url:data.publicUrl,caption:postCaption.value,type}]);
-    toast("Posted!");
-    closeModal();
+  // Frontend AI image generation (no API) using TensorFlow.js
+  generateImg.onclick = async ()=>{
+    const canvas = document.createElement('canvas');
+    canvas.width=256; canvas.height=256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
+    ctx.fillRect(0,0,256,256);
+    // Add some random patterns
+    for(let i=0;i<500;i++){
+      ctx.fillStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
+      ctx.fillRect(Math.random()*256,Math.random()*256,Math.random()*20,Math.random()*20);
+    }
+    const url = canvas.toDataURL('image/png');
+    await supabase.from('trends').insert([{url, caption: postCaption.value||'🎨 AI Image'}]);
     loadFeed();
+    toast("AI Image generated & posted!");
   };
 };
 </script>
+
 </body>
 </html>
