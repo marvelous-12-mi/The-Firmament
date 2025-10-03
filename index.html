@@ -2,246 +2,199 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>TrendTime — AI Social</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0a0f;
-  --card:#1f1b2e;
-  --muted:#9aa6b2;
-  --accent1:#ff0080;
-  --accent2:#00ffff;
-  --glass: rgba(255,255,255,0.05);
+  --bg:#f5f5f5; --card:#fff; --muted:#666;
+  --accent1:#ff6a00; --accent2:#ff1f71; --glass: rgba(0,0,0,0.05);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
-body{background:linear-gradient(180deg,#0a0a0f,#05020a);color:#fff;overflow:hidden;min-height:100vh;}
-header{height:70px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;background:linear-gradient(90deg,var(--accent1),var(--accent2));box-shadow:0 6px 30px rgba(255,0,128,0.4);position:sticky;top:0;z-index:50;}
-header h1{font-size:1.6rem;text-shadow:0 0 15px var(--accent2);}
+body{background:var(--bg);color:#111;min-height:100vh;overflow-x:hidden;}
+header{height:70px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);position:sticky;top:0;z-index:50;}
+header h1{font-size:1.6rem;font-weight:700;}
 header .actions{display:flex;gap:12px;align-items:center;}
-button.btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#000;border:none;padding:10px 16px;border-radius:999px;font-weight:600;cursor:pointer;transition:0.2s;}
-button.btn:hover{filter:drop-shadow(0 0 15px var(--accent2));}
-button.icon-btn{background:var(--glass);border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:8px;border-radius:12px;cursor:pointer;transition:0.2s;}
-button.icon-btn:hover{background:rgba(255,255,255,0.1);}
-.app{display:grid;grid-template-columns:300px 1fr 360px;gap:16px;padding:16px;height:calc(100vh - 70px);}
-@media(max-width:1100px){.app{grid-template-columns:1fr}.right{display:none}}
-.left, .right{background:var(--card);border-radius:14px;padding:16px;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.6);}
-.center{overflow:hidden;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:12px;}
+button.btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;padding:10px 16px;border-radius:999px;font-weight:600;cursor:pointer;transition:0.2s;}
+button.btn:hover{opacity:0.85;}
+.app{display:grid;grid-template-columns:1fr;gap:16px;padding:16px;}
+@media(min-width:900px){.app{grid-template-columns:280px 1fr 300px;}}
+.left,.right,.center{background:var(--card);border-radius:14px;padding:16px;overflow:auto;box-shadow:0 8px 20px rgba(0,0,0,0.05);}
+.center{display:flex;flex-direction:column;gap:12px;}
 .feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;padding:8px;}
-.post-card{position:relative;background:var(--card);height:calc(100vh - 200px);margin-bottom:18px;border-radius:14px;overflow:hidden;scroll-snap-align:start;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
-.post-media{width:100%;height:100%;object-fit:cover;background:#000;}
-.post-info{position:absolute;left:16px;bottom:16px;right:120px;padding:12px;background:linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.35));border-radius:12px;}
-.meta{display:flex;gap:12px;align-items:center;}
-.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.06);}
-.username{font-weight:700;color:#fff;}
-.caption{color:var(--muted);margin-top:6px;}
-.post-controls{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:12px;align-items:center;}
-.round{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,var(--accent1),var(--accent2));box-shadow:0 4px 20px rgba(255,30,100,0.3);cursor:pointer;transition:0.2s;}
-.round:hover{transform:scale(1.1);filter:drop-shadow(0 0 20px var(--accent2));}
-.small{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);cursor:pointer;transition:0.2s;}
-.small:hover{background:rgba(255,255,255,0.08);}
+.post-card{position:relative;background:var(--card);margin-bottom:18px;border-radius:14px;overflow:hidden;scroll-snap-align:start;box-shadow:0 8px 20px rgba(0,0,0,0.1);}
+.post-media{width:100%;height:100%;object-fit:cover;background:#000;border-radius:12px;}
+.post-info{padding:12px;}
+.meta{display:flex;gap:12px;align-items:center;margin-bottom:6px;}
+.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.05);}
+.username{font-weight:700;}
+.caption{color:var(--muted);}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
-input[type="text"], input[type="url"], textarea{background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:#fff;padding:10px;border-radius:12px;}
-.search-list{max-height:220px;overflow:auto;border-radius:8px;background:rgba(255,255,255,0.01);padding:6px;}
-.search-item{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.02);display:flex;gap:8px;align-items:center;}
-.comments{margin-top:10px;background:rgba(0,0,0,0.35);padding:8px;border-radius:8px;max-height:140px;overflow:auto;}
-.comment-item{padding:6px;border-bottom:1px solid rgba(255,255,255,0.02);font-size:14px;}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:90;}
-.modal{background:var(--card);padding:18px;border-radius:14px;width:90%;max-width:520px;box-shadow:0 0 20px rgba(0,255,255,0.3);}
+input[type="text"],input[type="url"],textarea{background:var(--glass);border:1px solid rgba(0,0,0,0.1);color:#111;padding:10px;border-radius:12px;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:90;}
+.modal{background:var(--card);padding:18px;border-radius:14px;width:90%;max-width:520px;box-shadow:0 0 20px rgba(0,0,0,0.1);}
+video#recordPreview{width:100%;border-radius:12px;background:#000;}
+.post-controls{display:flex;gap:10px;margin-top:6px;}
+.post-controls button{flex:1;padding:6px;border-radius:12px;border:none;cursor:pointer;transition:0.2s;}
+.post-controls button:hover{opacity:0.8;}
 </style>
 </head>
 <body>
+
 <header>
-  <h1>TrendTime</h1>
-  <div class="actions">
-    <button id="shuffleFeedBtn" class="icon-btn">🔀</button>
-    <button id="openPostModal" class="btn">Post / Record</button>
-    <button id="openLoginBtn" class="btn">Sign In</button>
-  </div>
+<h1>TrendTime</h1>
+<div class="actions">
+<button id="openRecordModal" class="btn">🎥 Record / Post</button>
+</div>
 </header>
 
 <div class="app">
-  <aside class="left">
-    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-      <img id="leftAvatar" class="avatar" src="https://placehold.co/80x80?text=U">
-      <div>
-        <div id="leftUsername" class="username">Guest</div>
-        <div class="muted" id="leftEmail">—</div>
-      </div>
-    </div>
-    <div class="field">
-      <button id="openRecordModal" class="btn">Record & Upload</button>
-    </div>
-    <div class="field">
-      <label>Search Users</label>
-      <input id="searchInput" type="text" placeholder="Search...">
-      <div class="search-list" id="searchResults"></div>
-    </div>
-  </aside>
-
-  <main class="center">
-    <div style="display:flex;align-items:center;gap:12px;padding:8px">
-      <h2>Feed</h2>
-      <button id="refreshFeed" class="icon-btn" style="margin-left:auto">⟳</button>
-    </div>
-    <div class="feed" id="feedWrap"></div>
-  </main>
-
-  <aside class="right">
-    <div class="field">
-      <label>Caption (AI)</label>
-      <input id="composeCaption" type="text" placeholder="Write a caption or use AI">
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button id="aiCaptionBtn" class="btn">✨ AI Caption</button>
-        <button id="aiHashtagsBtn" class="icon-btn"># Hashtags</button>
-      </div>
-    </div>
-    <div class="field">
-      <label>Cover Image Prompt</label>
-      <input id="aiCoverPrompt" type="text" placeholder="Neon dancer, cyberpunk...">
-      <button id="aiCoverBtn" class="btn">🖼️ Generate Cover</button>
-      <div id="aiCoverPreview" style="margin-top:8px"></div>
-    </div>
-  </aside>
+<main class="center">
+<div class="feed" id="feedWrap"></div>
+</main>
 </div>
 
-<div id="modalBackdrop" class="modal-backdrop"><div id="modalContainer" class="modal"></div></div>
+<div id="modalBackdrop" class="modal-backdrop">
+<div class="modal">
+<h2>Record & Upload</h2>
+<video id="recordPreview" autoplay muted playsinline></video>
+<div style="display:flex;gap:10px;margin-top:10px">
+<button id="startRec" class="btn">Start</button>
+<button id="stopRec" class="btn" disabled>Stop & Upload</button>
+<button id="closeModal" class="btn">Close</button>
+</div>
+<input id="postCaption" placeholder="Caption (optional)" style="margin-top:10px;padding:10px;border-radius:12px;width:100%;"/>
+<div style="display:flex;gap:10px;margin-top:10px;">
+<button id="aiCaptionBtn" class="btn">✨ AI Caption</button>
+<button id="applyTfBtn" class="btn">🧠 TF Effect</button>
+</div>
+</div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.7.0/dist/tf.min.js"></script>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// Supabase
 const supabaseUrl = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// DOM
-const feedWrap = document.getElementById('feedWrap');
-const leftAvatar = document.getElementById('leftAvatar');
-const leftUsername = document.getElementById('leftUsername');
-const leftEmail = document.getElementById('leftEmail');
-const openLoginBtn = document.getElementById('openLoginBtn');
-const openPostModal = document.getElementById('openPostModal');
 const openRecordModal = document.getElementById('openRecordModal');
-const shuffleFeedBtn = document.getElementById('shuffleFeedBtn');
-const refreshFeed = document.getElementById('refreshFeed');
-const composeCaptionInput = document.getElementById('composeCaption');
-const aiCaptionBtn = document.getElementById('aiCaptionBtn');
-const aiHashtagsBtn = document.getElementById('aiHashtagsBtn');
-const aiCoverPrompt = document.getElementById('aiCoverPrompt');
-const aiCoverBtn = document.getElementById('aiCoverBtn');
-const aiCoverPreview = document.getElementById('aiCoverPreview');
 const modalBackdrop = document.getElementById('modalBackdrop');
-const modalContainer = document.getElementById('modalContainer');
+const startRec = document.getElementById('startRec');
+const stopRec = document.getElementById('stopRec');
+const closeModal = document.getElementById('closeModal');
+const recordPreview = document.getElementById('recordPreview');
+const postCaption = document.getElementById('postCaption');
+const feedWrap = document.getElementById('feedWrap');
+const aiCaptionBtn = document.getElementById('aiCaptionBtn');
+const applyTfBtn = document.getElementById('applyTfBtn');
 
-let currentUser = null;
-let postsCache = [];
-let observer = null;
+let mediaRecorder, recordedChunks = [], localStream=null;
 
-// Helpers
-function toast(msg){ alert(msg);}
-function closeModal(){ modalBackdrop.style.display='none'; modalContainer.innerHTML=''; }
-modalBackdrop.addEventListener('click', e=>{if(e.target===modalBackdrop)closeModal();});
+// Modal & recording
+openRecordModal.onclick = async ()=>{
+  modalBackdrop.style.display='flex';
+  localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  recordPreview.srcObject = localStream;
+  mediaRecorder = new MediaRecorder(localStream,{mimeType:'video/webm;codecs=vp9'});
+  mediaRecorder.ondataavailable = e => {if(e.data.size>0) recordedChunks.push(e.data);}
+  mediaRecorder.onstop = async ()=>{
+    const blob = new Blob(recordedChunks,{type:'video/webm'});
+    const fileName = `video_${Date.now()}.webm`;
+    const { error } = await supabase.storage.from('videos').upload(fileName, blob, {upsert:true});
+    if(error){alert('Upload failed: '+error.message); return;}
+    const { data } = supabase.storage.from('videos').getPublicUrl(fileName);
+    const url = data.publicUrl;
+    await supabase.from('trends').insert([{url, caption: postCaption.value || '🔥 New Trend'}]);
+    recordedChunks=[];
+    loadFeed();
+    modalBackdrop.style.display='none';
+    localStream.getTracks().forEach(t=>t.stop());
+  };
+};
 
-// AUTH + PROFILE
-async function refreshAuth(){
-  const { data } = await supabase.auth.getSession();
-  currentUser = data.session?.user ?? null;
-  if(currentUser){
-    leftEmail.textContent = currentUser.email||'';
-    leftUsername.textContent = currentUser.email.split('@')[0];
-    leftAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(leftUsername.textContent)}&background=101827&color=fff&size=128`;
-    openLoginBtn.style.display='none';
-  }else{
-    leftEmail.textContent='—';
-    leftUsername.textContent='Guest';
-    leftAvatar.src='https://placehold.co/80x80?text=U';
-    openLoginBtn.style.display='inline-block';
-  }
-}
+startRec.onclick = ()=>{
+  mediaRecorder.start();
+  startRec.disabled=true;
+  stopRec.disabled=false;
+};
 
-// LOAD FEED
-async function loadFeed(){
-  const { data,error } = await supabase.from('trends').select('*').order('created_at',{ascending:false}).limit(100);
-  if(error){ toast('Feed error'); return; }
-  postsCache = data||[];
-  renderFeed(postsCache);
-}
-function renderFeed(posts){
-  feedWrap.innerHTML='';
-  let collection = posts.slice();
-  if(window.__shuffleOn) collection.sort(()=>Math.random()-0.5);
-  collection.forEach(post=>{
-    const card=document.createElement('div');card.className='post-card';
-    let mediaEl;
-    if(post.url.includes('youtube')){
-      mediaEl=document.createElement('iframe');
-      mediaEl.src=post.url.includes('embed')?post.url:post.url.replace('watch?v=','embed/');
-      mediaEl.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-      mediaEl.className='post-media';
-    }else{
-      mediaEl=document.createElement('video');
-      mediaEl.src=post.url;
-      mediaEl.className='post-media';
-      mediaEl.muted=true;
-      mediaEl.loop=true;
-    }
-    card.appendChild(mediaEl);
+stopRec.onclick = ()=>{
+  mediaRecorder.stop();
+  stopRec.disabled=true;
+  startRec.disabled=false;
+};
 
-    const info=document.createElement('div');info.className='post-info';
-    info.innerHTML=`<div class="meta"><img class="avatar" src="${post.avatar||'https://placehold.co/80x80'}"><div><div class="username">${post.username}</div></div></div><div class="caption">${post.caption||''}</div>`;
-    card.appendChild(info);
-
-    feedWrap.appendChild(card);
-  });
-
-  // autoplay videos
-  if(observer) observer.disconnect();
-  const videos=feedWrap.querySelectorAll('video');
-  observer=new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      const v=entry.target;
-      entry.isIntersecting?v.play().catch(()=>{}):v.pause();
-    });
-  },{threshold:0.6});
-  videos.forEach(v=>observer.observe(v));
-}
+closeModal.onclick = ()=>{
+  modalBackdrop.style.display='none';
+  if(localStream) localStream.getTracks().forEach(t=>t.stop());
+};
 
 // AI Caption
-aiCaptionBtn.addEventListener('click', async ()=>{
-  aiCaptionBtn.disabled=true;aiCaptionBtn.textContent='Thinking...';
+aiCaptionBtn.onclick = async ()=>{
+  aiCaptionBtn.disabled=true;
+  aiCaptionBtn.textContent='Thinking...';
   try{
-    const res=await fetch(`https://text.pollinations.ai/Short viral caption for a trendy short video with emoji`);
-    const txt=await res.text();
-    composeCaptionInput.value=(txt||'🔥 Trending!').replace(/\n/g,' ').slice(0,140);
-  }catch(e){ toast('AI error'); }
-  aiCaptionBtn.disabled=false;aiCaptionBtn.textContent='✨ AI Caption';
-});
+    const prompt = 'Short catchy caption for a trending short video, include emojis';
+    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
+    const text = await res.text();
+    postCaption.value = text.slice(0,120) || '🔥 Trending!';
+  }catch(e){console.log(e);}
+  aiCaptionBtn.disabled=false;
+  aiCaptionBtn.textContent='✨ AI Caption';
+};
 
-// AI Hashtags
-aiHashtagsBtn.addEventListener('click', async ()=>{
-  aiHashtagsBtn.disabled=true;
-  try{
-    const base=composeCaptionInput.value||'short dance video';
-    const res=await fetch(`https://text.pollinations.ai/Give 5 trending hashtags for: ${base}`);
-    const txt=await res.text();
-    const tags=(txt||'').split(/[\n,]+/).map(s=>s.trim()).filter(Boolean).slice(0,6).map(t=>t.startsWith('#')?t:'#'+t.replace(/\s+/g,'')).join(' ');
-    composeCaptionInput.value=(composeCaptionInput.value?'':tags)+' '+tags;
-  }catch(e){ toast('AI error');}
-  aiHashtagsBtn.disabled=false;
-});
+// TensorFlow.js simple video effect
+applyTfBtn.onclick = async ()=>{
+  applyTfBtn.disabled=true;
+  applyTfBtn.textContent='Applying...';
+  // simple gray-scale effect on video frame using tf.js
+  const video = recordPreview;
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  document.body.appendChild(canvas);
+  canvas.style.position='fixed';
+  canvas.style.top='50px';
+  canvas.style.left='50%';
+  canvas.style.transform='translateX(-50%)';
+  canvas.style.zIndex='100';
+  const loop = ()=>{
+    if(video.paused || video.ended) return;
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+    const tfImg = tf.browser.fromPixels(imgData);
+    const gray = tfImg.mean(2).expandDims(2).tile([1,1,3]);
+    tf.browser.toPixels(gray,canvas);
+    requestAnimationFrame(loop);
+  };
+  loop();
+  applyTfBtn.textContent='🧠 TF Effect';
+  applyTfBtn.disabled=false;
+};
 
-// Generate AI Cover
-aiCoverBtn.addEventListener('click', ()=>{
-  const prompt=aiCoverPrompt.value||'neon dancer, cyberpunk, vertical';
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  aiCoverPreview.innerHTML=`<img src="${url}" style="width:100%;border-radius:12px"/>`;
-});
+// Load feed
+async function loadFeed(){
+  feedWrap.innerHTML='';
+  const { data, error } = await supabase.from('trends').select('*').order('created_at',{ascending:false}).limit(50);
+  if(error){console.log(error); return;}
+  data.forEach(post=>{
+    const card = document.createElement('div'); card.className='post-card';
+    const video = document.createElement('video'); video.src=post.url; video.controls=true; video.loop=true; video.muted=false; video.className='post-media';
+    card.appendChild(video);
+    const info = document.createElement('div'); info.className='post-info';
+    info.innerHTML=`<div class="caption">${post.caption||''}</div>`;
+    card.appendChild(info);
+    feedWrap.appendChild(card);
+  });
+}
 
-// Refresh / Shuffle
-refreshFeed.addEventListener('click', loadFeed);
-shuffleFeedBtn.addEventListener('click', ()=>{window.__shuffleOn=!window.__shuffleOn;toast('Shuffle '+(window.__shuffleOn?'ON':'OFF'));loadFeed();});
+// Initial load
+loadFeed();
 
-// INIT
-(async function init(){await refreshAuth();await loadFeed();})();
 </script>
 </body>
 </html>
