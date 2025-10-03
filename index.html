@@ -8,234 +8,39 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.7.0/dist/tf.min.js"></script>
 <style>
-/* Same styles as before */
-  :root {
-  --bg: #fefefe;
-  --card: #ffffff;
-  --muted: #666666;
-  --accent1: #ff6a00;
-  --accent2: #ff1f71;
-  --glass: rgba(0, 0, 0, 0.05);
-  --shadow: rgba(0,0,0,0.1);
+:root{
+  --bg:#fefefe; --card:#fff; --muted:#666;
+  --accent1:#ff6a00; --accent2:#ff1f71; --glass: rgba(0,0,0,0.05);
 }
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{background:var(--bg);color:#111;min-height:100vh;overflow-x:hidden;}
+header{height:70px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);position:sticky;top:0;z-index:50;}
+header h1{font-size:1.6rem;font-weight:700;}
+header .actions{display:flex;gap:12px;align-items:center;}
+button.btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;padding:10px 16px;border-radius:999px;font-weight:600;cursor:pointer;transition:0.2s;}
+button.btn:hover{opacity:0.85;}
+.app{display:grid;grid-template-columns:1fr;gap:16px;padding:16px;}
+.feed{display:flex;flex-direction:column;gap:20px;max-width:600px;margin:0 auto;}
+.post-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.1);transition:transform 0.2s;}
+.post-card:hover{transform:scale(1.02);}
+.post-media{width:100%;height:400px;object-fit:cover;background:#000;}
+.post-info{padding:12px;}
+.meta{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.05);}
+.username{font-weight:700;}
+.caption{color:var(--muted);}
+.actions-row{display:flex;gap:10px;margin-top:8px;align-items:center;}
+.actions-row button{flex:1;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:80;}
+.modal{background:var(--card);padding:20px;border-radius:12px;width:90%;max-width:480px;}
+input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-bottom:10px;}
+.story-row{display:flex;overflow-x:auto;gap:12px;margin-bottom:12px;padding:8px 0;}
+.story{width:60px;height:60px;border-radius:50%;border:2px solid var(--accent1);flex-shrink:0;cursor:pointer;}
+.story img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+@media(max-width:600px){
+  .post-media{height:300px;}
+  header h1{font-size:1.3rem;}
 }
-
-body {
-  background: var(--bg);
-  color: #111;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-header {
-  height: 70px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  background: #fff;
-  box-shadow: 0 4px 15px var(--shadow);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--accent1);
-}
-
-header .actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-button.btn {
-  background: linear-gradient(90deg, var(--accent1), var(--accent2));
-  color: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button.btn:hover {
-  opacity: 0.85;
-  transform: scale(1.05);
-}
-
-.app {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  padding: 16px;
-}
-
-.feed {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.post-card {
-  background: var(--card);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 20px var(--shadow);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.post-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 12px 28px var(--shadow);
-}
-
-.post-media {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  background: #000;
-}
-
-.post-info {
-  padding: 12px;
-}
-
-.meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
-.avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(0,0,0,0.05);
-}
-
-.username {
-  font-weight: 700;
-}
-
-.caption {
-  color: var(--muted);
-  margin-top: 4px;
-  line-height: 1.4;
-}
-
-.actions-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.actions-row button {
-  flex: 1;
-  padding: 8px 0;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 80;
-}
-
-.modal {
-  background: var(--card);
-  padding: 20px;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 480px;
-  animation: fadeIn 0.3s ease-out;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  margin-bottom: 12px;
-  font-size: 1rem;
-}
-
-input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--accent1);
-  box-shadow: 0 0 10px rgba(255, 106, 0, 0.3);
-}
-
-.story-row {
-  display: flex;
-  overflow-x: auto;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding: 8px 0;
-}
-
-.story {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 2px solid var(--accent1);
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.story img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.story:hover {
-  transform: scale(1.1);
-  border-color: var(--accent2);
-}
-
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(-10px);}
-  to {opacity: 1; transform: translateY(0);}
-}
-
-/* Mobile responsiveness */
-@media (max-width: 600px) {
-  .post-media {
-    height: 250px;
-  }
-
-  header h1 {
-    font-size: 1.4rem;
-  }
-
-  .story {
-    width: 50px;
-    height: 50px;
-  }
-}
-
 </style>
 </head>
 <body>
@@ -257,11 +62,12 @@ input:focus, textarea:focus {
 </div>
 
 <script type="module">
-// ---------- Supabase Setup ----------
+// -------- Supabase setup --------
 const supabaseUrl = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// -------- Global variables --------
 let currentUser = null;
 let postsCache = [];
 
@@ -274,46 +80,47 @@ const modalContainer = document.getElementById('modalContainer');
 function toast(msg){ alert(msg); }
 function showModal(html){ modalContainer.innerHTML = html; modalBackdrop.style.display='flex'; }
 function closeModal(){ modalBackdrop.style.display='none'; modalContainer.innerHTML=''; }
-modalBackdrop.addEventListener('click', e=>{ if(e.target===modalBackdrop) closeModal(); });
+modalBackdrop.addEventListener('click',(e)=>{ if(e.target===modalBackdrop) closeModal(); });
 
-// ---------- Sample stories ----------
+// -------- Sample stories --------
 const stories = [
   {user:"elon",avatar:"https://placehold.co/60x60?text=E"},
   {user:"trending",avatar:"https://placehold.co/60x60?text=T"},
   {user:"sonofjean2",avatar:"https://placehold.co/60x60?text=S"}
 ];
-const storyRow = document.getElementById('storyRow');
-stories.forEach(st => {
-  const div = document.createElement('div'); div.className='story';
-  const img = document.createElement('img'); img.src = st.avatar; div.appendChild(img);
+const storyRow=document.getElementById('storyRow');
+stories.forEach(st=>{
+  const div=document.createElement('div'); div.className='story';
+  const img=document.createElement('img'); img.src=st.avatar; div.appendChild(img);
   storyRow.appendChild(div);
 });
 
-// ---------- Render feed ----------
+// -------- Render feed --------
 function renderFeed(posts){
-  feedWrap.innerHTML = '';
+  feedWrap.innerHTML='';
   posts.forEach(post=>{
-    const card = document.createElement('div'); card.className='post-card';
-    const media = document.createElement('img'); media.src = post.cover || post.media; media.className='post-media'; card.appendChild(media);
-    const info = document.createElement('div'); info.className='post-info';
-    info.innerHTML=`<div class="meta"><img class="avatar" src="${post.avatar}"><div class="username">${post.user}</div></div>
+    const card=document.createElement('div'); card.className='post-card';
+    const media=document.createElement('img'); media.src=post.cover||post.media; media.className='post-media'; card.appendChild(media);
+    const info=document.createElement('div'); info.className='post-info';
+    info.innerHTML=`<div class="meta"><img class="avatar" src="${post.avatar||'https://placehold.co/44x44'}"><div class="username">${post.user}</div></div>
     <div class="caption">${post.caption}</div>`;
     card.appendChild(info);
+
     const actionsRow=document.createElement('div'); actionsRow.className='actions-row';
     const likeBtn=document.createElement('button'); likeBtn.textContent=`❤️ ${post.likes}`; actionsRow.appendChild(likeBtn);
     const deleteBtn=document.createElement('button'); deleteBtn.textContent='🗑️'; actionsRow.appendChild(deleteBtn);
     card.appendChild(actionsRow);
 
-    likeBtn.addEventListener('click', async ()=>{
+    likeBtn.addEventListener('click',async ()=>{
       post.likes++;
-      await supabase.from('posts').update({likes:post.likes}).eq('id',post.id);
+      await supabase.from('trends').update({likes:post.likes}).eq('id',post.id);
       renderFeed(postsCache);
     });
 
-    deleteBtn.addEventListener('click', async ()=>{
+    deleteBtn.addEventListener('click',async ()=>{
       if(!currentUser){ toast("Sign in to delete"); return; }
-      if(currentUser.email!=="sonofjean2@gmail.com" && currentUser.username!==post.user){ toast("Not authorized"); return; }
-      await supabase.from('posts').delete().eq('id',post.id);
+      if(currentUser.email!=="sonofjean2@gmail.com" && currentUser.email!==post.user){ toast("Not authorized"); return; }
+      await supabase.from('trends').delete().eq('id',post.id);
       postsCache=postsCache.filter(p=>p.id!==post.id); renderFeed(postsCache);
     });
 
@@ -321,17 +128,17 @@ function renderFeed(posts){
   });
 }
 
-// ---------- Load posts ----------
+// -------- Load posts from Supabase --------
 async function loadPosts(){
-  const {data,error} = await supabase.from('posts').select('*').order('created_at',{ascending:false});
+  const {data,error}=await supabase.from('trends').select('*').order('created_at',{ascending:false});
   if(error){ toast(error.message); return; }
   postsCache = data;
   renderFeed(postsCache);
 }
 loadPosts();
 
-// ---------- Login / Signup ----------
-loginBtn.addEventListener('click', ()=>{
+// -------- Login / Signup --------
+loginBtn.addEventListener('click',()=>{
   showModal(`
     <h3>Sign In / Sign Up</h3>
     <input id="emailInput" placeholder="Email" type="email">
@@ -344,27 +151,29 @@ loginBtn.addEventListener('click', ()=>{
 
   document.getElementById('loginSubmit').onclick=async ()=>{
     const email=document.getElementById('emailInput').value;
-    const {data, error} = await supabase.auth.signInWithPassword({email,password:'password123'});
+    const username=document.getElementById('usernameInput').value||email.split('@')[0];
+    if(!email){ toast("Enter email"); return; }
+    const {data,error}=await supabase.auth.signInWithPassword({email,password:'password123'});
     if(error){ toast(error.message); return; }
-    const username = document.getElementById('usernameInput').value || email.split('@')[0];
-    currentUser = {email, username};
-    toast(`Signed in as ${username}` + (email==="sonofjean2@gmail.com"?" (Admin)":""));
+    currentUser={email,username};
+    toast("Signed in as "+username+(email==="sonofjean2@gmail.com"?" (Admin)":""));
     closeModal();
   };
 
   document.getElementById('signupSubmit').onclick=async ()=>{
     const email=document.getElementById('emailInput').value;
-    const username = document.getElementById('usernameInput').value || email.split('@')[0];
-    const {data,error} = await supabase.auth.signUp({email,password:'password123'});
+    const username=document.getElementById('usernameInput').value||email.split('@')[0];
+    if(!email){ toast("Enter email"); return; }
+    const {data,error}=await supabase.auth.signUp({email,password:'password123'});
     if(error){ toast(error.message); return; }
-    currentUser = {email, username};
-    toast(`Account created! Signed in as ${username}` + (email==="sonofjean2@gmail.com"?" (Admin)":""));
+    currentUser={email,username};
+    toast("Account created! Signed in as "+username+(email==="sonofjean2@gmail.com"?" (Admin)":""));
     closeModal();
   };
 });
 
-// ---------- Post modal ----------
-postBtn.addEventListener('click', ()=>{
+// -------- Post modal --------
+postBtn.addEventListener('click',()=>{
   if(!currentUser){ toast("Sign in to post"); return; }
   showModal(`
     <h3>New Post</h3>
@@ -373,45 +182,37 @@ postBtn.addEventListener('click', ()=>{
     <button id="aiCoverBtn" class="btn">🎨 Generate AI Cover</button>
     <button id="submitPost" class="btn">Post</button>
   `);
-
   const postFile=document.getElementById('postFile');
   let coverImg="";
 
   document.getElementById('aiCoverBtn').onclick=async ()=>{
-    if(!postFile.files[0]){ toast("Select file first"); return; }
-    // TensorFlow.js placeholder
-    toast("AI filter applied (placeholder)");
-    coverImg="https://placekitten.com/602/400";
+    if(!postFile.files[0]){ toast("Select image/video first"); return; }
+    // -------- TensorFlow.js placeholder --------
+    toast("Applying AI TensorFlow.js style transfer...");
+    coverImg="https://placekitten.com/602/400"; // placeholder
   };
 
   document.getElementById('submitPost').onclick=async ()=>{
     const caption=document.getElementById('postCaption').value;
     const file=postFile.files[0];
-    if(!file){ toast("Select file"); return; }
+    if(!file){ toast("Select a file"); return; }
 
-    const {data:uploadData,error:uploadError} = await supabase.storage.from('posts').upload(`${Date.now()}_${file.name}`, file);
-    if(uploadError){ toast(uploadError.message); return; }
+    // upload to Supabase storage
+    const {data,error}=await supabase.storage.from('posts').upload(`${Date.now()}_${file.name}`,file);
+    if(error){ toast(error.message); return; }
+    const url= supabase.storage.from('posts').getPublicUrl(data.path).publicUrl;
 
-    const url = supabase.storage.from('posts').getPublicUrl(uploadData.path).publicUrl;
-
-    const {data:postData,error:postError} = await supabase.from('posts').insert([{
-      user: currentUser.username,
-      email: currentUser.email,
+    // insert into trends table
+    const {data:postData,error:postError}=await supabase.from('trends').insert([{
+      user:currentUser.username,
+      email:currentUser.email,
       caption,
-      media: url,
-      cover: coverImg,
-      likes: 0
+      media:url,
+      cover:coverImg,
+      likes:0
     }]).select();
+
     if(postError){ toast(postError.message); return; }
-
-    // Extract hashtags for trends
-    const hashtags = caption.match(/#\w+/g);
-    if(hashtags){
-      for(let tag of hashtags){
-        await supabase.from('trends').upsert({tag, count:1}, {onConflict:'tag'});
-      }
-    }
-
     postsCache.unshift(postData[0]);
     renderFeed(postsCache);
     closeModal();
