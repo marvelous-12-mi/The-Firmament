@@ -1,172 +1,198 @@
-// === Import Supabase ===
+// trentime.js
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Replace with your Supabase project credentials
+// --- Supabase Config ---
 const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"; // paste your anon key here
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// === Elements ===
-const menuBtn = document.getElementById("menuBtn");
-const sidePanel = document.getElementById("sidePanel");
+// --- DOM Elements ---
 const authBtn = document.getElementById("authBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const userEmail = document.getElementById("userEmail");
-const feed = document.querySelector(".feed");
+const headerAvatar = document.getElementById("headerAvatar");
 const postBtn = document.getElementById("postBtn");
-const postUrl = document.getElementById("postUrl");
-const postCaption = document.getElementById("postCaption");
-const postSubmit = document.getElementById("postSubmit");
+const authModal = document.getElementById("authModal");
+const postModal = document.getElementById("postModal");
+const closeAuth = document.getElementById("closeAuth");
+const closePost = document.getElementById("closePost");
+const signInBtn = document.getElementById("signInBtn");
+const signUpBtn = document.getElementById("signUpBtn");
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
+const captionInput = document.getElementById("captionInput");
+const youtubeInput = document.getElementById("youtubeInput");
+const imagePrompt = document.getElementById("imagePrompt");
+const generateImageBtn = document.getElementById("generateImageBtn");
+const recordVideoBtn = document.getElementById("recordVideoBtn");
+const postTrendBtn = document.getElementById("postTrendBtn");
+const preview = document.getElementById("preview");
+const feed = document.getElementById("feed");
+const toast = document.getElementById("toast");
 
-// === Menu Panel Toggle ===
-menuBtn.addEventListener("click", () => {
-  sidePanel.classList.toggle("active");
-});
-document.addEventListener("click", (e) => {
-  if (
-    sidePanel.classList.contains("active") &&
-    !sidePanel.contains(e.target) &&
-    e.target !== menuBtn
-  ) {
-    sidePanel.classList.remove("active");
-  }
-});
+let currentUser = null;
+let generatedImage = null;
+let recordedVideoBlob = null;
+let mediaRecorder, recordedBlobs = [];
 
-// === Auth ===
-authBtn.addEventListener("click", async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-  });
-  if (error) console.error("Login error:", error.message);
-});
-
-logoutBtn.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  updateUserUI(null);
-});
-
-// Update UI based on user session
-async function updateUserUI(session) {
-  if (session?.user) {
-    userEmail.textContent = session.user.email;
-    authBtn.style.display = "none";
-    logoutBtn.style.display = "block";
-  } else {
-    userEmail.textContent = "Not logged in";
-    authBtn.style.display = "block";
-    logoutBtn.style.display = "none";
-  }
+// --- Toast Helper ---
+function showToast(msg, color="#111") {
+  toast.innerText = msg;
+  toast.style.background = color;
+  toast.style.display = "block";
+  setTimeout(()=>toast.style.display="none", 3000);
 }
 
-supabase.auth.onAuthStateChange((_event, session) => {
-  updateUserUI(session);
-});
+// --- Modal Toggles ---
+authBtn.onclick = ()=>authModal.style.display="flex";
+closeAuth.onclick = ()=>authModal.style.display="none";
+postBtn.onclick = ()=>postModal.style.display="flex";
+closePost.onclick = ()=>postModal.style.display="none";
 
-// === Feed Loader ===
-async function loadFeed() {
-  const { data, error } = await supabase
-    .from("trends")
-    .select("*")
-    .order("created_at", { ascending: false });
+// --- Auth ---
+signUpBtn.onclick = async ()=>{
+  const { error } = await supabase.auth.signUp({
+    email: emailInput.value,
+    password: passwordInput.value
+  });
+  if(error) return showToast(error.message,"#dc2626");
+  showToast("Signed up! Now sign in.", "#16a34a");
+};
+signInBtn.onclick = async ()=>{
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: emailInput.value,
+    password: passwordInput.value
+  });
+  if(error) return showToast(error.message,"#dc2626");
+  currentUser = data.user;
+  authModal.style.display="none";
+  authBtn.style.display="none";
+  headerAvatar.src = currentUser.user_metadata?.avatar_url || "https://placehold.co/64x64";
+  showToast("Signed in!", "#16a34a");
+};
 
-  if (error) {
-    console.error("Feed load error:", error.message);
-    return;
+// --- AI Image (Pollinations) ---
+generateImageBtn.onclick = ()=>{
+  const prompt = imagePrompt.value.trim();
+  if(!prompt) return showToast("Enter a prompt","#dc2626");
+  generatedImage = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+  preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
+};
+
+// --- TensorFlow Surprise: Caption Suggestion ---
+async function suggestCaption(imageUrl){
+  // Placeholder: in real use, load a TF model and run inference
+  return "🔥 This trend is about to blow up!";
+}
+
+// --- Record Video ---
+recordVideoBtn.onclick = async ()=>{
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    preview.innerHTML = `<video autoplay muted></video>`;
+    const videoEl = preview.querySelector("video");
+    videoEl.srcObject = stream;
+    recordedBlobs=[];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedBlobs.push(e.data); };
+    mediaRecorder.start();
+    setTimeout(()=>mediaRecorder.stop(),5000);
+    mediaRecorder.onstop = ()=>{
+      recordedVideoBlob = new Blob(recordedBlobs,{type:"video/webm"});
+      videoEl.srcObject=null;
+      videoEl.src = URL.createObjectURL(recordedVideoBlob);
+      videoEl.controls=true;
+    };
+  } catch(err){ showToast("Camera/mic access required!","#dc2626"); }
+};
+
+// --- Post Trend ---
+postTrendBtn.onclick = async ()=>{
+  if(!currentUser) return showToast("Sign in first","#dc2626");
+  let caption = captionInput.value.trim();
+  const youtubeLink = youtubeInput.value.trim();
+  let url=null, video_url=null, type="text";
+
+  if(!caption && generatedImage){
+    caption = await suggestCaption(generatedImage);
   }
 
-  feed.innerHTML = "";
-  data.forEach((post) => {
-    const card = document.createElement("div");
-    card.className = "trend-card";
+  if(generatedImage){
+    const resp = await fetch(generatedImage);
+    const blob = await resp.blob();
+    const filePath = `image-${Date.now()}.png`;
+    const { error } = await supabase.storage.from("videos").upload(filePath, blob, {upsert:true});
+    if(error) return showToast(error.message,"#dc2626");
+    url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
+    type="image"; generatedImage=null;
+  }
 
-    let media;
-    if (post.type === "youtube") {
-      media = document.createElement("iframe");
-      media.src = post.url;
-      media.setAttribute("allowfullscreen", true);
-    } else {
-      media = document.createElement("video");
-      media.src = post.url;
-      media.autoplay = true;
-      media.loop = true;
-      media.muted = true;
-    }
-    media.className = "trend-media";
-    card.appendChild(media);
+  if(recordedVideoBlob){
+    const filePath = `video-${Date.now()}.webm`;
+    const { error } = await supabase.storage.from("videos").upload(filePath, recordedVideoBlob, {upsert:true});
+    if(error) return showToast(error.message,"#dc2626");
+    video_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
+    type="video"; recordedVideoBlob=null;
+  }
 
-    const info = document.createElement("div");
-    info.className = "trend-info";
-    info.innerHTML = `<h2>@${post.username || "anon"}</h2><p>${post.caption || ""}</p>`;
+  if(youtubeLink){ type="youtube"; video_url=youtubeLink; }
+
+  const { error } = await supabase.from("trends").insert([{
+    user_id: currentUser.id,
+    caption: caption||null,
+    url,
+    video_url,
+    type,
+    username: currentUser.email.split("@")[0]||"anon",
+    avatar: currentUser.user_metadata?.avatar_url||null,
+    text: caption||null,
+    likes: 0
+  }]);
+  if(error) return showToast("Insert Error: "+error.message,"#dc2626");
+  captionInput.value=""; youtubeInput.value=""; imagePrompt.value=""; preview.innerHTML="";
+  postModal.style.display="none";
+  showToast("Trend posted!","#16a34a");
+  loadFeed();
+};
+
+// --- Like Button Handler ---
+async function likeTrend(id, currentLikes){
+  const { error } = await supabase.from("trends").update({likes: currentLikes+1}).eq("id",id);
+  if(error) return showToast("Like error","#dc2626");
+  loadFeed();
+}
+
+// --- Load Feed ---
+async function loadFeed(){
+  const { data, error } = await supabase.from("trends").select("*").order("created_at",{ascending:false});
+  if(error){ console.error(error); return; }
+  feed.innerHTML="";
+  data.forEach(trend=>{
+    const card=document.createElement("div"); card.className="trend-card";
+    const info=document.createElement("div"); info.className="trend-header";
+    info.innerHTML=`<img src="${trend.avatar||'https://placehold.co/40x40'}"><span class="handle">@${trend.username||'anon'}</span>`;
     card.appendChild(info);
 
-    const actions = document.createElement("div");
-    actions.className = "trend-actions";
-    actions.innerHTML = `
-      <div class="action-btn">❤️</div>
-      <div class="action-btn">💬</div>
-      <div class="action-btn">🔗</div>
-    `;
-    card.appendChild(actions);
+    if(trend.caption){
+      const textDiv=document.createElement("div"); textDiv.className="trend-text"; textDiv.innerText=trend.caption;
+      card.appendChild(textDiv);
+    }
+
+    if(trend.type==="image" && trend.url){
+      card.innerHTML+=`<div class="trend-media"><img src="${trend.url}"></div>`;
+    } else if(trend.type==="video" && trend.video_url){
+      card.innerHTML+=`<div class="trend-media"><video src="${trend.video_url}" controls></video></div>`;
+    } else if(trend.type==="youtube" && trend.video_url){
+      let vid = trend.video_url.replace("watch?v=","embed/");
+      card.innerHTML+=`<div class="trend-media"><iframe src="${vid}" frameborder="0" allowfullscreen style="width:100%;height:300px;"></iframe></div>`;
+    }
+
+    // Like button
+    const likeBtn=document.createElement("button");
+    likeBtn.className="btn";
+    likeBtn.innerText=`❤️ ${trend.likes||0}`;
+    likeBtn.onclick=()=>likeTrend(trend.id, trend.likes||0);
+    card.appendChild(likeBtn);
 
     feed.appendChild(card);
   });
-
-  initVideoObserver();
 }
-
-// === Post Submit ===
-postSubmit.addEventListener("click", async () => {
-  const session = (await supabase.auth.getSession()).data.session;
-  if (!session) {
-    alert("You must be logged in to post!");
-    return;
-  }
-
-  const url = postUrl.value.trim();
-  const caption = postCaption.value.trim();
-  if (!url) {
-    alert("Please enter a video or YouTube URL");
-    return;
-  }
-
-  const type = url.includes("youtube.com") ? "youtube" : "video";
-
-  const { error } = await supabase.from("trends").insert([
-    {
-      url,
-      caption,
-      type,
-      username: session.user.email.split("@")[0],
-    },
-  ]);
-
-  if (error) {
-    console.error("Post error:", error.message);
-  } else {
-    postUrl.value = "";
-    postCaption.value = "";
-    loadFeed();
-  }
-});
-
-// === Video Auto Play ===
-function initVideoObserver() {
-  const videos = document.querySelectorAll(".trend-card video");
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.play().catch(() => {});
-        } else {
-          entry.target.pause();
-        }
-      });
-    },
-    { threshold: 0.6 }
-  );
-  videos.forEach((video) => observer.observe(video));
-}
-
-// === Initialize ===
-handleAuth()
 loadFeed();
