@@ -14,28 +14,20 @@
   --shadow:0 6px 18px rgba(0,0,0,0.15);
   --bg-gradient: linear-gradient(135deg,var(--purple),var(--blue));
 }
-
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:#f0f2f5;color:#333;transition:background 0.3s;}
+body{background:#f0f2f5;color:#333;}
 header{background:var(--bg-gradient);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 header h1{font-size:1.6rem;}
-header button{background:white;color:var(--purple);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;transform:translateY(0);}
-header button:hover{background:var(--blue);color:white;transform:translateY(-2px);}
-
+header button{background:white;color:var(--purple);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;}
+header button:hover{background:var(--blue);color:white;}
 main{max-width:700px;margin:2rem auto;padding:0 1rem;}
-#auth,#composer,#settings{background:var(--card);border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:var(--shadow);transition:transform 0.3s;}
-#auth:hover,#composer:hover,#settings:hover{transform:translateY(-3px);}
-#auth input,#composer input,#composer textarea,#settings input{width:100%;margin:0.5rem 0;padding:0.7rem;border:1px solid #ddd;border-radius:8px;resize:none;transition:0.3s;}
-#auth input:focus,#composer input:focus,#composer textarea:focus,#settings input:focus{border-color:var(--purple);box-shadow:0 0 5px var(--purple);}
-#auth button,#composer button,#settings button{background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;transition:all 0.3s;}
-#auth button:hover,#composer button:hover,#settings button:hover{transform:translateY(-2px);opacity:0.9;}
-.feed .trend{background:var(--card);border-radius:15px;margin-bottom:1.2rem;padding:1rem;box-shadow:var(--shadow);transition:transform 0.3s;}
-.feed .trend:hover{transform:translateY(-5px);}
+#auth,#composer{background:var(--card);border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:var(--shadow);}
+#auth input,#composer input,#composer textarea{width:100%;margin:0.5rem 0;padding:0.7rem;border:1px solid #ddd;border-radius:8px;resize:none;}
+#auth button,#composer button{background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;}
+.feed .trend{background:var(--card);border-radius:15px;margin-bottom:1.2rem;padding:1rem;box-shadow:var(--shadow);}
 .feed .trend img,.feed .trend video{max-width:100%;border-radius:10px;margin-top:0.5rem;}
 .post-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:var(--card);padding:1rem 1.5rem;border-radius:15px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;z-index:500;transition:transform 0.3s ease;}
 .post-popup.show{transform:translate(-50%,-50%) scale(1);}
-.post-popup button{margin-top:0.5rem;transition:transform 0.2s;}
-.post-popup button:hover{transform:translateY(-2px);}
 </style>
 </head>
 <body>
@@ -51,11 +43,10 @@ main{max-width:700px;margin:2rem auto;padding:0 1rem;}
 <main>
   <section id="auth">
     <h2>Sign In / Sign Up</h2>
-    <input type="text" id="username" placeholder="Choose a username (UID)"/>
+    <input type="text" id="username" placeholder="Choose a username"/>
     <input type="email" id="email" placeholder="Email"/>
-    <input type="password" id="password" placeholder="Password"/>
-    <button id="authBtn">Sign In / Sign Up</button>
-    <p style="font-size:0.85rem;color:#666;">Enter your username, email, and password to get started.</p>
+    <button id="authBtn">Send Magic Link</button>
+    <p style="font-size:0.85rem;color:#666;">Enter email to get a login link.</p>
   </section>
 
   <section id="composer" style="display:none;">
@@ -82,68 +73,56 @@ main{max-width:700px;margin:2rem auto;padding:0 1rem;}
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Supabase connection
 const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
 const supabase = createClient(supabaseUrl,supabaseKey);
 
-let currentUser = null;
-let generatedImage = null;
-let recordedVideoBlob = null;
+let currentUser=null, generatedImage=null, recordedVideoBlob=null;
 
 // AUTH
 const authBtn=document.getElementById("authBtn");
 const emailInput=document.getElementById("email");
-const passwordInput=document.getElementById("password");
 const usernameInput=document.getElementById("username");
 const authSection=document.getElementById("auth");
 const composerSection=document.getElementById("composer");
 const signOutBtn=document.getElementById("signOutBtn");
+const postBtn=document.getElementById("postBtn");
 
 authBtn.onclick=async()=>{
   const email=emailInput.value.trim();
-  const password=passwordInput.value.trim();
   const username=usernameInput.value.trim();
-  if(!email||!password||!username){alert("Enter username, email & password"); return;}
-
-  // Try sign in
-  let { data, error } = await supabase.auth.signInWithPassword({email,password});
-  if(error){
-    // Sign up if not exist
-    let { data: signUpData, error: signUpError } = await supabase.auth.signUp({email,password});
-    if(signUpError){alert(signUpError.message); return;}
-    // Insert username into profile table
-    await supabase.from("profiles").insert([{id:signUpData.user.id, username}]);
-    await supabase.auth.signInWithPassword({email,password});
-  }
-
-  const userData = await supabase.auth.getUser();
-  currentUser = userData.data.user;
-  authSection.style.display="none";
-  composerSection.style.display="block";
-  signOutBtn.style.display="inline-block";
-  document.getElementById("postBtn").style.display="inline-block";
-  loadFeed();
+  if(!email||!username){alert("Enter email & username"); return;}
+  const { error } = await supabase.auth.signInWithOtp({email});
+  if(error){alert(error.message); return;}
+  alert("Magic link sent to your email!");
 }
 
-// SIGN OUT
+// Check session
+async function checkSession(){
+  const { data:{ session } } = await supabase.auth.getSession();
+  if(session){
+    currentUser=session.user;
+    authSection.style.display="none";
+    composerSection.style.display="block";
+    signOutBtn.style.display="inline-block";
+    postBtn.style.display="inline-block";
+    loadFeed();
+  }
+}
+checkSession();
+
 signOutBtn.onclick=async()=>{await supabase.auth.signOut(); location.reload();}
 
 // AI IMAGE
-const generateImageBtn=document.getElementById("generateImageBtn");
-const imagePrompt=document.getElementById("imagePrompt");
-const preview=document.getElementById("preview");
-generateImageBtn.onclick=()=>{
-  const prompt=imagePrompt.value.trim();
+document.getElementById("generateImageBtn").onclick=()=>{
+  const prompt=document.getElementById("imagePrompt").value.trim();
   if(!prompt){alert("Enter prompt!"); return;}
   generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  preview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;"/>`;
+  document.getElementById("preview").innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;"/>`;
 }
 
-// AI Caption
-document.getElementById("suggestCaptionBtn").onclick=()=>{
-  document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!";
-}
+// AI CAPTION
+document.getElementById("suggestCaptionBtn").onclick=()=>{document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!";}
 
 // RECORD VIDEO
 document.getElementById("recordVideoBtn").onclick=async()=>{
@@ -151,13 +130,12 @@ document.getElementById("recordVideoBtn").onclick=async()=>{
   const recorder=new MediaRecorder(stream);
   let chunks=[];
   recorder.ondataavailable=e=>chunks.push(e.data);
-  recorder.onstop=()=>{recordedVideoBlob=new Blob(chunks,{type:"video/webm"}); preview.innerHTML=`<video controls src="${URL.createObjectURL(recordedVideoBlob)}"></video>`;}
+  recorder.onstop=()=>{recordedVideoBlob=new Blob(chunks,{type:"video/webm"}); document.getElementById("preview").innerHTML=`<video controls src="${URL.createObjectURL(recordedVideoBlob)}"></video>`;}
   recorder.start();
   setTimeout(()=>recorder.stop(),5000);
 }
 
-// POST POPUP
-const postBtn=document.getElementById("postBtn");
+// POST
 const postPopup=document.getElementById("postPopup");
 const popupInfo=document.getElementById("popupInfo");
 const confirmPostBtn=document.getElementById("confirmPostBtn");
@@ -171,7 +149,6 @@ postBtn.onclick=()=>{
   popupInfo.textContent=info;
   postPopup.classList.add("show");
 }
-
 function closePopup(){postPopup.classList.remove("show");}
 
 confirmPostBtn.onclick=async()=>{
@@ -200,7 +177,7 @@ confirmPostBtn.onclick=async()=>{
   const { error }=await supabase.from("trends").insert([{user_id:currentUser.id,caption,url,type}]);
   if(error){alert(error.message); return;}
   document.getElementById("captionInput").value="";
-  preview.innerHTML="";
+  document.getElementById("preview").innerHTML="";
   loadFeed();
 }
 
