@@ -7,223 +7,213 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --purple:#7b5fff;
-  --blue:#42d4ff;
-  --white:#fff;
-  --card:#fefefe;
-  --shadow:0 6px 18px rgba(0,0,0,0.15);
-  --bg-gradient: linear-gradient(135deg,var(--purple),var(--blue));
+  --primary:#1e90ff;
+  --secondary:#ff1493;
+  --dark:#0f0f0f;
+  --card:#1a1a1a;
+  --accent:#00ffea;
+  --light:#fff;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:#f0f2f5;color:#333;}
-header{background:var(--bg-gradient);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-header h1{font-size:1.6rem;}
-header button{background:white;color:var(--purple);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;margin-left:0.5rem;}
-header button:hover{background:var(--blue);color:white;}
-main{max-width:700px;margin:2rem auto;padding:0 1rem;}
-#auth,#composer{background:var(--card);border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:var(--shadow);}
-#auth input,#composer input,#composer textarea{width:100%;margin:0.5rem 0;padding:0.7rem;border:1px solid #ddd;border-radius:8px;resize:none;}
-#auth button,#composer button{background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;}
-.feed .trend{background:var(--card);border-radius:15px;margin-bottom:1.2rem;padding:1rem;box-shadow:var(--shadow);}
-.feed .trend img,.feed .trend video{max-width:100%;border-radius:10px;margin-top:0.5rem;}
-.post-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:var(--card);padding:1rem 1.5rem;border-radius:15px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;z-index:500;transition:transform 0.3s ease;}
-.post-popup.show{transform:translate(-50%,-50%) scale(1);}
+body{background:var(--dark);color:white;overflow-x:hidden;}
+header{position:sticky;top:0;width:100%;z-index:100;background:linear-gradient(90deg,var(--primary),var(--secondary));display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
+header h1{font-size:1.6rem;font-weight:700;letter-spacing:1px;text-shadow:0 0 10px rgba(0,0,0,0.5);}
+header button{background:white;color:var(--dark);border:none;padding:0.5rem 1rem;border-radius:999px;cursor:pointer;font-weight:bold;transition:0.3s;}
+header button:hover{background:var(--secondary);color:white;}
+
+/* Side Panel */
+.side-panel{position:fixed;top:0;left:-400px;width:380px;height:100vh;background:var(--card);box-shadow:5px 0 25px rgba(0,0,0,0.6);transition:left 0.3s ease;padding:2rem;z-index:200;overflow-y:auto;}
+.side-panel.active{left:0;}
+.side-panel h2,h3{margin-bottom:1rem;color:var(--accent);}
+.side-panel input,.side-panel select,.side-panel button{margin:0.5rem 0;padding:0.7rem;width:100%;border-radius:10px;border:none;background:#222;color:white;}
+.side-panel input::placeholder{color:#aaa;}
+.side-panel button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
+.side-panel button:hover{opacity:0.9;}
+
+/* Sections */
+.settings-section{margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.2);}
+.settings-section h3{margin-bottom:0.7rem;color:var(--accent);}
+.settings-section video{width:100%;border-radius:10px;margin-bottom:0.5rem;}
+
+/* Feed */
+.feed{display:flex;flex-direction:column;gap:2rem;padding:1rem;max-width:900px;margin:auto;}
+.trend-card{background:var(--card);border-radius:1.5rem;overflow:hidden;position:relative;box-shadow:0 0 25px rgba(30,144,255,0.2);transition:0.3s;}
+.trend-card:hover{transform:scale(1.01);}
+.trend-card video,.trend-card img{width:100%;height:60vh;object-fit:cover;border-radius:1.5rem;}
+.trend-info{margin-top:0.5rem;padding:0 1rem;}
+.trend-info h2{font-size:1.3rem;margin-bottom:0.3rem;color:var(--primary);}
+.trend-info p{font-size:1rem;color:#ccc;margin-bottom:0.5rem;}
+.trend-actions{display:flex;gap:1rem;padding:0 1rem;margin-bottom:0.5rem;}
+.action-btn{background:linear-gradient(145deg,var(--primary),var(--secondary));width:45px;height:45px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.2rem;cursor:pointer;box-shadow:0 0 15px rgba(30,144,255,0.8);transition:transform 0.2s;}
+.action-btn:hover{transform:scale(1.1);}
+
+/* Post button */
+.post-btn{position:fixed;bottom:2rem;right:2rem;background:linear-gradient(145deg,var(--secondary),var(--primary));color:white;font-size:1.6rem;width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;box-shadow:0 0 25px rgba(255,30,100,0.9);cursor:pointer;transition:all 0.3s ease;z-index:200;animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 15px rgba(30,144,255,0.6);}50%{box-shadow:0 0 35px rgba(255,30,100,1);}100%{box-shadow:0 0 15px rgba(30,144,255,0.6);}}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>TrendTime AI 🔥</h1>
-  <div>
-    <button id="postBtn" style="display:none;">Post</button>
-    <button id="signOutBtn" style="display:none;">Sign Out</button>
-  </div>
+  <button id="menuBtn">☰</button>
+  <h1>🔥 TrendTime AI</h1>
+  <button id="authBtn">Login</button>
 </header>
 
-<main>
-  <section id="auth">
-    <h2>Sign In / Sign Up</h2>
-    <input type="text" id="username" placeholder="Choose a username"/>
-    <input type="email" id="email" placeholder="Email"/>
-    <input type="password" id="password" placeholder="Password (optional for magic link)"/>
-    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-      <button id="authBtn">Sign In / Up</button>
-      <button id="magicLinkBtn">Send Magic Link</button>
+<div class="side-panel" id="sidePanel">
+  <h2>Welcome</h2>
+  <p id="userEmail">Not logged in</p>
+  <input type="text" id="username" placeholder="Username"/>
+  <input type="email" id="email" placeholder="Email"/>
+  <input type="password" id="password" placeholder="Password (optional)"/>
+  <button id="magicLinkBtn">Send Magic Link</button>
+  <button id="signUpBtn">Sign Up / Login</button>
+
+  <div class="settings-section">
+    <h3>Record & Post a Trend</h3>
+    <video id="preview" autoplay muted></video>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+      <button id="recordBtn">Start Recording</button>
+      <button id="stopBtn">Stop & Upload</button>
     </div>
-    <p style="font-size:0.85rem;color:#666;">Password optional: leave blank for magic link login.</p>
-  </section>
+    <input id="postCaption" type="text" placeholder="Caption">
+  </div>
 
-  <section id="composer" style="display:none;">
-    <textarea id="captionInput" placeholder="What's trending?"></textarea>
-    <input type="text" id="imagePrompt" placeholder="AI Image Prompt..."/>
-    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
-      <button id="generateImageBtn">🎨 Generate Image</button>
-      <button id="recordVideoBtn">🎥 Record 5s Video</button>
-      <button id="suggestCaptionBtn">✨ AI Caption</button>
-    </div>
-    <div id="preview" style="margin-top:1rem;"></div>
-  </section>
-
-  <section class="feed" id="feed"></section>
-</main>
-
-<div class="post-popup" id="postPopup">
-  <h3>Confirm Post</h3>
-  <p id="popupInfo"></p>
-  <button id="confirmPostBtn">Post Now</button>
-  <button onclick="closePopup()">Cancel</button>
+  <div class="settings-section">
+    <h3>AI Tools</h3>
+    <input type="text" id="aiPrompt" placeholder="Prompt for AI Image">
+    <button id="aiImageBtn">Generate AI Image</button>
+    <button id="aiCaptionBtn">Generate Caption</button>
+  </div>
 </div>
+
+<main class="feed"></main>
+<div class="post-btn" id="postBtn">➕</div>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
-const supabase = createClient(supabaseUrl,supabaseKey);
+const supabase=createClient(supabaseUrl,supabaseKey);
 
-let currentUser=null, generatedImage=null, recordedVideoBlob=null;
-
-// AUTH ELEMENTS
+const menuBtn=document.getElementById("menuBtn");
+const sidePanel=document.getElementById("sidePanel");
 const authBtn=document.getElementById("authBtn");
 const magicLinkBtn=document.getElementById("magicLinkBtn");
-const emailInput=document.getElementById("email");
-const usernameInput=document.getElementById("username");
-const passwordInput=document.getElementById("password");
-const authSection=document.getElementById("auth");
-const composerSection=document.getElementById("composer");
-const signOutBtn=document.getElementById("signOutBtn");
+const signUpBtn=document.getElementById("signUpBtn");
+const logoutBtn=document.getElementById("logoutBtn");
+const userEmail=document.getElementById("userEmail");
 const postBtn=document.getElementById("postBtn");
 
-// Password login/signup
-authBtn.onclick=async()=>{
-  const email=emailInput.value.trim();
-  const password=passwordInput.value.trim();
-  const username=usernameInput.value.trim();
+const recordBtn=document.getElementById("recordBtn");
+const stopBtn=document.getElementById("stopBtn");
+const preview=document.getElementById("preview");
+const postCaption=document.getElementById("postCaption");
+
+const aiImageBtn=document.getElementById("aiImageBtn");
+const aiCaptionBtn=document.getElementById("aiCaptionBtn");
+const aiPrompt=document.getElementById("aiPrompt");
+
+const feed=document.querySelector(".feed");
+
+let mediaRecorder, recordedBlobs=[];
+let currentUser=null;
+
+// Menu toggle
+menuBtn.addEventListener("click",()=>{sidePanel.classList.toggle("active");});
+document.addEventListener("click",e=>{if(sidePanel.classList.contains("active")&&!sidePanel.contains(e.target)&&e.target!==menuBtn){sidePanel.classList.remove("active");}});
+
+// Magic link
+magicLinkBtn.onclick=async()=>{
+  const email=document.getElementById("email").value.trim();
+  const username=document.getElementById("username").value.trim();
   if(!email || !username){alert("Enter email & username"); return;}
-  let { data,error } = await supabase.auth.signInWithPassword({email,password});
+  const { error }=await supabase.auth.signInWithOtp({email, options:{data:{username}}});
+  if(error) alert(error.message);
+  else alert("Magic link sent!");
+}
+
+// Signup/Login
+signUpBtn.onclick=async()=>{
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value.trim();
+  const username=document.getElementById("username").value.trim();
+  if(!email || !username){alert("Enter email & username"); return;}
+  let { data, error }=await supabase.auth.signInWithPassword({email,password});
   if(error){
-    // Try signup
-    let { error: signUpError } = await supabase.auth.signUp({email,password,options:{data:{username}}});
+    let { error: signUpError }=await supabase.auth.signUp({email,password,options:{data:{username}}});
     if(signUpError){alert(signUpError.message); return;}
     await supabase.auth.signInWithPassword({email,password});
   }
   currentUser=(await supabase.auth.getUser()).data.user;
-  authSection.style.display="none";
-  composerSection.style.display="block";
-  signOutBtn.style.display="inline-block";
-  postBtn.style.display="inline-block";
+  userEmail.textContent=currentUser.user_metadata.username||currentUser.email;
+  authBtn.style.display="none";
+  postBtn.style.display="flex";
   loadFeed();
 }
 
-// Magic Link login
-magicLinkBtn.onclick=async()=>{
-  const email=emailInput.value.trim();
-  const username=usernameInput.value.trim();
-  if(!email || !username){alert("Enter email & username"); return;}
-  const { error } = await supabase.auth.signInWithOtp({email,options:{data:{username}}});
-  if(error){alert(error.message); return;}
-  alert("Magic link sent to your email!");
-}
-
-// Check session
-async function checkSession(){
-  const { data:{ session } } = await supabase.auth.getSession();
-  if(session){
-    currentUser=session.user;
-    authSection.style.display="none";
-    composerSection.style.display="block";
-    signOutBtn.style.display="inline-block";
-    postBtn.style.display="inline-block";
-    loadFeed();
-  }
-}
-checkSession();
-
-signOutBtn.onclick=async()=>{await supabase.auth.signOut(); location.reload();}
-
-// AI IMAGE
-document.getElementById("generateImageBtn").onclick=()=>{
-  const prompt=document.getElementById("imagePrompt").value.trim();
-  if(!prompt){alert("Enter prompt!"); return;}
-  generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  document.getElementById("preview").innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;"/>`;
-}
-
-// AI CAPTION
-document.getElementById("suggestCaptionBtn").onclick=()=>{document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!";}
-
-// RECORD VIDEO
-document.getElementById("recordVideoBtn").onclick=async()=>{
+// Recording
+recordBtn.onclick=async()=>{
   const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  const recorder=new MediaRecorder(stream);
-  let chunks=[];
-  recorder.ondataavailable=e=>chunks.push(e.data);
-  recorder.onstop=()=>{recordedVideoBlob=new Blob(chunks,{type:"video/webm"}); document.getElementById("preview").innerHTML=`<video controls src="${URL.createObjectURL(recordedVideoBlob)}"></video>`;}
-  recorder.start();
-  setTimeout(()=>recorder.stop(),5000);
+  preview.srcObject=stream;
+  recordedBlobs=[];
+  mediaRecorder=new MediaRecorder(stream);
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0) recordedBlobs.push(e.data);}
+  mediaRecorder.start();
+  alert("Recording started!");
 }
 
-// POST POPUP
-const postPopup=document.getElementById("postPopup");
-const popupInfo=document.getElementById("popupInfo");
-const confirmPostBtn=document.getElementById("confirmPostBtn");
-
-postBtn.onclick=()=>{
-  const caption=document.getElementById("captionInput").value.trim();
-  if(!caption && !generatedImage && !recordedVideoBlob){alert("Add caption or media!"); return;}
-  let info="Caption: "+caption;
-  if(generatedImage) info+="\nIncludes Image";
-  if(recordedVideoBlob) info+="\nIncludes Video";
-  popupInfo.textContent=info;
-  postPopup.classList.add("show");
-}
-function closePopup(){postPopup.classList.remove("show");}
-
-confirmPostBtn.onclick=async()=>{
-  postPopup.classList.remove("show");
-  const caption=document.getElementById("captionInput").value.trim();
-  let url=null,type="text";
-
-  if(generatedImage){
-    const resp=await fetch(generatedImage);
-    const blob=await resp.blob();
-    const filePath=`image-${Date.now()}.png`;
-    let { error } = await supabase.storage.from("trend-media").upload(filePath,blob,{upsert:true});
-    if(error){alert(error.message); return;}
-    url=supabase.storage.from("trend-media").getPublicUrl(filePath).data.publicUrl;
-    type="image"; generatedImage=null;
-  }
-
-  if(recordedVideoBlob){
-    const filePath=`video-${Date.now()}.webm`;
-    let { error } = await supabase.storage.from("trend-media").upload(filePath,recordedVideoBlob,{upsert:true});
-    if(error){alert(error.message); return;}
-    url=supabase.storage.from("trend-media").getPublicUrl(filePath).data.publicUrl;
-    type="video"; recordedVideoBlob=null;
-  }
-
-  const { error }=await supabase.from("trends").insert([{user_id:currentUser.id,caption,url,type}]);
+stopBtn.onclick=async()=>{
+  mediaRecorder.stop();
+  const blob=new Blob(recordedBlobs,{type:"video/webm"});
+  const file=new File([blob],`trend_${Date.now()}.webm`,{type:"video/webm"});
+  if(!currentUser){alert("Login first"); return;}
+  const { error }=await supabase.storage.from("trend-media").upload(file.name,file,{upsert:true});
   if(error){alert(error.message); return;}
-  document.getElementById("captionInput").value="";
-  document.getElementById("preview").innerHTML="";
+  const url=supabase.storage.from("trend-media").getPublicUrl(file.name).data.publicUrl;
+  await supabase.from("trends").insert([{url,caption:postCaption.value||"",type:"video",username:currentUser.user_metadata.username}]);
+  alert("Trend posted!");
+  postCaption.value="";
+  preview.srcObject=null;
   loadFeed();
 }
 
-// LOAD FEED
+// AI Image
+aiImageBtn.onclick=()=>{
+  const prompt=aiPrompt.value.trim();
+  if(!prompt){alert("Enter prompt"); return;}
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+  window.open(url,"_blank");
+}
+
+// AI Caption
+aiCaptionBtn.onclick=()=>{
+  postCaption.value="🔥 AI suggested caption!";
+}
+
+// Load Feed
 async function loadFeed(){
-  const { data,error } = await supabase.from("trends").select("*").order("id",{ascending:false});
+  const { data,error }=await supabase.from("trends").select("*").order("created_at",{ascending:false});
   if(error){console.error(error); return;}
-  const feed=document.getElementById("feed");
   feed.innerHTML="";
-  data.forEach(trend=>{
-    const div=document.createElement("div");
-    div.className="trend";
-    div.innerHTML=`<strong>${trend.user_id}</strong><p>${trend.caption||""}</p>
-      ${trend.type==="image"?`<img src="${trend.url}"/>`:''}
-      ${trend.type==="video"?`<video controls src="${trend.url}"></video>`:''}`;
-    feed.appendChild(div);
+  data.forEach(post=>{
+    const card=document.createElement("div");
+    card.className="trend-card";
+    if(post.type==="video") card.innerHTML=`<video src="${post.url}" autoplay muted loop></video>`;
+    if(post.type==="image") card.innerHTML=`<img src="${post.url}"/>`;
+    const info=document.createElement("div");
+    info.className="trend-info";
+    info.innerHTML=`<h2>@${post.username||"anon"}</h2><p>${post.caption||""}</p>`;
+    const actions=document.createElement("div");
+    actions.className="trend-actions";
+    actions.innerHTML=`<div class="action-btn">❤️</div><div class="action-btn">💬</div>`;
+    card.appendChild(info);
+    card.appendChild(actions);
+    feed.appendChild(card);
   });
 }
+
 </script>
 </body>
 </html>
