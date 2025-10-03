@@ -7,13 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --primary:#ff4d8d;
-  --secondary:#ff914d;
-  --dark:#1a1a1a;
-  --card:#222;
+  --primary:#6a0dad;
+  --secondary:#ff6a00;
+  --dark:#121212;
+  --card:#1f1f1f;
   --accent:#00ffea;
   --light:#fff;
-  --shadow-glow:0 0 20px rgba(255,77,141,0.4);
+  --shadow-glow:0 0 20px rgba(106,13,173,0.4);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:var(--dark);color:white;overflow-x:hidden;}
@@ -23,13 +23,21 @@ header button{background:white;color:var(--dark);border:none;padding:0.5rem 1rem
 header button:hover{background:var(--secondary);color:white;transform:scale(1.05);transition:0.3s;}
 
 /* Modal */
-.modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);display:none;justify-content:center;align-items:center;z-index:500;animation:fadeIn 0.4s;}
-.modal{background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:400px;box-shadow:var(--shadow-glow);position:relative;animation:slideUp 0.4s;}
+.modal-bg{
+  position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);
+  display:none;justify-content:center;align-items:center;z-index:500;
+  overflow-y:auto;animation:fadeIn 0.4s;
+}
+.modal{
+  background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:450px;
+  box-shadow:var(--shadow-glow);position:relative;animation:slideUp 0.4s;max-height:90vh;
+  overflow-y:auto;
+}
 @keyframes slideUp{0%{transform:translateY(50px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
 @keyframes fadeIn{0%{opacity:0;}100%{opacity:1;}}
 .modal h2{color:var(--accent);margin-bottom:1rem;text-align:center;}
-.modal input, .modal textarea, .modal button{width:100%;margin:0.5rem 0;padding:0.8rem;border-radius:10px;border:none;background:#222;color:white;}
-.modal input::placeholder, .modal textarea::placeholder{color:#aaa;}
+.modal input,.modal textarea,.modal button{width:100%;margin:0.5rem 0;padding:0.8rem;border-radius:10px;border:none;background:#222;color:white;}
+.modal input::placeholder,.modal textarea::placeholder{color:#aaa;}
 .modal button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;box-shadow:0 0 10px rgba(255,30,100,0.6);}
 .modal button:hover{opacity:0.9;transform:scale(1.03);}
 .modal .close-btn{position:absolute;top:10px;right:10px;background:red;color:white;width:30px;height:30px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;}
@@ -66,9 +74,10 @@ header button:hover{background:var(--secondary);color:white;transform:scale(1.05
   <div class="modal">
     <div class="close-btn" id="closeLogin">×</div>
     <h2>Login / Signup</h2>
-    <input type="email" id="loginEmail" placeholder="Your Email"/>
-    <button id="magicLinkBtn">Send Magic Link</button>
-    <p style="font-size:0.85rem;color:#aaa;margin-top:0.5rem;text-align:center;">You will receive a magic link via email</p>
+    <input type="email" id="loginEmail" placeholder="Email"/>
+    <input type="password" id="loginPassword" placeholder="Password"/>
+    <button id="loginSubmitBtn">Sign In / Sign Up</button>
+    <p style="font-size:0.85rem;color:#aaa;margin-top:0.5rem;text-align:center;">We will send a magic link or log you in</p>
   </div>
 </div>
 
@@ -98,8 +107,9 @@ const supabase=createClient(supabaseUrl,supabaseKey);
 const loginBtn=document.getElementById("loginBtn");
 const loginModal=document.getElementById("loginModal");
 const closeLogin=document.getElementById("closeLogin");
-const magicLinkBtn=document.getElementById("magicLinkBtn");
 const loginEmail=document.getElementById("loginEmail");
+const loginPassword=document.getElementById("loginPassword");
+const loginSubmitBtn=document.getElementById("loginSubmitBtn");
 
 const openPostBtn=document.getElementById("openPostBtn");
 const postModal=document.getElementById("postModal");
@@ -133,12 +143,21 @@ supabase.auth.onAuthStateChange((_event, session) => {
   }
 });
 
-// Send Magic Link
-magicLinkBtn.onclick=async()=>{
+// Magic Link / Password Login
+loginSubmitBtn.onclick=async()=>{
   const email=loginEmail.value.trim();
+  const password=loginPassword.value.trim();
   if(!email){alert("Enter email"); return;}
-  const { error } = await supabase.auth.signInWithOtp({email});
-  if(error){alert(error.message);} else{alert("Check your email for the magic link");}
+  try{
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({email,password});
+    if(signInError && signInError.status===400){
+      // User doesn’t exist, sign up and send magic link
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({email,password});
+      if(signUpError){alert(signUpError.message); return;}
+      await supabase.auth.sendMagicLinkEmail(email);
+      alert("Magic link sent to your email!"); 
+    }else if(signInError){alert(signInError.message); return;}
+  }catch(e){console.error(e);}
 }
 
 // AI image generation
