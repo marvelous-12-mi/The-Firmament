@@ -1,481 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TrendTime — AI Social</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrendTime AI 🔥</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --pink:#ff4d8d;
-    --orange:#ff914d;
-    --white:#ffffff;
-    --bg-white:#fafafa;
-    --card:#ffffff;
-    --muted:#7a7a7a;
-    --text:#111;
-  }
-  *{box-sizing:border-box;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  body{margin:0;background:var(--bg-white);color:var(--text);-webkit-font-smoothing:antialiased}
-  header{
-    height:72px;display:flex;align-items:center;justify-content:space-between;
-    padding:0 20px;background:linear-gradient(135deg,var(--pink),var(--orange));
-    color:var(--white);position:sticky;top:0;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,0.08)
-  }
-  header h1{font-size:1.25rem;margin:0}
-  .nav-actions{display:flex;gap:10px;align-items:center}
-  button.btn{background:var(--white);color:var(--pink);border:none;padding:8px 12px;border-radius:20px;font-weight:700;cursor:pointer}
-  button.primary{background:linear-gradient(90deg,var(--pink),var(--orange));color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
-  main{max-width:980px;margin:20px auto;padding:16px;display:grid;grid-template-columns:1fr;gap:18px}
-  @media(min-width:1000px){ main{grid-template-columns: 1fr 340px} }
+:root {
+  --pink:#ff4d8d;
+  --orange:#ff914d;
+  --white:#fff;
+  --bg-gradient: linear-gradient(135deg,var(--pink),var(--orange));
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#fff;color:#333;}
+header{background:var(--bg-gradient);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 15px rgba(0,0,0,0.2);}
+header h1{font-size:1.6rem;}
+header button{background:white;color:var(--pink);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;}
+header button:hover{background:var(--orange);color:white;}
 
-  /* Composer / feed */
-  .composer{
-    background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.06)
-  }
-  .row{display:flex;gap:10px;align-items:center}
-  textarea,input[type="text"],input[type="email"],input[type="password"]{
-    width:100%;padding:10px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;font-size:15px;color:var(--text)
-  }
-  .small{font-size:13px;color:var(--muted)}
+main{max-width:700px;margin:2rem auto;padding:0 1rem;}
+#auth,#composer{background:white;border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+#auth input,#composer input,#composer textarea{width:100%;margin:0.5rem 0;padding:0.7rem;border:1px solid #ddd;border-radius:8px;resize:none;}
+#auth button,#composer button{background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;}
+#auth button:hover,#composer button:hover{opacity:0.9;}
 
-  /* feed */
-  .feed{display:flex;flex-direction:column;gap:16px}
-  .post{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 8px 20px rgba(0,0,0,0.06)}
-  .post .meta{display:flex;align-items:center;gap:10px}
-  .avatar{width:44px;height:44px;border-radius:50%;background:#eee;display:inline-block;flex-shrink:0}
-  .username{font-weight:700}
-  .caption{color:var(--muted);margin-top:8px}
-  .media{margin-top:10px;border-radius:10px;overflow:hidden}
-  .media img,.media video{width:100%;height:auto;display:block}
-
-  /* right column (ai tools / settings) */
-  .panel{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-  .panel h3{margin:0 0 8px 0}
-  .ai-preview img{width:100%;border-radius:10px;margin-top:8px}
-
-  /* modal-like area */
-  .toast{position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:10px 14px;border-radius:8px;opacity:0.95;z-index:400}
-
-  /* mobile */
-  @media(max-width:999px){
-    main{padding:12px}
-    .panel{order:2}
-  }
+.feed .trend{background:white;border-radius:15px;margin-bottom:1.2rem;padding:1rem;box-shadow:0 3px 8px rgba(0,0,0,0.08);}
+.feed .trend img,.feed .trend video{max-width:100%;border-radius:10px;margin-top:0.5rem;}
 </style>
 </head>
 <body>
-
 <header>
-  <h1>TrendTime</h1>
-  <div class="nav-actions">
-    <button id="magicBtn" class="btn">Send Sign-In Code</button>
-    <button id="signInBtn" class="btn">Sign In (PW)</button>
-    <button id="signUpBtn" class="btn">Sign Up</button>
-    <button id="signOutBtn" class="btn" style="display:none">Sign Out</button>
-  </div>
+  <h1>TrendTime AI 🔥</h1>
+  <button id="signOutBtn" style="display:none;">Sign Out</button>
 </header>
 
 <main>
-  <!-- left: feed & composer -->
-  <div>
-    <section class="composer" id="composerBox">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div class="small">Signed in as</div>
-          <div id="userLabel" style="font-weight:700">Not signed in</div>
-        </div>
-        <div style="text-align:right">
-          <div class="small">Admin</div>
-          <div id="adminBadge" class="small" style="color:gold;display:none;font-weight:800">👑</div>
-        </div>
-      </div>
+  <section id="auth">
+    <h2>Sign In / Sign Up</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="authBtn">Sign In / Up</button>
+  </section>
 
-      <hr style="margin:12px 0;border:none;border-top:1px solid #f0f0f0">
-      <textarea id="caption" rows="3" placeholder="What's happening? (caption)"></textarea>
+  <section id="composer" style="display:none;">
+    <textarea id="captionInput" placeholder="What's trending?"></textarea>
+    <input type="text" id="imagePrompt" placeholder="AI Image Prompt...">
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+      <button id="generateImageBtn">🎨 Generate Image</button>
+      <button id="recordVideoBtn">🎥 Record 5s Video</button>
+      <button id="suggestCaptionBtn">✨ AI Caption</button>
+      <button id="postTrendBtn">Post</button>
+    </div>
+    <div id="preview" style="margin-top:1rem;"></div>
+  </section>
 
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="imageFile" type="file" accept="image/*" />
-        <input id="videoFile" type="file" accept="video/*" />
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <input id="aiPrompt" type="text" placeholder="AI image prompt (e.g. neon dancer, cyberpunk)"/>
-        <button id="genImageBtn" class="primary">Generate Image</button>
-        <button id="useGenBtn" class="btn" style="display:none">Use Generated</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button id="recordBtn" class="btn">🎥 Record 5s</button>
-        <button id="stopRecordBtn" class="btn" disabled>⏹ Stop</button>
-        <button id="postBtn" class="primary" style="margin-left:auto">Post</button>
-      </div>
-
-      <div id="previewArea" style="margin-top:12px"></div>
-    </section>
-
-    <section class="feed" id="feed"></section>
-  </div>
-
-  <!-- right: AI tools & settings -->
-  <aside class="panel" style="min-width:260px">
-    <h3>AI Image (Pollinations)</h3>
-    <div class="small">Type a prompt and press Generate. Click "Use Generated" to attach it to post.</div>
-    <div class="ai-preview" id="aiPreview"></div>
-
-    <hr style="margin:12px 0;border:none;border-top:1px solid #f0f0f0">
-
-    <h3>Quick AI Caption</h3>
-    <div class="small">Generate a short caption suggestion for your post.</div>
-    <button id="aiCaptionBtn" class="btn" style="margin-top:8px">✨ Suggest Caption</button>
-
-    <hr style="margin:12px 0;border:none;border-top:1px solid #f0f0f0">
-
-    <h3>Settings</h3>
-    <div class="small">Upload avatar (optional)</div>
-    <input id="avatarUpload" type="file" accept="image/*" />
-    <button id="avatarBtn" class="btn" style="margin-top:8px">Upload Avatar</button>
-  </aside>
+  <section class="feed" id="feed"></section>
 </main>
 
-<div id="toast" style="display:none" class="toast"></div>
-
-<!-- Supabase SDK (ESM) -->
 <script type="module">
-/* ------------------------------------------------------------------
-  Full TrendTime single-file frontend:
-  - Replace nothing: uses the Supabase project & anon key you provided earlier.
-  - Posting strategy: if your `trends` table only has `url` text, we will store a JSON string in `url`.
-    When loading the feed we parse that and render media + caption properly.
-  - Bucket name: "trend-media" (public). If your bucket name differs, change BUCKET const.
-------------------------------------------------------------------- */
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-// ---------- CONFIG: your project (already provided earlier) ----------
-const SUPABASE_URL = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
-const BUCKET = 'trend-media'; // ensure this bucket exists and is public (or adjust per your setup)
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ---------- DOM ----------
-const signInBtn = document.getElementById('signInBtn');
-const signUpBtn = document.getElementById('signUpBtn');
-const signOutBtn = document.getElementById('signOutBtn');
-const magicBtn = document.getElementById('magicBtn');
-
-const emailEl = document.getElementById('email');
-const pwdEl = document.getElementById('password');
-
-const postBtn = document.getElementById('postBtn');
-const captionEl = document.getElementById('caption');
-const imageFileEl = document.getElementById('imageFile');
-const videoFileEl = document.getElementById('videoFile');
-
-const feedEl = document.getElementById('feed');
-const previewArea = document.getElementById('previewArea');
-
-const genBtn = document.getElementById('genImageBtn');
-const aiPreview = document.getElementById('aiPreview');
-const useGenBtn = document.getElementById('useGenBtn');
-const aiPrompt = document.getElementById('aiPrompt');
-
-const aiCaptionBtn = document.getElementById('aiCaptionBtn');
-
-const avatarUpload = document.getElementById('avatarUpload');
-const avatarBtn = document.getElementById('avatarBtn');
-
-const userLabel = document.getElementById('userLabel');
-const adminBadge = document.getElementById('adminBadge');
-
-const toastEl = document.getElementById('toast');
+const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
+const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
+const supabase = createClient(supabaseUrl,supabaseKey);
 
 let currentUser = null;
-let generatedImageUrl = null;
-let recordedBlob = null;
-let mediaRecorder = null;
-let cameraStream = null;
+let generatedImage = null;
+let recordedVideoBlob = null;
 
-// ---------- utilities ----------
-function showToast(msg, t=2500){
-  toastEl.textContent = msg;
-  toastEl.style.display = 'block';
-  setTimeout(()=>toastEl.style.display='none', t);
-}
+// Auth
+const authBtn=document.getElementById("authBtn");
+const emailInput=document.getElementById("email");
+const passwordInput=document.getElementById("password");
+const authSection=document.getElementById("auth");
+const composerSection=document.getElementById("composer");
+const signOutBtn=document.getElementById("signOutBtn");
 
-function isoNow(){ return new Date().toISOString(); }
-
-// ---------- auth helpers ----------
-async function refreshAuthUI(){
-  const { data } = await supabase.auth.getSession();
-  currentUser = data.session?.user ?? null;
-  if(currentUser){
-    userLabel.textContent = currentUser.email;
-    signInBtn.style.display = 'none';
-    signUpBtn.style.display = 'none';
-    signOutBtn.style.display = 'inline-block';
-    magicBtn.style.display = 'none';
-    // admin check
-    if(currentUser.email === 'sonofjean2@gmail.com') adminBadge.style.display='inline';
-    else adminBadge.style.display='none';
-    document.getElementById('composerBox').style.opacity = '1';
-  } else {
-    userLabel.textContent = 'Not signed in';
-    signInBtn.style.display = 'inline-block';
-    signUpBtn.style.display = 'inline-block';
-    signOutBtn.style.display = 'none';
-    magicBtn.style.display = 'inline-block';
-    adminBadge.style.display='none';
-    document.getElementById('composerBox').style.opacity = '0.6';
-  }
-}
-
-supabase.auth.onAuthStateChange(() => refreshAuthUI());
-await refreshAuthUI();
-
-// ---------- sign up / sign in / magic link ----------
-signUpBtn.onclick = async () => {
-  const email = prompt('Enter email for sign up:');
-  const password = prompt('Enter password:');
-  if(!email || !password) return showToast('Email + password required');
-  const { error } = await supabase.auth.signUp({ email, password });
-  if(error) showToast('Sign up error: ' + error.message);
-  else showToast('Signed up — check your email to confirm (if required).');
-};
-
-signInBtn.onclick = async () => {
-  const email = prompt('Email:');
-  const password = prompt('Password:');
-  if(!email || !password) return showToast('Email + password required');
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if(error) showToast('Sign in error: ' + error.message);
-  else {
-    showToast('Signed in');
-    await refreshAuthUI();
+async function checkSession() {
+  const { data:{ session } } = await supabase.auth.getSession();
+  if(session){
+    currentUser=session.user;
+    authSection.style.display="none";
+    composerSection.style.display="block";
+    signOutBtn.style.display="inline-block";
     loadFeed();
   }
-};
+}
+checkSession();
 
-magicBtn.onclick = async () => {
-  const email = prompt('Enter your email to receive a sign-in link:');
-  if(!email) return showToast('Email required');
-  const { error } = await supabase.auth.signInWithOtp({ email });
-  if(error) showToast('Magic link error: ' + error.message);
-  else showToast('Magic link sent to ' + email);
-};
+authBtn.onclick=async()=>{
+  const email=emailInput.value;
+  const password=passwordInput.value;
+  let { data,error } = await supabase.auth.signInWithPassword({ email,password });
+  if(error){
+    let { error: signUpError } = await supabase.auth.signUp({ email,password });
+    if(signUpError){ alert(signUpError.message); return;}
+    await supabase.auth.signInWithPassword({ email,password });
+  }
+  const userData = await supabase.auth.getUser();
+  currentUser=userData.data.user;
+  authSection.style.display="none";
+  composerSection.style.display="block";
+  signOutBtn.style.display="inline-block";
+  loadFeed();
+}
 
-signOutBtn.onclick = async () => {
+signOutBtn.onclick=async()=>{
   await supabase.auth.signOut();
-  currentUser = null;
-  refreshAuthUI();
-  showToast('Signed out');
-};
-
-// ---------- Upload helpers ----------
-async function uploadFileToBucket(file, path) {
-  // path should be unique filename
-  const { data, error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
-  if(error) throw error;
-  const urlData = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return urlData.data.publicUrl;
+  location.reload();
 }
 
-// ---------- generate AI image (Pollinations) ----------
-genBtn.onclick = async () => {
-  const prompt = aiPrompt.value?.trim();
-  if(!prompt) return showToast('Type an AI prompt first');
-  // Pollinations quick URL
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  generatedImageUrl = url;
-  aiPreview.innerHTML = `<img src="${url}" alt="AI" />`;
-  useGenBtn.style.display = 'inline-block';
-  showToast('AI image preview ready — click "Use Generated" to attach');
-};
+// AI Image Generation (Pollinations in-page)
+const generateImageBtn=document.getElementById("generateImageBtn");
+const imagePrompt=document.getElementById("imagePrompt");
+const preview=document.getElementById("preview");
 
-useGenBtn.onclick = () => {
-  if(!generatedImageUrl) return showToast('No generated image');
-  // set preview area and clear file inputs
-  previewArea.innerHTML = `<div class="media"><img src="${generatedImageUrl}" alt="generated" /></div>`;
-  imageFileEl.value = '';
-  videoFileEl.value = '';
-  recordedBlob = null;
-  showToast('Generated image attached (will be uploaded on Post)');
-};
+generateImageBtn.onclick=()=>{
+  const prompt=imagePrompt.value.trim();
+  if(!prompt){alert("Enter a prompt!"); return;}
+  generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+  preview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;"/>`;
+}
 
-// ---------- AI caption (simple) ----------
-aiCaptionBtn.onclick = async () => {
-  // simple prompt -> Pollinations text API
-  const base = aiPrompt.value || 'short trending caption';
-  try{
-    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(base)}`);
-    let text = await res.text();
-    if(!text || text.length < 3) text = '🔥 This will go viral!';
-    caption.value = text.slice(0, 220);
-    showToast('AI caption suggested');
-  }catch(err){
-    caption.value = '🔥 Trending!';
-    showToast('AI caption failed, used fallback');
+// AI Caption Suggestion (simple frontend)
+document.getElementById("suggestCaptionBtn").onclick=()=>{
+  document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!";
+}
+
+// Record 5s video
+document.getElementById("recordVideoBtn").onclick=async()=>{
+  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  const recorder=new MediaRecorder(stream);
+  let chunks=[];
+  recorder.ondataavailable=e=>chunks.push(e.data);
+  recorder.onstop=()=>{
+    recordedVideoBlob=new Blob(chunks,{type:"video/webm"});
+    preview.innerHTML=`<video controls src="${URL.createObjectURL(recordedVideoBlob)}"></video>`;
   }
-};
-
-// ---------- avatar upload ----------
-avatarBtn.onclick = async () => {
-  if(!currentUser) return showToast('Sign in to upload avatar');
-  const f = avatarUpload.files[0];
-  if(!f) return showToast('Pick a file first');
-  try{
-    const filename = `avatars/${currentUser.id}_${Date.now()}_${f.name}`;
-    await uploadFileToBucket(f, filename);
-    // you can store avatar url in profiles table — omitted for brevity
-    showToast('Avatar uploaded');
-  }catch(e){ showToast('Avatar upload failed: ' + e.message); }
-};
-
-// ---------- video recording ----------
-recordBtn.onclick = async () => {
-  try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
-  }catch(err){ return showToast('Camera access denied'); }
-
-  previewArea.innerHTML = `<video id="livePreview" playsinline autoplay muted style="width:100%;border-radius:10px"></video>`;
-  const live = document.getElementById('livePreview');
-  live.srcObject = cameraStream;
-
-  recordedBlob = null;
-  const recorder = new MediaRecorder(cameraStream, { mimeType: 'video/webm;codecs=vp9' });
-  let chunks = [];
-  recorder.ondataavailable = (e) => { if(e.data && e.data.size) chunks.push(e.data); };
-  recorder.onstop = () => {
-    recordedBlob = new Blob(chunks, { type: 'video/webm' });
-    previewArea.innerHTML = `<div class="media"><video controls src="${URL.createObjectURL(recordedBlob)}"></video></div>`;
-    // stop camera tracks
-    cameraStream.getTracks().forEach(t=>t.stop());
-    cameraStream = null;
-  };
-  mediaRecorder = recorder;
   recorder.start();
-  showToast('Recording... 5s');
-  document.getElementById('stopRecordBtn').disabled = false;
-  setTimeout(()=>{ if(recorder.state === 'recording') recorder.stop(); document.getElementById('stopRecordBtn').disabled = true; }, 5000);
-};
+  setTimeout(()=>recorder.stop(),5000);
+}
 
-document.getElementById('stopRecordBtn').onclick = () => {
-  if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-  document.getElementById('stopRecordBtn').disabled = true;
-};
+// Post Trend
+document.getElementById("postTrendBtn").onclick=async()=>{
+  const caption=document.getElementById("captionInput").value.trim();
+  if(!caption && !generatedImage && !recordedVideoBlob){alert("Add caption or media!"); return;}
+  let url=null,type="text";
 
-// ---------- post flow ----------
-postBtn.onclick = async () => {
-  if(!currentUser) return showToast('Sign in to post');
-  const captionText = caption.value?.trim() || '';
-  // decide what media to upload:
-  try{
-    let media_url = null;
-    let media_type = null;
-
-    // priority: uploaded image file -> generatedImageUrl -> recorded video -> uploaded video file
-    if(imageFileEl.files && imageFileEl.files[0]){
-      const f = imageFileEl.files[0];
-      const path = `images/${currentUser.id}_${Date.now()}_${f.name}`;
-      media_url = await uploadFileToBucket(f, path);
-      media_type = 'image';
-    } else if(generatedImageUrl){
-      // fetch generated image and upload to bucket (so it persists)
-      const resp = await fetch(generatedImageUrl);
-      const blob = await resp.blob();
-      const path = `images/${currentUser.id}_ai_${Date.now()}.png`;
-      media_url = await uploadFileToBucket(blob, path);
-      media_type = 'image';
-      // clear generatedImageUrl so next post doesn't re-use it
-      generatedImageUrl = null;
-      aiPreview.innerHTML = '';
-      useGenBtn.style.display = 'none';
-    } else if(recordedBlob){
-      const path = `videos/${currentUser.id}_${Date.now()}.webm`;
-      media_url = await uploadFileToBucket(recordedBlob, path);
-      media_type = 'video';
-      recordedBlob = null;
-    } else if(videoFileEl.files && videoFileEl.files[0]){
-      const f = videoFileEl.files[0];
-      const path = `videos/${currentUser.id}_${Date.now()}_${f.name}`;
-      media_url = await uploadFileToBucket(f, path);
-      media_type = 'video';
-    }
-
-    // Build a JSON payload to store in the trends.url text column.
-    // This keeps compatibility with a "url text" only schema.
-    const payload = {
-      user_email: currentUser.email,
-      caption: captionText,
-      media_url: media_url || null,
-      media_type: media_type || null,
-      created_at: isoNow()
-    };
-
-    const payloadString = JSON.stringify(payload);
-
-    // Insert into trends table - into url column (text)
-    const { error } = await supabase.from('trends').insert([{ url: payloadString }]);
-    if(error) throw error;
-
-    showToast('Posted!');
-    // reset composer
-    caption.value = '';
-    imageFileEl.value = '';
-    videoFileEl.value = '';
-    previewArea.innerHTML = '';
-    // reload feed
-    await loadFeed();
-  }catch(err){
-    showToast('Post failed: ' + (err.message || err));
-    console.error(err);
+  if(generatedImage){
+    const resp=await fetch(generatedImage);
+    const blob=await resp.blob();
+    const filePath=`image-${Date.now()}.png`;
+    let { error }=await supabase.storage.from("trends-media").upload(filePath,blob,{upsert:true});
+    if(error){alert(error.message); return;}
+    url=supabase.storage.from("trends-media").getPublicUrl(filePath).data.publicUrl;
+    type="image";
+    generatedImage=null;
   }
-};
 
-// ---------- load feed ----------
+  if(recordedVideoBlob){
+    const filePath=`video-${Date.now()}.webm`;
+    let { error }=await supabase.storage.from("trends-media").upload(filePath,recordedVideoBlob,{upsert:true});
+    if(error){alert(error.message); return;}
+    url=supabase.storage.from("trends-media").getPublicUrl(filePath).data.publicUrl;
+    type="video";
+    recordedVideoBlob=null;
+  }
+
+  const { error }=await supabase.from("trends").insert([{user_id:currentUser.id,caption,url,type}]);
+  if(error){alert(error.message); return;}
+  document.getElementById("captionInput").value="";
+  preview.innerHTML="";
+  loadFeed();
+}
+
+// Load Feed
 async function loadFeed(){
-  try{
-    const { data, error } = await supabase.from('trends').select('id,url,created_at').order('created_at', { ascending: false }).limit(100);
-    if(error) throw error;
-    feedEl.innerHTML = '';
-    (data||[]).forEach(row=>{
-      // url column may contain JSON string we stored
-      let parsed = null;
-      try{ parsed = JSON.parse(row.url); }catch(e){ parsed = null; }
-      const item = parsed || { caption: row.url, media_url: null, media_type: null, user_email: null };
-      const postDiv = document.createElement('div');
-      postDiv.className = 'post';
-      let metaHtml = `<div class="meta"><div class="avatar"></div><div><div class="username">${item.user_email ? item.user_email.split('@')[0] : 'anon'}</div><div class="small">${new Date(item.created_at || row.created_at).toLocaleString()}</div></div></div>`;
-      let captionHtml = item.caption ? `<div class="caption">${escapeHtml(item.caption)}</div>` : '';
-      let mediaHtml = '';
-      if(item.media_type === 'image' && item.media_url) mediaHtml = `<div class="media"><img src="${item.media_url}" alt="media"></div>`;
-      if(item.media_type === 'video' && item.media_url) mediaHtml = `<div class="media"><video controls src="${item.media_url}"></video></div>`;
-      // Fallback: if we stored plain url string earlier
-      if(!item.media_url && !item.media_type && isValidHttpUrl(item.caption || '')){
-        mediaHtml = `<div class="media"><img src="${item.caption}" alt="media"></div>`;
-        captionHtml = ''; // we used URL as media
-      }
-      postDiv.innerHTML = metaHtml + captionHtml + mediaHtml;
-      feedEl.appendChild(postDiv);
-    });
-  }catch(err){
-    console.error('Load feed error', err);
-    showToast('Unable to load feed: ' + (err.message||err));
-  }
+  const { data,error }=await supabase.from("trends").select("*").order("id",{ascending:false});
+  if(error){console.error(error); return;}
+  const feed=document.getElementById("feed");
+  feed.innerHTML="";
+  data.forEach(trend=>{
+    const div=document.createElement("div");
+    div.className="trend";
+    div.innerHTML=`<strong>${trend.user_id}</strong><p>${trend.caption||""}</p>
+    ${trend.type==="image"?`<img src="${trend.url}"/>`:''}
+    ${trend.type==="video"?`<video controls src="${trend.url}"></video>`:''}`;
+    feed.appendChild(div);
+  });
 }
-
-// small helper
-function isValidHttpUrl(str) {
-  try { const u = new URL(str); return u.protocol === 'http:' || u.protocol === 'https:'; }
-  catch(e){ return false; }
-}
-function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-
-// ---------- init load ----------
-await refreshAuthUI();
-await loadFeed();
-
 </script>
 </body>
 </html>
