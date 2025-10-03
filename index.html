@@ -1,38 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrendTime AI 🔥</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --pink:#ff4d8d;
-  --orange:#ff914d;
+  --primary:#ff4d8d;
+  --secondary:#ff914d;
   --white:#fff;
-  --bg-gradient: linear-gradient(135deg,var(--pink),var(--orange));
+  --dark:#1b1b1b;
+  --gray:#222;
+  --bg-gradient: linear-gradient(135deg,var(--primary),var(--secondary));
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:#fff;color:#333;}
-header{background:var(--bg-gradient);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 15px rgba(0,0,0,0.2);}
+body{background:var(--dark);color:var(--white);overflow-x:hidden;}
+header{
+  background:var(--bg-gradient);
+  color:white;
+  padding:1rem 2rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
 header h1{font-size:1.6rem;}
-header button{background:white;color:var(--pink);border:none;padding:0.5rem 1rem;border-radius:25px;font-weight:600;cursor:pointer;transition:0.3s;}
-header button:hover{background:var(--orange);color:white;}
+header button{
+  background:white;color:var(--primary);
+  border:none;padding:0.5rem 1rem;border-radius:25px;
+  font-weight:600;cursor:pointer;transition:0.3s;margin-left:0.5rem;
+}
+header button:hover{background:var(--secondary);color:white;}
 
+/* Main content */
 main{max-width:700px;margin:2rem auto;padding:0 1rem;}
-#auth,#composer{background:white;border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-#auth input,#composer input,#composer textarea{width:100%;margin:0.5rem 0;padding:0.7rem;border:1px solid #ddd;border-radius:8px;resize:none;}
-#auth button,#composer button{background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;}
-#auth button:hover,#composer button:hover{opacity:0.9;}
+#auth,#feed{background:var(--gray);border-radius:15px;padding:1rem;margin-bottom:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.4);}
+#auth input{width:100%;margin:0.5rem 0;padding:0.7rem;border:1px solid #555;border-radius:8px;background:#111;color:white;}
+#auth button{width:100%;background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;}
+#auth button:hover{opacity:0.9;}
 
-.feed .trend{background:white;border-radius:15px;margin-bottom:1.2rem;padding:1rem;box-shadow:0 3px 8px rgba(0,0,0,0.08);}
+/* Feed cards */
+.feed .trend{background:#111;border-radius:15px;margin-bottom:1.2rem;padding:1rem;box-shadow:0 3px 12px rgba(0,0,0,0.5);}
 .feed .trend img,.feed .trend video{max-width:100%;border-radius:10px;margin-top:0.5rem;}
+
+/* Popup Composer */
+#postPopup{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);
+  display:flex;justify-content:center;align-items:center;
+  opacity:0;visibility:hidden;transition:0.3s;
+  z-index:200;
+}
+#postPopup.active{opacity:1;visibility:visible;}
+#postPopupContent{
+  background:#222;border-radius:15px;padding:1.5rem;
+  width:90%;max-width:500px;box-shadow:0 8px 25px rgba(0,0,0,0.7);
+  display:flex;flex-direction:column;gap:0.5rem;
+}
+#postPopupContent textarea,#postPopupContent input{
+  width:100%;padding:0.7rem;border:1px solid #555;border-radius:8px;resize:none;background:#111;color:white;
+}
+#postPopupContent button{
+  background:var(--bg-gradient);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;margin-top:0.5rem;transition:0.3s;
+}
+#postPopupContent button:hover{opacity:0.9;}
+#closePopup{background:#333;color:white;}
+
 </style>
 </head>
 <body>
+
 <header>
   <h1>TrendTime AI 🔥</h1>
-  <button id="signOutBtn" style="display:none;">Sign Out</button>
+  <div>
+    <button id="postBtn" style="display:none;">Post</button>
+    <button id="signOutBtn" style="display:none;">Sign Out</button>
+  </div>
 </header>
 
 <main>
@@ -43,25 +90,29 @@ main{max-width:700px;margin:2rem auto;padding:0 1rem;}
     <button id="authBtn">Sign In / Up</button>
   </section>
 
-  <section id="composer" style="display:none;">
+  <section class="feed" id="feed"></section>
+</main>
+
+<!-- Popup Composer -->
+<div id="postPopup">
+  <div id="postPopupContent">
+    <button id="closePopup">✖ Close</button>
     <textarea id="captionInput" placeholder="What's trending?"></textarea>
     <input type="text" id="imagePrompt" placeholder="AI Image Prompt...">
-    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button id="generateImageBtn">🎨 Generate Image</button>
       <button id="recordVideoBtn">🎥 Record 5s Video</button>
       <button id="suggestCaptionBtn">✨ AI Caption</button>
       <button id="postTrendBtn">Post</button>
     </div>
     <div id="preview" style="margin-top:1rem;"></div>
-  </section>
-
-  <section class="feed" id="feed"></section>
-</main>
+  </div>
+</div>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Supabase config
+// Supabase
 const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
 const supabase = createClient(supabaseUrl,supabaseKey);
@@ -75,7 +126,9 @@ const authBtn=document.getElementById("authBtn");
 const emailInput=document.getElementById("email");
 const passwordInput=document.getElementById("password");
 const authSection=document.getElementById("auth");
-const composerSection=document.getElementById("composer");
+const composerPopup=document.getElementById("postPopup");
+const postBtn=document.getElementById("postBtn");
+const closePopup=document.getElementById("closePopup");
 const signOutBtn=document.getElementById("signOutBtn");
 const generateImageBtn=document.getElementById("generateImageBtn");
 const imagePrompt=document.getElementById("imagePrompt");
@@ -84,7 +137,7 @@ const preview=document.getElementById("preview");
 // Check session
 async function checkSession(){
   const { data:{ session } } = await supabase.auth.getSession();
-  if(session){ currentUser=session.user; showComposer(); loadFeed(); }
+  if(session){ currentUser=session.user; showComposerBtn(); loadFeed(); }
 }
 checkSession();
 
@@ -100,44 +153,41 @@ authBtn.onclick=async()=>{
   }
   const userData = await supabase.auth.getUser();
   currentUser=userData.data.user;
-  showComposer();
+  showComposerBtn();
   loadFeed();
 }
 
-signOutBtn.onclick=async()=>{
-  await supabase.auth.signOut();
-  location.reload();
-}
-
-function showComposer(){
+function showComposerBtn(){
   authSection.style.display="none";
-  composerSection.style.display="block";
+  postBtn.style.display="inline-block";
   signOutBtn.style.display="inline-block";
 }
+
+// Sign out
+signOutBtn.onclick=async()=>{ await supabase.auth.signOut(); location.reload(); }
+
+// Popup
+postBtn.onclick=()=>composerPopup.classList.add("active");
+closePopup.onclick=()=>composerPopup.classList.remove("active");
 
 // Generate AI Image
 generateImageBtn.onclick=()=>{
   const prompt=imagePrompt.value.trim();
   if(!prompt){ alert("Enter a prompt!"); return; }
   generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  preview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;"/>`;
+  preview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;">`;
 }
 
-// Suggest AI Caption
-document.getElementById("suggestCaptionBtn").onclick=()=>{
-  document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!";
-}
+// AI caption
+document.getElementById("suggestCaptionBtn").onclick=()=>{ document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!"; }
 
-// Record 5s Video
+// Record video
 document.getElementById("recordVideoBtn").onclick=async()=>{
   const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
   const recorder=new MediaRecorder(stream);
   let chunks=[];
   recorder.ondataavailable=e=>chunks.push(e.data);
-  recorder.onstop=()=>{
-    recordedVideoBlob=new Blob(chunks,{type:"video/webm"});
-    preview.innerHTML=`<video controls src="${URL.createObjectURL(recordedVideoBlob)}"></video>`;
-  }
+  recorder.onstop=()=>{ recordedVideoBlob=new Blob(chunks,{type:"video/webm"}); preview.innerHTML=`<video controls src="${URL.createObjectURL(recordedVideoBlob)}"></video>`; }
   recorder.start();
   setTimeout(()=>recorder.stop(),5000);
 }
@@ -145,37 +195,32 @@ document.getElementById("recordVideoBtn").onclick=async()=>{
 // Post Trend
 document.getElementById("postTrendBtn").onclick=async()=>{
   const caption=document.getElementById("captionInput").value.trim();
-  if(!caption && !generatedImage && !recordedVideoBlob){ alert("Add caption or media!"); return; }
-
+  if(!caption && !generatedImage && !recordedVideoBlob){alert("Add caption or media!"); return;}
   let url=null,type="text";
 
-  // Upload Image
   if(generatedImage){
     const resp=await fetch(generatedImage);
     const blob=await resp.blob();
     const filePath=`image-${Date.now()}.png`;
     let { error }=await supabase.storage.from("trend-media").upload(filePath,blob,{upsert:true});
-    if(error){ alert(error.message); return; }
+    if(error){alert(error.message); return;}
     url=supabase.storage.from("trend-media").getPublicUrl(filePath).data.publicUrl;
-    type="image";
-    generatedImage=null;
+    type="image"; generatedImage=null;
   }
 
-  // Upload Video
   if(recordedVideoBlob){
     const filePath=`video-${Date.now()}.webm`;
     let { error }=await supabase.storage.from("trend-media").upload(filePath,recordedVideoBlob,{upsert:true});
-    if(error){ alert(error.message); return; }
+    if(error){alert(error.message); return;}
     url=supabase.storage.from("trend-media").getPublicUrl(filePath).data.publicUrl;
-    type="video";
-    recordedVideoBlob=null;
+    type="video"; recordedVideoBlob=null;
   }
 
   const { error }=await supabase.from("trends").insert([{user_id:currentUser.id,caption,url,type}]);
-  if(error){ alert(error.message); return; }
-
+  if(error){alert(error.message); return;}
   document.getElementById("captionInput").value="";
   preview.innerHTML="";
+  composerPopup.classList.remove("active");
   loadFeed();
 }
 
@@ -189,12 +234,11 @@ async function loadFeed(){
     const div=document.createElement("div");
     div.className="trend";
     div.innerHTML=`<strong>${trend.user_id}</strong><p>${trend.caption||""}</p>
-    ${trend.type==="image"?`<img src="${trend.url}"/>`:''}
-    ${trend.type==="video"?`<video controls src="${trend.url}"></video>`:''}`;
+      ${trend.type==="image"?`<img src="${trend.url}"/>`:''}
+      ${trend.type==="video"?`<video controls src="${trend.url}"></video>`:''}`;
     feed.appendChild(div);
   });
 }
 </script>
 </body>
 </html>
-
