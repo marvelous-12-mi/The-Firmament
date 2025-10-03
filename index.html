@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TrendTime AI 🔥</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
   --pink:#ff4d8d;
@@ -61,48 +61,46 @@ main{max-width:700px;margin:2rem auto;padding:0 1rem;}
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+// Supabase config
 const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
-const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
+const supabaseKey="YOUR_SUPABASE_ANON_KEY";
 const supabase = createClient(supabaseUrl,supabaseKey);
 
-let currentUser = null;
-let generatedImage = null;
-let recordedVideoBlob = null;
+let currentUser=null;
+let generatedImage=null;
+let recordedVideoBlob=null;
 
-// Auth
+// Elements
 const authBtn=document.getElementById("authBtn");
 const emailInput=document.getElementById("email");
 const passwordInput=document.getElementById("password");
 const authSection=document.getElementById("auth");
 const composerSection=document.getElementById("composer");
 const signOutBtn=document.getElementById("signOutBtn");
+const generateImageBtn=document.getElementById("generateImageBtn");
+const imagePrompt=document.getElementById("imagePrompt");
+const preview=document.getElementById("preview");
 
-async function checkSession() {
+// Check session
+async function checkSession(){
   const { data:{ session } } = await supabase.auth.getSession();
-  if(session){
-    currentUser=session.user;
-    authSection.style.display="none";
-    composerSection.style.display="block";
-    signOutBtn.style.display="inline-block";
-    loadFeed();
-  }
+  if(session){ currentUser=session.user; showComposer(); loadFeed(); }
 }
 checkSession();
 
+// Auth
 authBtn.onclick=async()=>{
   const email=emailInput.value;
   const password=passwordInput.value;
   let { data,error } = await supabase.auth.signInWithPassword({ email,password });
   if(error){
     let { error: signUpError } = await supabase.auth.signUp({ email,password });
-    if(signUpError){ alert(signUpError.message); return;}
+    if(signUpError){ alert(signUpError.message); return; }
     await supabase.auth.signInWithPassword({ email,password });
   }
   const userData = await supabase.auth.getUser();
   currentUser=userData.data.user;
-  authSection.style.display="none";
-  composerSection.style.display="block";
-  signOutBtn.style.display="inline-block";
+  showComposer();
   loadFeed();
 }
 
@@ -111,24 +109,26 @@ signOutBtn.onclick=async()=>{
   location.reload();
 }
 
-// AI Image Generation (Pollinations in-page)
-const generateImageBtn=document.getElementById("generateImageBtn");
-const imagePrompt=document.getElementById("imagePrompt");
-const preview=document.getElementById("preview");
+function showComposer(){
+  authSection.style.display="none";
+  composerSection.style.display="block";
+  signOutBtn.style.display="inline-block";
+}
 
+// Generate AI Image
 generateImageBtn.onclick=()=>{
   const prompt=imagePrompt.value.trim();
-  if(!prompt){alert("Enter a prompt!"); return;}
+  if(!prompt){ alert("Enter a prompt!"); return; }
   generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
   preview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;"/>`;
 }
 
-// AI Caption Suggestion (simple frontend)
+// Suggest AI Caption
 document.getElementById("suggestCaptionBtn").onclick=()=>{
   document.getElementById("captionInput").value="🔥 Viral caption suggested by AI!";
 }
 
-// Record 5s video
+// Record 5s Video
 document.getElementById("recordVideoBtn").onclick=async()=>{
   const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
   const recorder=new MediaRecorder(stream);
@@ -145,31 +145,35 @@ document.getElementById("recordVideoBtn").onclick=async()=>{
 // Post Trend
 document.getElementById("postTrendBtn").onclick=async()=>{
   const caption=document.getElementById("captionInput").value.trim();
-  if(!caption && !generatedImage && !recordedVideoBlob){alert("Add caption or media!"); return;}
+  if(!caption && !generatedImage && !recordedVideoBlob){ alert("Add caption or media!"); return; }
+
   let url=null,type="text";
 
+  // Upload Image
   if(generatedImage){
     const resp=await fetch(generatedImage);
     const blob=await resp.blob();
     const filePath=`image-${Date.now()}.png`;
-    let { error }=await supabase.storage.from("trends-media").upload(filePath,blob,{upsert:true});
-    if(error){alert(error.message); return;}
-    url=supabase.storage.from("trends-media").getPublicUrl(filePath).data.publicUrl;
+    let { error }=await supabase.storage.from("trend-media").upload(filePath,blob,{upsert:true});
+    if(error){ alert(error.message); return; }
+    url=supabase.storage.from("trend-media").getPublicUrl(filePath).data.publicUrl;
     type="image";
     generatedImage=null;
   }
 
+  // Upload Video
   if(recordedVideoBlob){
     const filePath=`video-${Date.now()}.webm`;
-    let { error }=await supabase.storage.from("trends-media").upload(filePath,recordedVideoBlob,{upsert:true});
-    if(error){alert(error.message); return;}
-    url=supabase.storage.from("trends-media").getPublicUrl(filePath).data.publicUrl;
+    let { error }=await supabase.storage.from("trend-media").upload(filePath,recordedVideoBlob,{upsert:true});
+    if(error){ alert(error.message); return; }
+    url=supabase.storage.from("trend-media").getPublicUrl(filePath).data.publicUrl;
     type="video";
     recordedVideoBlob=null;
   }
 
   const { error }=await supabase.from("trends").insert([{user_id:currentUser.id,caption,url,type}]);
-  if(error){alert(error.message); return;}
+  if(error){ alert(error.message); return; }
+
   document.getElementById("captionInput").value="";
   preview.innerHTML="";
   loadFeed();
@@ -178,7 +182,7 @@ document.getElementById("postTrendBtn").onclick=async()=>{
 // Load Feed
 async function loadFeed(){
   const { data,error }=await supabase.from("trends").select("*").order("id",{ascending:false});
-  if(error){console.error(error); return;}
+  if(error){ console.error(error); return; }
   const feed=document.getElementById("feed");
   feed.innerHTML="";
   data.forEach(trend=>{
