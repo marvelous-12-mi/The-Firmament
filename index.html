@@ -21,19 +21,15 @@ header h1{font-size:1.6rem;font-weight:700;letter-spacing:1px;text-shadow:0 0 10
 header button{background:white;color:var(--dark);border:none;padding:0.5rem 1rem;border-radius:999px;cursor:pointer;font-weight:bold;transition:0.3s;}
 header button:hover{background:var(--secondary);color:white;}
 
-/* Side Panel */
-.side-panel{position:fixed;top:0;left:-400px;width:380px;height:100vh;background:var(--card);box-shadow:5px 0 25px rgba(0,0,0,0.6);transition:left 0.3s ease;padding:2rem;z-index:200;overflow-y:auto;}
-.side-panel.active{left:0;}
-.side-panel h2,h3{margin-bottom:1rem;color:var(--accent);}
-.side-panel input,.side-panel select,.side-panel button{margin:0.5rem 0;padding:0.7rem;width:100%;border-radius:10px;border:none;background:#222;color:white;}
-.side-panel input::placeholder{color:#aaa;}
-.side-panel button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
-.side-panel button:hover{opacity:0.9;}
-
-/* Sections */
-.settings-section{margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.2);}
-.settings-section h3{margin-bottom:0.7rem;color:var(--accent);}
-.settings-section video{width:100%;border-radius:10px;margin-bottom:0.5rem;}
+/* Popup */
+.popup-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:500;}
+.popup{background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:500px;box-shadow:0 0 25px rgba(30,144,255,0.4);position:relative;}
+.popup h2{color:var(--accent);margin-bottom:1rem;}
+.popup input, .popup textarea, .popup button{width:100%;margin:0.5rem 0;padding:0.7rem;border-radius:10px;border:none;background:#222;color:white;}
+.popup input::placeholder, .popup textarea::placeholder{color:#aaa;}
+.popup button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
+.popup button:hover{opacity:0.9;}
+.popup .close-btn{position:absolute;top:10px;right:10px;background:red;color:white;width:30px;height:30px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;}
 
 /* Feed */
 .feed{display:flex;flex-direction:column;gap:2rem;padding:1rem;max-width:900px;margin:auto;}
@@ -55,35 +51,23 @@ header button:hover{background:var(--secondary);color:white;}
 <body>
 
 <header>
-  <button id="menuBtn">☰</button>
   <h1>🔥 TrendTime AI</h1>
   <button id="authBtn">Login</button>
 </header>
 
-<div class="side-panel" id="sidePanel">
-  <h2>Welcome</h2>
-  <p id="userEmail">Not logged in</p>
-  <input type="text" id="username" placeholder="Username"/>
-  <input type="email" id="email" placeholder="Email"/>
-  <input type="password" id="password" placeholder="Password (optional)"/>
-  <button id="magicLinkBtn">Send Magic Link</button>
-  <button id="signUpBtn">Sign Up / Login</button>
-
-  <div class="settings-section">
-    <h3>Record & Post a Trend</h3>
-    <video id="preview" autoplay muted></video>
-    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-      <button id="recordBtn">Start Recording</button>
-      <button id="stopBtn">Stop & Upload</button>
-    </div>
-    <input id="postCaption" type="text" placeholder="Caption">
-  </div>
-
-  <div class="settings-section">
-    <h3>AI Tools</h3>
-    <input type="text" id="aiPrompt" placeholder="Prompt for AI Image">
-    <button id="aiImageBtn">Generate AI Image</button>
-    <button id="aiCaptionBtn">Generate Caption</button>
+<div class="popup-bg" id="popupBg">
+  <div class="popup">
+    <div class="close-btn" id="closePopup">×</div>
+    <h2>Post a Trend</h2>
+    <input type="text" id="popupUsername" placeholder="Username"/>
+    <input type="email" id="popupEmail" placeholder="Email"/>
+    <input type="password" id="popupPassword" placeholder="Password (optional)"/>
+    <button id="popupMagicLink">Send Magic Link</button>
+    <textarea id="popupCaption" placeholder="Caption..."></textarea>
+    <input type="text" id="popupPrompt" placeholder="AI Image Prompt..."/>
+    <button id="popupGenImage">Generate Image</button>
+    <div id="popupPreview" style="margin-top:1rem;"></div>
+    <button id="popupPost">Post Trend</button>
   </div>
 </div>
 
@@ -92,107 +76,86 @@ header button:hover{background:var(--secondary);color:white;}
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
 const supabaseUrl="https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
 const supabase=createClient(supabaseUrl,supabaseKey);
 
-const menuBtn=document.getElementById("menuBtn");
-const sidePanel=document.getElementById("sidePanel");
-const authBtn=document.getElementById("authBtn");
-const magicLinkBtn=document.getElementById("magicLinkBtn");
-const signUpBtn=document.getElementById("signUpBtn");
-const logoutBtn=document.getElementById("logoutBtn");
-const userEmail=document.getElementById("userEmail");
 const postBtn=document.getElementById("postBtn");
-
-const recordBtn=document.getElementById("recordBtn");
-const stopBtn=document.getElementById("stopBtn");
-const preview=document.getElementById("preview");
-const postCaption=document.getElementById("postCaption");
-
-const aiImageBtn=document.getElementById("aiImageBtn");
-const aiCaptionBtn=document.getElementById("aiCaptionBtn");
-const aiPrompt=document.getElementById("aiPrompt");
-
+const popupBg=document.getElementById("popupBg");
+const closePopup=document.getElementById("closePopup");
+const popupUsername=document.getElementById("popupUsername");
+const popupEmail=document.getElementById("popupEmail");
+const popupPassword=document.getElementById("popupPassword");
+const popupMagicLink=document.getElementById("popupMagicLink");
+const popupCaption=document.getElementById("popupCaption");
+const popupPrompt=document.getElementById("popupPrompt");
+const popupGenImage=document.getElementById("popupGenImage");
+const popupPreview=document.getElementById("popupPreview");
+const popupPost=document.getElementById("popupPost");
+const authBtn=document.getElementById("authBtn");
 const feed=document.querySelector(".feed");
 
-let mediaRecorder, recordedBlobs=[];
 let currentUser=null;
+let generatedImage=null;
 
-// Menu toggle
-menuBtn.addEventListener("click",()=>{sidePanel.classList.toggle("active");});
-document.addEventListener("click",e=>{if(sidePanel.classList.contains("active")&&!sidePanel.contains(e.target)&&e.target!==menuBtn){sidePanel.classList.remove("active");}});
+// Open popup
+postBtn.onclick=()=>{popupBg.style.display="flex";}
+closePopup.onclick=()=>{popupBg.style.display="none";popupPreview.innerHTML="";generatedImage=null;};
 
 // Magic link
-magicLinkBtn.onclick=async()=>{
-  const email=document.getElementById("email").value.trim();
-  const username=document.getElementById("username").value.trim();
-  if(!email || !username){alert("Enter email & username"); return;}
-  const { error }=await supabase.auth.signInWithOtp({email, options:{data:{username}}});
-  if(error) alert(error.message);
-  else alert("Magic link sent!");
+popupMagicLink.onclick=async()=>{
+  const email=popupEmail.value.trim();
+  const username=popupUsername.value.trim();
+  if(!email||!username){alert("Enter email & username"); return;}
+  const { error }=await supabase.auth.signInWithOtp({email,options:{data:{username}}});
+  if(error){alert(error.message);} else{alert("Magic link sent! Check your email.");}
 }
 
 // Signup/Login
-signUpBtn.onclick=async()=>{
-  const email=document.getElementById("email").value.trim();
-  const password=document.getElementById("password").value.trim();
-  const username=document.getElementById("username").value.trim();
-  if(!email || !username){alert("Enter email & username"); return;}
-  let { data, error }=await supabase.auth.signInWithPassword({email,password});
+authBtn.onclick=async()=>{
+  const email=popupEmail.value.trim();
+  const password=popupPassword.value.trim();
+  const username=popupUsername.value.trim();
+  if(!email||!username){alert("Enter email & username"); return;}
+  let { data,error }=await supabase.auth.signInWithPassword({email,password});
   if(error){
     let { error: signUpError }=await supabase.auth.signUp({email,password,options:{data:{username}}});
     if(signUpError){alert(signUpError.message); return;}
     await supabase.auth.signInWithPassword({email,password});
   }
   currentUser=(await supabase.auth.getUser()).data.user;
-  userEmail.textContent=currentUser.user_metadata.username||currentUser.email;
-  authBtn.style.display="none";
-  postBtn.style.display="flex";
-  loadFeed();
+  alert("Logged in as "+currentUser.user_metadata.username);
 }
 
-// Recording
-recordBtn.onclick=async()=>{
-  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  preview.srcObject=stream;
-  recordedBlobs=[];
-  mediaRecorder=new MediaRecorder(stream);
-  mediaRecorder.ondataavailable=e=>{if(e.data.size>0) recordedBlobs.push(e.data);}
-  mediaRecorder.start();
-  alert("Recording started!");
+// Generate AI image
+popupGenImage.onclick=()=>{
+  const prompt=popupPrompt.value.trim();
+  if(!prompt){alert("Enter a prompt"); return;}
+  generatedImage=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+  popupPreview.innerHTML=`<img src="${generatedImage}" style="width:100%;border-radius:10px;">`;
 }
 
-stopBtn.onclick=async()=>{
-  mediaRecorder.stop();
-  const blob=new Blob(recordedBlobs,{type:"video/webm"});
-  const file=new File([blob],`trend_${Date.now()}.webm`,{type:"video/webm"});
+// Post trend
+popupPost.onclick=async()=>{
   if(!currentUser){alert("Login first"); return;}
-  const { error }=await supabase.storage.from("trend-media").upload(file.name,file,{upsert:true});
-  if(error){alert(error.message); return;}
-  const url=supabase.storage.from("trend-media").getPublicUrl(file.name).data.publicUrl;
-  await supabase.from("trends").insert([{url,caption:postCaption.value||"",type:"video",username:currentUser.user_metadata.username}]);
+  let url=generatedImage||null;
+  if(url){
+    const resp=await fetch(url);
+    const blob=await resp.blob();
+    const fileName=`image-${Date.now()}.png`;
+    const { error }=await supabase.storage.from("trend-media").upload(fileName,blob,{upsert:true});
+    if(error){alert(error.message); return;}
+    url=supabase.storage.from("trend-media").getPublicUrl(fileName).data.publicUrl;
+    generatedImage=null;
+  }
+  const caption=popupCaption.value.trim();
+  await supabase.from("trends").insert([{username:currentUser.user_metadata.username,url,caption,type:"image"}]);
+  popupCaption.value=""; popupPrompt.value=""; popupPreview.innerHTML=""; popupBg.style.display="none";
   alert("Trend posted!");
-  postCaption.value="";
-  preview.srcObject=null;
   loadFeed();
 }
 
-// AI Image
-aiImageBtn.onclick=()=>{
-  const prompt=aiPrompt.value.trim();
-  if(!prompt){alert("Enter prompt"); return;}
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  window.open(url,"_blank");
-}
-
-// AI Caption
-aiCaptionBtn.onclick=()=>{
-  postCaption.value="🔥 AI suggested caption!";
-}
-
-// Load Feed
+// Load feed
 async function loadFeed(){
   const { data,error }=await supabase.from("trends").select("*").order("created_at",{ascending:false});
   if(error){console.error(error); return;}
@@ -200,20 +163,20 @@ async function loadFeed(){
   data.forEach(post=>{
     const card=document.createElement("div");
     card.className="trend-card";
+    if(post.type==="image") card.innerHTML=`<img src="${post.url}">`;
     if(post.type==="video") card.innerHTML=`<video src="${post.url}" autoplay muted loop></video>`;
-    if(post.type==="image") card.innerHTML=`<img src="${post.url}"/>`;
     const info=document.createElement("div");
     info.className="trend-info";
     info.innerHTML=`<h2>@${post.username||"anon"}</h2><p>${post.caption||""}</p>`;
     const actions=document.createElement("div");
     actions.className="trend-actions";
     actions.innerHTML=`<div class="action-btn">❤️</div><div class="action-btn">💬</div>`;
-    card.appendChild(info);
-    card.appendChild(actions);
+    card.appendChild(info); card.appendChild(actions);
     feed.appendChild(card);
   });
 }
 
+loadFeed();
 </script>
 </body>
 </html>
