@@ -1,51 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrendTime AI 🔥</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --primary:#1e90ff;
-  --secondary:#ff1493;
-  --dark:#0f0f0f;
-  --card:#1a1a1a;
+:root{
+  --primary:#ff4d8d;
+  --secondary:#ff914d;
+  --dark:#1a1a1a;
+  --card:#222;
   --accent:#00ffea;
   --light:#fff;
+  --shadow-glow:0 0 20px rgba(255,77,141,0.4);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:var(--dark);color:white;overflow-x:hidden;}
 header{position:sticky;top:0;width:100%;z-index:100;background:linear-gradient(90deg,var(--primary),var(--secondary));display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
-header h1{font-size:1.6rem;font-weight:700;letter-spacing:1px;text-shadow:0 0 10px rgba(0,0,0,0.5);}
+header h1{font-size:1.8rem;font-weight:700;letter-spacing:1px;text-shadow:0 0 15px rgba(0,0,0,0.5);}
 header button{background:white;color:var(--dark);border:none;padding:0.5rem 1rem;border-radius:999px;cursor:pointer;font-weight:bold;transition:0.3s;}
-header button:hover{background:var(--secondary);color:white;}
+header button:hover{background:var(--secondary);color:white;transform:scale(1.05);transition:0.3s;}
 
-/* Modal background */
-.modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:500;}
-.modal{background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:450px;box-shadow:0 0 25px rgba(30,144,255,0.4);position:relative;}
+/* Modal */
+.modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);display:none;justify-content:center;align-items:center;z-index:500;animation:fadeIn 0.4s;}
+.modal{background:var(--card);padding:2rem;border-radius:15px;width:90%;max-width:400px;box-shadow:var(--shadow-glow);position:relative;animation:slideUp 0.4s;}
+@keyframes slideUp{0%{transform:translateY(50px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
+@keyframes fadeIn{0%{opacity:0;}100%{opacity:1;}}
 .modal h2{color:var(--accent);margin-bottom:1rem;text-align:center;}
-.modal input, .modal textarea, .modal button{width:100%;margin:0.5rem 0;padding:0.7rem;border-radius:10px;border:none;background:#222;color:white;}
+.modal input, .modal textarea, .modal button{width:100%;margin:0.5rem 0;padding:0.8rem;border-radius:10px;border:none;background:#222;color:white;}
 .modal input::placeholder, .modal textarea::placeholder{color:#aaa;}
-.modal button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
-.modal button:hover{opacity:0.9;}
+.modal button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;box-shadow:0 0 10px rgba(255,30,100,0.6);}
+.modal button:hover{opacity:0.9;transform:scale(1.03);}
 .modal .close-btn{position:absolute;top:10px;right:10px;background:red;color:white;width:30px;height:30px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;}
 
 /* Feed */
 .feed{display:flex;flex-direction:column;gap:2rem;padding:1rem;max-width:900px;margin:auto;}
-.trend-card{background:var(--card);border-radius:1.5rem;overflow:hidden;position:relative;box-shadow:0 0 25px rgba(30,144,255,0.2);transition:0.3s;}
-.trend-card:hover{transform:scale(1.01);}
+.trend-card{background:var(--card);border-radius:1.5rem;overflow:hidden;position:relative;box-shadow:var(--shadow-glow);transition:0.3s;}
+.trend-card:hover{transform:scale(1.02);}
 .trend-card video,.trend-card img{width:100%;height:60vh;object-fit:cover;border-radius:1.5rem;}
 .trend-info{margin-top:0.5rem;padding:0 1rem;}
 .trend-info h2{font-size:1.3rem;margin-bottom:0.3rem;color:var(--primary);}
 .trend-info p{font-size:1rem;color:#ccc;margin-bottom:0.5rem;}
 .trend-actions{display:flex;gap:1rem;padding:0 1rem;margin-bottom:0.5rem;}
-.action-btn{background:linear-gradient(145deg,var(--primary),var(--secondary));width:45px;height:45px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.2rem;cursor:pointer;box-shadow:0 0 15px rgba(30,144,255,0.8);transition:transform 0.2s;}
+.action-btn{background:linear-gradient(145deg,var(--primary),var(--secondary));width:45px;height:45px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.2rem;cursor:pointer;box-shadow:var(--shadow-glow);transition:transform 0.2s;}
 .action-btn:hover{transform:scale(1.1);}
 
 /* Post button */
 .post-btn{position:fixed;bottom:2rem;right:2rem;background:linear-gradient(145deg,var(--secondary),var(--primary));color:white;font-size:1.6rem;width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;box-shadow:0 0 25px rgba(255,30,100,0.9);cursor:pointer;transition:all 0.3s ease;z-index:200;animation:pulse 2s infinite;}
-@keyframes pulse{0%{box-shadow:0 0 15px rgba(30,144,255,0.6);}50%{box-shadow:0 0 35px rgba(255,30,100,1);}100%{box-shadow:0 0 15px rgba(30,144,255,0.6);}}
+@keyframes pulse{0%{box-shadow:0 0 15px rgba(255,77,141,0.6);}50%{box-shadow:0 0 35px rgba(255,30,100,1);}100%{box-shadow:0 0 15px rgba(255,77,141,0.6);}}
+
+/* Responsive */
+@media(max-width:600px){.trend-card video,.trend-card img{height:40vh;}}
 </style>
 </head>
 <body>
@@ -60,11 +66,9 @@ header button:hover{background:var(--secondary);color:white;}
   <div class="modal">
     <div class="close-btn" id="closeLogin">×</div>
     <h2>Login / Signup</h2>
-    <input type="text" id="loginUsername" placeholder="Username"/>
-    <input type="email" id="loginEmail" placeholder="Email"/>
-    <input type="password" id="loginPassword" placeholder="Password (optional)"/>
-    <button id="loginMagicLink">Send Magic Link</button>
-    <button id="loginBtnModal">Login / Signup</button>
+    <input type="email" id="loginEmail" placeholder="Your Email"/>
+    <button id="magicLinkBtn">Send Magic Link</button>
+    <p style="font-size:0.85rem;color:#aaa;margin-top:0.5rem;text-align:center;">You will receive a magic link via email</p>
   </div>
 </div>
 
@@ -94,11 +98,8 @@ const supabase=createClient(supabaseUrl,supabaseKey);
 const loginBtn=document.getElementById("loginBtn");
 const loginModal=document.getElementById("loginModal");
 const closeLogin=document.getElementById("closeLogin");
-const loginMagicLink=document.getElementById("loginMagicLink");
-const loginBtnModal=document.getElementById("loginBtnModal");
-const loginUsername=document.getElementById("loginUsername");
+const magicLinkBtn=document.getElementById("magicLinkBtn");
 const loginEmail=document.getElementById("loginEmail");
-const loginPassword=document.getElementById("loginPassword");
 
 const openPostBtn=document.getElementById("openPostBtn");
 const postModal=document.getElementById("postModal");
@@ -110,7 +111,6 @@ const postPreview=document.getElementById("postPreview");
 const submitPost=document.getElementById("submitPost");
 
 const feed=document.querySelector(".feed");
-
 let currentUser=null;
 let generatedImage=null;
 
@@ -120,30 +120,25 @@ closeLogin.onclick=()=>loginModal.style.display="none";
 openPostBtn.onclick=()=>postModal.style.display="flex";
 closePost.onclick=()=>{postModal.style.display="none"; postPreview.innerHTML=""; generatedImage=null;};
 
-// Magic link
-loginMagicLink.onclick=async()=>{
-  const email=loginEmail.value.trim();
-  const username=loginUsername.value.trim();
-  if(!email||!username){alert("Enter email & username"); return;}
-  const { error }=await supabase.auth.signInWithOtp({email,options:{data:{username}}});
-  if(error){alert(error.message);} else{alert("Magic link sent!"); loginModal.style.display="none";}
-}
-
-// Login/signup with password
-loginBtnModal.onclick=async()=>{
-  const email=loginEmail.value.trim();
-  const password=loginPassword.value.trim();
-  const username=loginUsername.value.trim();
-  if(!email||!username){alert("Enter email & username"); return;}
-  let { data,error }=await supabase.auth.signInWithPassword({email,password});
-  if(error){
-    let { error: signUpError }=await supabase.auth.signUp({email,password,options:{data:{username}}});
-    if(signUpError){alert(signUpError.message); return;}
-    await supabase.auth.signInWithPassword({email,password});
+// Auth state listener
+supabase.auth.onAuthStateChange((_event, session) => {
+  if(session?.user){
+    currentUser=session.user;
+    loginBtn.textContent="Logged in as " + (currentUser.email.split("@")[0]);
+    loginModal.style.display="none";
+    loadFeed();
+  }else{
+    currentUser=null;
+    loginBtn.textContent="Login / Signup";
   }
-  currentUser=(await supabase.auth.getUser()).data.user;
-  alert("Logged in as "+currentUser.user_metadata.username);
-  loginModal.style.display="none";
+});
+
+// Send Magic Link
+magicLinkBtn.onclick=async()=>{
+  const email=loginEmail.value.trim();
+  if(!email){alert("Enter email"); return;}
+  const { error } = await supabase.auth.signInWithOtp({email});
+  if(error){alert(error.message);} else{alert("Check your email for the magic link");}
 }
 
 // AI image generation
@@ -168,7 +163,7 @@ submitPost.onclick=async()=>{
     generatedImage=null;
   }
   const caption=postCaption.value.trim();
-  await supabase.from("trends").insert([{username:currentUser.user_metadata.username,url,caption,type:"image"}]);
+  await supabase.from("trends").insert([{username:currentUser.email.split("@")[0],url,caption,type:"image"}]);
   postCaption.value=""; postPrompt.value=""; postPreview.innerHTML=""; postModal.style.display="none";
   alert("Trend posted!");
   loadFeed();
