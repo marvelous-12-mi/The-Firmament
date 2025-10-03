@@ -7,68 +7,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --white: #ffffff;
-  --black: #111111;
-  --orange: #ff6a00;
-  --gray: #999999;
-  --card: #f9f9f9;
+  --white:#ffffff; --black:#111111; --orange:#ff6a00; --gray:#999999; --card:#f9f9f9;
 }
-* {margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif;}
-body {background:var(--white); color:var(--black);}
-header {
-  position:sticky; top:0; width:100%; background:var(--black); color:var(--white);
-  display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem; z-index:100;
-}
-header h1 { font-size:1.8rem; font-weight:700; color:var(--orange); }
-header button {
-  background:var(--orange); color:var(--white); border:none; border-radius:999px; padding:0.5rem 1rem;
-  cursor:pointer; font-weight:600; transition:0.3s;
-}
-header button:hover { background:#ff9500; }
-
-main { max-width:900px; margin:2rem auto; padding:0 1rem; }
-.feed { display:flex; flex-direction:column; gap:2rem; }
-
-.trend-card {
-  background:var(--card); border-radius:15px; padding:1rem; box-shadow:0 4px 15px rgba(0,0,0,0.1);
-  display:flex; flex-direction:column; gap:0.5rem; transition:0.3s;
-}
-.trend-card:hover { transform:scale(1.02); }
-.trend-card img, .trend-card video, .trend-card iframe { width:100%; border-radius:12px; margin-top:0.5rem; }
-
-.trend-header { display:flex; align-items:center; gap:0.8rem; }
-.trend-header img { width:40px; height:40px; border-radius:50%; object-fit:cover; }
-.trend-header span { font-weight:700; color:var(--black); }
-
-.trend-text { color:var(--black); font-size:1rem; margin-top:0.3rem; }
-.trend-actions { display:flex; gap:1rem; margin-top:0.5rem; }
-
-.post-btn {
-  position:fixed; bottom:2rem; right:2rem; width:70px; height:70px;
-  border-radius:50%; background:var(--orange); color:var(--white);
-  display:flex; justify-content:center; align-items:center; font-size:2rem;
-  cursor:pointer; box-shadow:0 0 25px rgba(255,106,0,0.5); z-index:200; transition:0.3s;
-}
-.post-btn:hover { transform:scale(1.1); }
-
-.modal-bg {
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:300;
-}
-.modal {
-  background:var(--white); padding:2rem; border-radius:15px; width:90%; max-width:500px;
-  max-height:90vh; overflow-y:auto; position:relative;
-}
-.modal h2 { margin-bottom:1rem; color:var(--orange); }
-.modal input, .modal textarea, .modal button { width:100%; margin:0.5rem 0; padding:0.7rem; border-radius:10px; border:1px solid #ccc; }
-.modal textarea{ resize:none; }
-.modal button { background:var(--orange); color:var(--white); border:none; cursor:pointer; font-weight:600; }
-.modal button:hover { background:#ff9500; }
-.close-btn {
-  position:absolute; top:1rem; right:1rem; background:var(--orange); color:var(--white);
-  width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center;
-  cursor:pointer; font-weight:bold;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:var(--white);color:var(--black);}
+header{position:sticky;top:0;width:100%;background:var(--black);color:var(--white);display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;z-index:100;}
+header h1{font-size:1.8rem;font-weight:700;color:var(--orange);}
+header button{background:var(--orange);color:var(--white);border:none;border-radius:999px;padding:0.5rem 1rem;cursor:pointer;font-weight:600;transition:0.3s;}
+header button:hover{background:#ff9500;}
+main{max-width:900px;margin:2rem auto;padding:0 1rem;}
+.feed{display:flex;flex-direction:column;gap:2rem;}
+.trend-card{background:var(--card);border-radius:15px;padding:1rem;box-shadow:0 4px 15px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:0.5rem;transition:0.3s;}
+.trend-card:hover{transform:scale(1.02);}
+.trend-card img,.trend-card video,.trend-card iframe{width:100%;border-radius:12px;margin-top:0.5rem;}
+.trend-header{display:flex;align-items:center;gap:0.8rem;}
+.trend-header img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+.trend-header span{font-weight:700;color:var(--black);}
+.trend-text{color:var(--black);font-size:1rem;margin-top:0.3rem;}
+.post-btn{position:fixed;bottom:2rem;right:2rem;width:70px;height:70px;border-radius:50%;background:var(--orange);color:var(--white);display:flex;justify-content:center;align-items:center;font-size:2rem;cursor:pointer;box-shadow:0 0 25px rgba(255,106,0,0.5);z-index:200;transition:0.3s;}
+.post-btn:hover{transform:scale(1.1);}
+.modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:300;}
+.modal{background:var(--white);padding:2rem;border-radius:15px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;}
+.modal h2{margin-bottom:1rem;color:var(--orange);}
+.modal input,.modal textarea,.modal button{width:100%;margin:0.5rem 0;padding:0.7rem;border-radius:10px;border:1px solid #ccc;}
+.modal textarea{resize:none;}
+.modal button{background:var(--orange);color:var(--white);border:none;cursor:pointer;font-weight:600;}
+.modal button:hover{background:#ff9500;}
+.close-btn{position:absolute;top:1rem;right:1rem;background:var(--orange);color:var(--white);width:30px;height:30px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:bold;}
 </style>
 </head>
 <body>
@@ -87,6 +52,10 @@ main { max-width:900px; margin:2rem auto; padding:0 1rem; }
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <div class="close-btn" id="closeModal">×</div>
+    <h2>Sign In / Sign Up</h2>
+    <input type="email" id="emailInput" placeholder="Email" required>
+    <button id="magicLinkBtn">Send Magic Link</button>
+    <hr style="margin:1rem 0;">
     <h2>Post a Trend</h2>
     <input type="text" id="captionInput" placeholder="Caption..." required>
     <input type="text" id="youtubeInput" placeholder="YouTube Link (optional)">
@@ -119,6 +88,7 @@ const youtubeInput = document.getElementById("youtubeInput");
 const imagePrompt = document.getElementById("imagePrompt");
 const preview = document.getElementById("preview");
 const feed = document.getElementById("feed");
+const emailInput = document.getElementById("emailInput");
 
 let currentUser = null;
 let generatedImage = null;
@@ -129,10 +99,10 @@ let mediaRecorder, recordedBlobs = [];
 postBtn.onclick = ()=>modalBg.style.display="flex";
 closeModal.onclick = ()=>modalBg.style.display="none";
 
-// --- Supabase Auth (Magic Link) ---
-authBtn.onclick = async ()=>{
-  const email = prompt("Enter your email:");
-  if(!email) return;
+// --- Magic Link Login ---
+document.getElementById("magicLinkBtn").onclick = async ()=>{
+  const email = emailInput.value.trim();
+  if(!email) return alert("Enter your email!");
   const { error } = await supabase.auth.signInWithOtp({ email, options:{emailRedirectTo:window.location.href} });
   if(error) return alert(error.message);
   alert("Magic link sent! Check your email.");
@@ -143,7 +113,7 @@ supabase.auth.onAuthStateChange((_event, session)=>{
   if(currentUser) authBtn.style.display="none";
 });
 
-// --- Generate AI Image ---
+// --- AI Image ---
 generateImageBtn.onclick = ()=>{
   const prompt = imagePrompt.value.trim();
   if(!prompt) return alert("Enter prompt!");
@@ -151,14 +121,14 @@ generateImageBtn.onclick = ()=>{
   preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
 };
 
-// --- Record 5s Video ---
+// --- Record Video ---
 recordVideoBtn.onclick = async ()=>{
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
     preview.innerHTML = `<video autoplay muted></video>`;
     const videoEl = preview.querySelector("video");
     videoEl.srcObject = stream;
-    recordedBlobs = [];
+    recordedBlobs=[];
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedBlobs.push(e.data); };
     mediaRecorder.start();
@@ -169,7 +139,7 @@ recordVideoBtn.onclick = async ()=>{
       videoEl.src = URL.createObjectURL(recordedVideoBlob);
       videoEl.controls=true;
     };
-  } catch(err){ console.error(err); alert("Camera/mic access required!"); }
+  } catch(err){ alert("Camera/mic access required!"); }
 };
 
 // --- Post Trend ---
@@ -179,7 +149,6 @@ postTrendBtn.onclick = async ()=>{
   const youtubeLink = youtubeInput.value.trim();
   let url=null, video_url=null, type="text";
 
-  // Upload AI Image
   if(generatedImage){
     const resp = await fetch(generatedImage);
     const blob = await resp.blob();
@@ -187,38 +156,30 @@ postTrendBtn.onclick = async ()=>{
     const { error } = await supabase.storage.from("videos").upload(filePath, blob, {upsert:true});
     if(error) return alert(error.message);
     url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
-    type="image";
-    generatedImage=null;
+    type="image"; generatedImage=null;
   }
 
-  // Upload Recorded Video
   if(recordedVideoBlob){
     const filePath = `video-${Date.now()}.webm`;
     const { error } = await supabase.storage.from("videos").upload(filePath, recordedVideoBlob, {upsert:true});
     if(error) return alert(error.message);
     video_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
-    type="video";
-    recordedVideoBlob=null;
+    type="video"; recordedVideoBlob=null;
   }
 
-  // YouTube Link
   if(youtubeLink){ type="youtube"; video_url=youtubeLink; }
 
-  // Insert trend
   const { error } = await supabase.from("trends").insert([{
     user_id: currentUser.id,
-    caption: caption || null,
+    caption: caption||null,
     url,
     video_url,
     type,
-    username: currentUser.email.split("@")[0] || "anon",
-    avatar: currentUser.user_metadata?.avatar_url || null,
-    text: caption || null
+    username: currentUser.email.split("@")[0]||"anon",
+    avatar: currentUser.user_metadata?.avatar_url||null,
+    text: caption||null
   }]);
-
-  if(error) return alert(error.message);
-
-  // Reset
+  if(error) return alert("Supabase Insert Error: "+error.message);
   captionInput.value=""; youtubeInput.value=""; imagePrompt.value=""; preview.innerHTML=""; modalBg.style.display="none";
   loadFeed();
 };
@@ -229,25 +190,17 @@ async function loadFeed(){
   if(error){ console.error(error); return; }
   feed.innerHTML="";
   data.forEach(trend=>{
-    const card = document.createElement("div");
-    card.className="trend-card";
-
-    // Media
-    if(trend.type==="image" && trend.url) card.innerHTML = `<img src="${trend.url}">`;
-    else if(trend.type==="video" && trend.video_url) card.innerHTML = `<video src="${trend.video_url}" controls></video>`;
-    else if(trend.type==="youtube" && trend.video_url) {
+    const card=document.createElement("div"); card.className="trend-card";
+    if(trend.type==="image" && trend.url) card.innerHTML=`<img src="${trend.url}">`;
+    else if(trend.type==="video" && trend.video_url) card.innerHTML=`<video src="${trend.video_url}" controls></video>`;
+    else if(trend.type==="youtube" && trend.video_url){
       let vid = trend.video_url.replace("watch?v=","embed/");
-      card.innerHTML = `<iframe src="${vid}" frameborder="0" allowfullscreen style="width:100%;height:300px;border-radius:12px;"></iframe>`;
+      card.innerHTML=`<iframe src="${vid}" frameborder="0" allowfullscreen style="width:100%;height:300px;border-radius:12px;"></iframe>`;
     }
-
-    // Info
-    const info = document.createElement("div");
-    info.className="trend-header";
-    info.innerHTML = `<img src="${trend.avatar||'https://placehold.co/40x40'}"><span>@${trend.username||"anon"}</span>`;
-    const textDiv = document.createElement("div");
-    textDiv.className="trend-text"; textDiv.innerText = trend.caption || "";
-    card.appendChild(info); card.appendChild(textDiv);
-    feed.appendChild(card);
+    const info=document.createElement("div"); info.className="trend-header";
+    info.innerHTML=`<img src="${trend.avatar||'https://placehold.co/40x40'}"><span>@${trend.username||'anon'}</span>`;
+    const textDiv=document.createElement("div"); textDiv.className="trend-text"; textDiv.innerText=trend.caption||"";
+    card.appendChild(info); card.appendChild(textDiv); feed.appendChild(card);
   });
 }
 loadFeed();
