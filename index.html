@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrendTime — AI Social</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.7.0/dist/tf.min.js"></script>
 <style>
 :root{
@@ -62,12 +62,12 @@ input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;m
 </div>
 
 <script type="module">
-// -------- Supabase setup --------
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 const supabaseUrl = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// -------- Global variables --------
 let currentUser = null;
 let postsCache = [];
 
@@ -82,7 +82,6 @@ function showModal(html){ modalContainer.innerHTML = html; modalBackdrop.style.d
 function closeModal(){ modalBackdrop.style.display='none'; modalContainer.innerHTML=''; }
 modalBackdrop.addEventListener('click',(e)=>{ if(e.target===modalBackdrop) closeModal(); });
 
-// -------- Sample stories --------
 const stories = [
   {user:"elon",avatar:"https://placehold.co/60x60?text=E"},
   {user:"trending",avatar:"https://placehold.co/60x60?text=T"},
@@ -95,7 +94,6 @@ stories.forEach(st=>{
   storyRow.appendChild(div);
 });
 
-// -------- Render feed --------
 function renderFeed(posts){
   feedWrap.innerHTML='';
   posts.forEach(post=>{
@@ -128,7 +126,6 @@ function renderFeed(posts){
   });
 }
 
-// -------- Load posts from Supabase --------
 async function loadPosts(){
   const {data,error}=await supabase.from('trends').select('*').order('created_at',{ascending:false});
   if(error){ toast(error.message); return; }
@@ -149,22 +146,24 @@ loginBtn.addEventListener('click',()=>{
     </div>
   `);
 
-  document.getElementById('loginSubmit').onclick=async ()=>{
-    const email=document.getElementById('emailInput').value;
-    const username=document.getElementById('usernameInput').value||email.split('@')[0];
+  document.getElementById('loginSubmit').onclick = async () => {
+    const email = document.getElementById('emailInput').value;
+    const password = 'password123';
+    const username = document.getElementById('usernameInput').value || email.split('@')[0];
     if(!email){ toast("Enter email"); return; }
-    const {data,error}=await supabase.auth.signInWithPassword({email,password:'password123'});
+    const { data, error } = await supabase.auth.signInWithPassword({email,password});
     if(error){ toast(error.message); return; }
     currentUser={email,username};
     toast("Signed in as "+username+(email==="sonofjean2@gmail.com"?" (Admin)":""));
     closeModal();
   };
 
-  document.getElementById('signupSubmit').onclick=async ()=>{
-    const email=document.getElementById('emailInput').value;
-    const username=document.getElementById('usernameInput').value||email.split('@')[0];
+  document.getElementById('signupSubmit').onclick = async () => {
+    const email = document.getElementById('emailInput').value;
+    const password = 'password123';
+    const username = document.getElementById('usernameInput').value || email.split('@')[0];
     if(!email){ toast("Enter email"); return; }
-    const {data,error}=await supabase.auth.signUp({email,password:'password123'});
+    const { data, error } = await supabase.auth.signUp({email,password});
     if(error){ toast(error.message); return; }
     currentUser={email,username};
     toast("Account created! Signed in as "+username+(email==="sonofjean2@gmail.com"?" (Admin)":""));
@@ -187,7 +186,6 @@ postBtn.addEventListener('click',()=>{
 
   document.getElementById('aiCoverBtn').onclick=async ()=>{
     if(!postFile.files[0]){ toast("Select image/video first"); return; }
-    // -------- TensorFlow.js placeholder --------
     toast("Applying AI TensorFlow.js style transfer...");
     coverImg="https://placekitten.com/602/400"; // placeholder
   };
@@ -197,12 +195,10 @@ postBtn.addEventListener('click',()=>{
     const file=postFile.files[0];
     if(!file){ toast("Select a file"); return; }
 
-    // upload to Supabase storage
     const {data,error}=await supabase.storage.from('posts').upload(`${Date.now()}_${file.name}`,file);
     if(error){ toast(error.message); return; }
     const url= supabase.storage.from('posts').getPublicUrl(data.path).publicUrl;
 
-    // insert into trends table
     const {data:postData,error:postError}=await supabase.from('trends').insert([{
       user:currentUser.username,
       email:currentUser.email,
