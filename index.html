@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>TrendTime — AI Social</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.7.0/dist/tf.min.js"></script>
 <style>
 :root{
-  --bg:#fefefe; --card:#fff; --muted:#666;
+  --bg:#f5f5f5; --card:#fff; --muted:#666;
   --accent1:#ff6a00; --accent2:#ff1f71; --glass: rgba(0,0,0,0.05);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
@@ -20,200 +20,183 @@ header .actions{display:flex;gap:12px;align-items:center;}
 button.btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;padding:10px 16px;border-radius:999px;font-weight:600;cursor:pointer;transition:0.2s;}
 button.btn:hover{opacity:0.85;}
 .app{display:grid;grid-template-columns:1fr;gap:16px;padding:16px;}
-.feed{display:flex;flex-direction:column;gap:20px;max-width:600px;margin:0 auto;}
-.post-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.1);transition:transform 0.2s;}
-.post-card:hover{transform:scale(1.02);}
-.post-media{width:100%;height:400px;object-fit:cover;background:#000;}
+@media(min-width:900px){.app{grid-template-columns:280px 1fr 300px;}}
+.center{display:flex;flex-direction:column;gap:12px;}
+.feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;padding:8px;}
+.post-card{position:relative;background:var(--card);margin-bottom:18px;border-radius:14px;overflow:hidden;scroll-snap-align:start;box-shadow:0 8px 20px rgba(0,0,0,0.1);}
+.post-media{width:100%;height:300px;object-fit:cover;background:#000;border-radius:12px;}
 .post-info{padding:12px;}
-.meta{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
-.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.05);}
-.username{font-weight:700;}
 .caption{color:var(--muted);}
-.actions-row{display:flex;gap:10px;margin-top:8px;align-items:center;}
-.actions-row button{flex:1;}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:80;}
-.modal{background:var(--card);padding:20px;border-radius:12px;width:90%;max-width:480px;}
-input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-bottom:10px;}
-.story-row{display:flex;overflow-x:auto;gap:12px;margin-bottom:12px;padding:8px 0;}
-.story{width:60px;height:60px;border-radius:50%;border:2px solid var(--accent1);flex-shrink:0;cursor:pointer;}
-.story img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
-@media(max-width:600px){
-  .post-media{height:300px;}
-  header h1{font-size:1.3rem;}
-}
+input,textarea{width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;margin-bottom:10px;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:90;}
+.modal{background:var(--card);padding:18px;border-radius:14px;width:90%;max-width:520px;box-shadow:0 0 20px rgba(0,0,0,0.1);}
+video#recordPreview{width:100%;border-radius:12px;background:#000;}
+.post-controls{display:flex;gap:10px;margin-top:6px;}
+.post-controls button{flex:1;padding:6px;border-radius:12px;border:none;cursor:pointer;transition:0.2s;}
+.post-controls button:hover{opacity:0.8;}
+img.ai-image{width:100%;border-radius:12px;margin-top:8px;}
 </style>
 </head>
 <body>
+
 <header>
-  <h1>TrendTime</h1>
-  <div class="actions">
-    <button id="loginBtn" class="btn">Sign In / Sign Up</button>
-    <button id="postBtn" class="btn">Post</button>
-  </div>
+<h1>TrendTime</h1>
+<div class="actions">
+<button id="loginBtn" class="btn">Sign In / Sign Up</button>
+<button id="postBtn" class="btn">New Post</button>
+</div>
 </header>
 
 <div class="app">
-  <div class="story-row" id="storyRow"></div>
-  <div class="feed" id="feedWrap"></div>
+<main class="center">
+<div class="feed" id="feedWrap"></div>
+</main>
 </div>
 
 <div id="modalBackdrop" class="modal-backdrop">
-  <div id="modalContainer" class="modal"></div>
+<div class="modal" id="modalContent"></div>
 </div>
 
 <script type="module">
+// -------- Supabase setup --------
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
 const supabaseUrl = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-let currentUser = null;
-let postsCache = [];
+// -------- Global variables --------
+let currentUser=null;
+const feedWrap=document.getElementById('feedWrap');
+const modalBackdrop=document.getElementById('modalBackdrop');
+const modalContent=document.getElementById('modalContent');
+const loginBtn=document.getElementById('loginBtn');
+const postBtn=document.getElementById('postBtn');
 
-const feedWrap = document.getElementById('feedWrap');
-const loginBtn = document.getElementById('loginBtn');
-const postBtn = document.getElementById('postBtn');
-const modalBackdrop = document.getElementById('modalBackdrop');
-const modalContainer = document.getElementById('modalContainer');
+// -------- Helpers --------
+function toast(msg){alert(msg);}
+function showModal(html){modalContent.innerHTML=html; modalBackdrop.style.display='flex';}
+function closeModal(){modalBackdrop.style.display='none'; modalContent.innerHTML='';}
+modalBackdrop.addEventListener('click',e=>{if(e.target===modalBackdrop) closeModal();});
 
-function toast(msg){ alert(msg); }
-function showModal(html){ modalContainer.innerHTML = html; modalBackdrop.style.display='flex'; }
-function closeModal(){ modalBackdrop.style.display='none'; modalContainer.innerHTML=''; }
-modalBackdrop.addEventListener('click',(e)=>{ if(e.target===modalBackdrop) closeModal(); });
-
-const stories = [
-  {user:"elon",avatar:"https://placehold.co/60x60?text=E"},
-  {user:"trending",avatar:"https://placehold.co/60x60?text=T"},
-  {user:"sonofjean2",avatar:"https://placehold.co/60x60?text=S"}
-];
-const storyRow=document.getElementById('storyRow');
-stories.forEach(st=>{
-  const div=document.createElement('div'); div.className='story';
-  const img=document.createElement('img'); img.src=st.avatar; div.appendChild(img);
-  storyRow.appendChild(div);
-});
-
-function renderFeed(posts){
+// -------- Load feed --------
+async function loadFeed(){
   feedWrap.innerHTML='';
-  posts.forEach(post=>{
+  const {data,error}=await supabase.from('trends').select('*').order('created_at',{ascending:false});
+  if(error){console.log(error);return;}
+  data.forEach(post=>{
     const card=document.createElement('div'); card.className='post-card';
-    const media=document.createElement('img'); media.src=post.cover||post.media; media.className='post-media'; card.appendChild(media);
+    if(post.type==='video'){
+      const video=document.createElement('video'); video.src=post.url; video.controls=true; video.loop=true; video.muted=false; video.className='post-media';
+      card.appendChild(video);
+    }else if(post.type==='image'){
+      const img=document.createElement('img'); img.src=post.url; img.className='post-media ai-image';
+      card.appendChild(img);
+    }
     const info=document.createElement('div'); info.className='post-info';
-    info.innerHTML=`<div class="meta"><img class="avatar" src="${post.avatar||'https://placehold.co/44x44'}"><div class="username">${post.user}</div></div>
-    <div class="caption">${post.caption}</div>`;
+    info.innerHTML=`<div class="caption">${post.caption||''}</div>`;
     card.appendChild(info);
-
-    const actionsRow=document.createElement('div'); actionsRow.className='actions-row';
-    const likeBtn=document.createElement('button'); likeBtn.textContent=`❤️ ${post.likes}`; actionsRow.appendChild(likeBtn);
-    const deleteBtn=document.createElement('button'); deleteBtn.textContent='🗑️'; actionsRow.appendChild(deleteBtn);
-    card.appendChild(actionsRow);
-
-    likeBtn.addEventListener('click',async ()=>{
-      post.likes++;
-      await supabase.from('trends').update({likes:post.likes}).eq('id',post.id);
-      renderFeed(postsCache);
-    });
-
-    deleteBtn.addEventListener('click',async ()=>{
-      if(!currentUser){ toast("Sign in to delete"); return; }
-      if(currentUser.email!=="sonofjean2@gmail.com" && currentUser.email!==post.user){ toast("Not authorized"); return; }
-      await supabase.from('trends').delete().eq('id',post.id);
-      postsCache=postsCache.filter(p=>p.id!==post.id); renderFeed(postsCache);
-    });
-
     feedWrap.appendChild(card);
   });
 }
+loadFeed();
 
-async function loadPosts(){
-  const {data,error}=await supabase.from('trends').select('*').order('created_at',{ascending:false});
-  if(error){ toast(error.message); return; }
-  postsCache = data;
-  renderFeed(postsCache);
-}
-loadPosts();
-
-// -------- Login / Signup --------
-loginBtn.addEventListener('click',()=>{
+// -------- Auth modal --------
+loginBtn.onclick=()=>{
   showModal(`
     <h3>Sign In / Sign Up</h3>
-    <input id="emailInput" placeholder="Email" type="email">
-    <input id="usernameInput" placeholder="Display Name" type="text">
+    <input type="email" id="emailInput" placeholder="Email">
+    <input type="password" id="passInput" placeholder="Password">
     <div style="display:flex;gap:8px;">
-      <button id="loginSubmit" class="btn">Sign In</button>
-      <button id="signupSubmit" class="btn">Sign Up</button>
+      <button id="signInBtn" class="btn">Sign In</button>
+      <button id="signUpBtn" class="btn">Sign Up</button>
     </div>
   `);
-
-  document.getElementById('loginSubmit').onclick = async () => {
-    const email = document.getElementById('emailInput').value;
-    const password = 'password123';
-    const username = document.getElementById('usernameInput').value || email.split('@')[0];
-    if(!email){ toast("Enter email"); return; }
-    const { data, error } = await supabase.auth.signInWithPassword({email,password});
-    if(error){ toast(error.message); return; }
-    currentUser={email,username};
-    toast("Signed in as "+username+(email==="sonofjean2@gmail.com"?" (Admin)":""));
+  document.getElementById('signInBtn').onclick=async()=>{
+    const email=document.getElementById('emailInput').value;
+    const password=document.getElementById('passInput').value;
+    if(!email||!password){toast("Enter email & password");return;}
+    const {data,error}=await supabase.auth.signInWithPassword({email,password});
+    if(error){toast(error.message);return;}
+    currentUser=data.user;
+    toast("Signed in: "+email);
     closeModal();
   };
-
-  document.getElementById('signupSubmit').onclick = async () => {
-    const email = document.getElementById('emailInput').value;
-    const password = 'password123';
-    const username = document.getElementById('usernameInput').value || email.split('@')[0];
-    if(!email){ toast("Enter email"); return; }
-    const { data, error } = await supabase.auth.signUp({email,password});
-    if(error){ toast(error.message); return; }
-    currentUser={email,username};
-    toast("Account created! Signed in as "+username+(email==="sonofjean2@gmail.com"?" (Admin)":""));
+  document.getElementById('signUpBtn').onclick=async()=>{
+    const email=document.getElementById('emailInput').value;
+    const password=document.getElementById('passInput').value;
+    if(!email||!password){toast("Enter email & password");return;}
+    const {data,error}=await supabase.auth.signUp({email,password});
+    if(error){toast(error.message);return;}
+    currentUser=data.user;
+    toast("Account created: "+email);
     closeModal();
   };
-});
+};
 
 // -------- Post modal --------
-postBtn.addEventListener('click',()=>{
-  if(!currentUser){ toast("Sign in to post"); return; }
+postBtn.onclick=()=>{
+  if(!currentUser){toast("Sign in first!");return;}
   showModal(`
     <h3>New Post</h3>
-    <input id="postCaption" placeholder="Caption...">
+    <input type="text" id="postCaption" placeholder="Caption">
     <input type="file" id="postFile">
-    <button id="aiCoverBtn" class="btn">🎨 Generate AI Cover</button>
-    <button id="submitPost" class="btn">Post</button>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button id="aiCaptionBtn" class="btn">✨ AI Caption</button>
+      <button id="aiImageBtn" class="btn">🎨 Generate AI Image</button>
+      <button id="submitPostBtn" class="btn">Post</button>
+    </div>
+    <div id="aiImagePreview"></div>
   `);
+
   const postFile=document.getElementById('postFile');
-  let coverImg="";
+  const postCaption=document.getElementById('postCaption');
+  const aiCaptionBtn=document.getElementById('aiCaptionBtn');
+  const aiImageBtn=document.getElementById('aiImageBtn');
+  const submitPostBtn=document.getElementById('submitPostBtn');
+  const aiImagePreview=document.getElementById('aiImagePreview');
 
-  document.getElementById('aiCoverBtn').onclick=async ()=>{
-    if(!postFile.files[0]){ toast("Select image/video first"); return; }
-    toast("Applying AI TensorFlow.js style transfer...");
-    coverImg="https://placekitten.com/602/400"; // placeholder
+  aiCaptionBtn.onclick=async()=>{
+    aiCaptionBtn.disabled=true; aiCaptionBtn.textContent='Thinking...';
+    try{
+      const prompt="Short catchy caption with emojis for a trending post";
+      const res=await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
+      const text=await res.text();
+      postCaption.value=text.slice(0,120)||"🔥 Trending!";
+    }catch(e){console.log(e);}
+    aiCaptionBtn.disabled=false; aiCaptionBtn.textContent='✨ AI Caption';
   };
 
-  document.getElementById('submitPost').onclick=async ()=>{
-    const caption=document.getElementById('postCaption').value;
+  aiImageBtn.onclick=async()=>{
+    if(!postFile.files[0]){toast("Select file first");return;}
+    aiImageBtn.disabled=true; aiImageBtn.textContent='Generating...';
+    try{
+      const prompt="Create an AI image based on this file";
+      const file=postFile.files[0];
+      const formData=new FormData();
+      formData.append("file",file);
+      formData.append("prompt",prompt);
+      const res=await fetch("https://image.pollinations.ai/prompt",{method:"POST",body:formData});
+      const blob=await res.blob();
+      const url=URL.createObjectURL(blob);
+      aiImagePreview.innerHTML=`<img src="${url}" class="ai-image">`;
+    }catch(e){console.log(e);}
+    aiImageBtn.disabled=false; aiImageBtn.textContent='🎨 Generate AI Image';
+  };
+
+  submitPostBtn.onclick=async()=>{
+    if(!postFile.files[0]){toast("Select file"); return;}
     const file=postFile.files[0];
-    if(!file){ toast("Select a file"); return; }
-
-    const {data,error}=await supabase.storage.from('posts').upload(`${Date.now()}_${file.name}`,file);
-    if(error){ toast(error.message); return; }
-    const url= supabase.storage.from('posts').getPublicUrl(data.path).publicUrl;
-
-    const {data:postData,error:postError}=await supabase.from('trends').insert([{
-      user:currentUser.username,
-      email:currentUser.email,
-      caption,
-      media:url,
-      cover:coverImg,
-      likes:0
-    }]).select();
-
-    if(postError){ toast(postError.message); return; }
-    postsCache.unshift(postData[0]);
-    renderFeed(postsCache);
+    const type=file.type.startsWith("video")?"video":"image";
+    const fileName=`${Date.now()}_${file.name}`;
+    const {error}=await supabase.storage.from('media').upload(fileName,file,{upsert:true});
+    if(error){toast(error.message);return;}
+    const {data}=supabase.storage.from('media').getPublicUrl(fileName);
+    await supabase.from('trends').insert([{url:data.publicUrl,caption:postCaption.value,type}]);
+    toast("Posted!");
     closeModal();
+    loadFeed();
   };
-});
+};
 </script>
 </body>
 </html>
