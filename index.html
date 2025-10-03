@@ -1,273 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TrendTime AI 🔥</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --primary: #ff4d6d;
-  --secondary: #1e90ff;
-  --accent: #00c896;
-  --light: #ffffff;
-  --dark: #111111;
-  --gray: #f4f4f4;
-}
-
-* {
-  margin: 0; padding: 0; box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-body {
-  background: var(--light);
-  color: var(--dark);
-  overflow-x: hidden;
-}
-
-/* Header */
-header {
-  position: sticky; top: 0; z-index: 100;
-  width: 100%;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 1.5rem;
-  background: var(--light);
-  border-bottom: 1px solid #eee;
-  box-shadow: 0 3px 15px rgba(0,0,0,0.05);
-}
-header h1 {
-  font-size: 1.5rem; font-weight: 700;
-  background: linear-gradient(45deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-header button {
-  background: linear-gradient(145deg, var(--primary), var(--secondary));
-  color: white; border: none;
-  padding: 0.5rem 1.2rem; border-radius: 999px;
-  font-weight: bold; cursor: pointer;
-  transition: 0.3s;
-}
-header button:hover { opacity: 0.85; }
-
-/* Side Panel */
-.side-panel {
-  position: fixed; top: 0; left: -400px; height: 100vh; width: 360px;
-  background: var(--gray); box-shadow: 5px 0 25px rgba(0,0,0,0.2);
-  transition: left 0.3s ease; padding: 2rem; z-index: 200;
-  overflow-y: auto;
-}
-.side-panel.active { left: 0; }
-.side-panel h2, .side-panel h3 { margin-bottom: 1rem; color: var(--primary); }
-.side-panel input, .side-panel select, .side-panel button {
-  margin: 0.5rem 0; padding: 0.8rem; width: 100%;
-  border-radius: 10px; border: 1px solid #ddd;
-  background: #fff; color: #333;
-}
-.side-panel input::placeholder { color: #aaa; }
-.side-panel button {
-  background: linear-gradient(145deg, var(--primary), var(--secondary));
-  border: none; color: white;
-  font-weight: bold; cursor: pointer;
-}
-.side-panel button:hover { opacity: 0.9; }
-
-/* Feed */
-.feed {
-  display: flex; flex-direction: column; gap: 2rem;
-  padding: 1rem; max-width: 700px; margin: 2rem auto;
-}
-.trend-card {
-  background: white;
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-  transition: transform 0.2s;
-}
-.trend-card:hover { transform: scale(1.01); }
-.trend-card video, .trend-card img {
-  width: 100%; border-bottom: 1px solid #eee; max-height: 60vh; object-fit: cover;
-}
-.trend-info { padding: 1rem; }
-.trend-info h2 { font-size: 1.2rem; margin-bottom: 0.4rem; color: var(--secondary); }
-.trend-info p { color: #555; font-size: 0.95rem; }
-
-/* Actions */
-.trend-actions {
-  display: flex; gap: 1rem; padding: 0 1rem 1rem;
-}
-.action-btn {
-  background: linear-gradient(145deg, var(--primary), var(--secondary));
-  width: 45px; height: 45px; border-radius: 50%;
-  display: flex; justify-content: center; align-items: center;
-  font-size: 1.2rem; cursor: pointer; color: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-}
-.action-btn:hover { transform: scale(1.1); }
-
-/* Post floating button */
-.post-btn {
-  position: fixed; bottom: 2rem; right: 2rem;
-  width: 70px; height: 70px; border-radius: 50%;
-  display: flex; justify-content: center; align-items: center;
-  font-size: 1.8rem; color: white;
-  background: linear-gradient(145deg, var(--secondary), var(--primary));
-  cursor: pointer; z-index: 200;
-  box-shadow: 0 0 25px rgba(0,0,0,0.25);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);}
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrendTime ✨</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --pink: #ff4d8d;
+      --orange: #ff914d;
+      --white: #ffffff;
+      --bg: linear-gradient(135deg, var(--pink), var(--orange));
+    }
+    * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    body {
+      margin: 0; padding: 0; 
+      background: var(--white);
+      color: #333;
+    }
+    header {
+      background: var(--bg);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0; z-index: 100;
+    }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    nav button {
+      background: var(--white);
+      border: none; border-radius: 20px;
+      padding: 0.5rem 1rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--pink);
+    }
+    main {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    .composer {
+      background: #fff;
+      border-radius: 15px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .composer textarea, .composer input {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.7rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      resize: none;
+    }
+    .composer button {
+      background: var(--bg);
+      color: var(--white);
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .feed .trend {
+      background: #fff;
+      border-radius: 15px;
+      margin-bottom: 1.2rem;
+      padding: 1rem;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .feed img, .feed video {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+    }
+    .admin-badge {
+      background: gold;
+      color: #333;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-left: 5px;
+    }
+    #settings {
+      display: none;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>TrendTime ✨</h1>
+    <nav>
+      <button onclick="showFeed()">Feed</button>
+      <button onclick="showSettings()">Settings</button>
+      <button onclick="signOut()">Sign Out</button>
+    </nav>
+  </header>
 
-<header>
-  <button id="menuBtn">☰</button>
-  <h1>TrendTime AI</h1>
-  <button id="authBtn">Login</button>
-</header>
+  <main>
+    <section id="composer" class="composer">
+      <textarea id="captionInput" placeholder="What's trending?"></textarea>
+      <input type="text" id="imagePrompt" placeholder="Type a prompt for AI image..."/>
+      <button onclick="generateImage()">🎨 Generate Image</button>
+      <button onclick="recordVideo()">🎥 Record Video</button>
+      <button onclick="suggestCaption()">✨ AI Caption</button>
+      <button onclick="postTrend()">Post</button>
+      <div id="preview"></div>
+    </section>
 
-<!-- Side panel -->
-<div class="side-panel" id="sidePanel">
-  <h2>User Settings</h2>
-  <p id="userEmail">Not logged in</p>
-  <button id="logoutBtn" style="display:none;">Logout</button>
+    <section id="feed" class="feed"></section>
+    <section id="settings">
+      <h2>Settings</h2>
+      <input type="file" id="avatarUpload" />
+      <button onclick="updateAvatar()">Update Avatar</button>
+    </section>
+  </main>
 
-  <div class="settings-section">
-    <h3>Record & Post</h3>
-    <video id="preview" autoplay muted></video>
-    <button id="recordBtn">🎥 Start Recording</button>
-    <button id="stopBtn">⏹ Stop & Upload</button>
-    <input id="postCaption" type="text" placeholder="Caption">
-    <input id="postUrl" type="text" placeholder="or paste video URL">
-    <button id="postSubmit">Post</button>
-  </div>
+  <!-- Supabase -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient("https://kpdgmbjdaynplyjacuxd.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ");
+    let currentUser = null;
+    let generatedImage = null;
+    let recordedVideo = null;
 
-  <div class="settings-section">
-    <h3>Profile</h3>
-    <input type="text" id="username" placeholder="Username">
-    <input type="file" id="avatarUpload" accept="image/*">
-    <button id="saveProfile">Save Profile</button>
-  </div>
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const email = prompt("Enter email to sign in/signup:");
+        const password = prompt("Enter password:");
+        let { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          await supabase.auth.signUp({ email, password });
+          await supabase.auth.signInWithPassword({ email, password });
+        }
+      }
+      currentUser = (await supabase.auth.getUser()).data.user;
+      loadFeed();
+    }
+    init();
 
-  <div class="settings-section">
-    <h3>AI Tools</h3>
-    <button id="aiCaptionBtn">✨ Generate Caption</button>
-    <input type="text" id="aiPrompt" placeholder="Prompt for AI Image">
-    <button id="aiImageBtn">🖼 Generate Image</button>
-  </div>
-</div>
+    async function postTrend() {
+      const caption = document.getElementById("captionInput").value;
+      if (!caption && !generatedImage && !recordedVideo) {
+        alert("Write something or add media!");
+        return;
+      }
+      let url = null, type = "text";
+      if (generatedImage) { url = generatedImage; type = "image"; }
+      if (recordedVideo) { url = recordedVideo; type = "video"; }
+      let { error } = await supabase.from("trends").insert([{
+        user_id: currentUser.id,
+        caption, url, type,
+        avatar: currentUser.email === "sonofjean2@gmail.com" ? "👑" : "🙂"
+      }]);
+      if (error) { alert("Post failed: " + error.message); }
+      else { loadFeed(); document.getElementById("captionInput").value = ""; }
+    }
 
-<!-- Feed -->
-<main class="feed"></main>
-<div class="post-btn" id="postBtn">➕</div>
+    async function loadFeed() {
+      let { data } = await supabase.from("trends").select("*").order("id", { ascending: false });
+      const feed = document.getElementById("feed");
+      feed.innerHTML = "";
+      data.forEach(trend => {
+        const div = document.createElement("div");
+        div.className = "trend";
+        div.innerHTML = `
+          <strong>${trend.avatar || "🙂"} ${trend.user_id}</strong>
+          ${trend.user_id === currentUser.id && currentUser.email==="sonofjean2@gmail.com" ? '<span class="admin-badge">ADMIN</span>' : ""}
+          <p>${trend.caption || ""}</p>
+          ${trend.type==="image" ? `<img src="${trend.url}"/>` : ""}
+          ${trend.type==="video" ? `<video controls src="${trend.url}"></video>` : ""}
+        `;
+        feed.appendChild(div);
+      });
+    }
 
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    // AI image gen (pollinations API free frontend)
+    function generateImage() {
+      const prompt = document.getElementById("imagePrompt").value;
+      if (!prompt) return alert("Enter prompt!");
+      generatedImage = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+      document.getElementById("preview").innerHTML = `<img src="${generatedImage}" />`;
+    }
 
-const supabase = createClient(
-  "https://kpdgmbjdaynplyjacuxd.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"
-);
+    // AI captions with TensorFlow.js (dummy example)
+    async function suggestCaption() {
+      document.getElementById("captionInput").value = "🔥 AI thinks this will go viral!";
+    }
 
-const menuBtn=document.getElementById("menuBtn");
-const sidePanel=document.getElementById("sidePanel");
-const authBtn=document.getElementById("authBtn");
-const logoutBtn=document.getElementById("logoutBtn");
-const userEmail=document.getElementById("userEmail");
-const feed=document.querySelector(".feed");
-const preview=document.getElementById("preview");
-let mediaRecorder, recordedBlobs=[];
+    // Record video (frontend only)
+    async function recordVideo() {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const recorder = new MediaRecorder(stream);
+      let chunks = [];
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = async () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        recordedVideo = URL.createObjectURL(blob);
+        document.getElementById("preview").innerHTML = `<video controls src="${recordedVideo}"></video>`;
+      };
+      recorder.start();
+      setTimeout(() => recorder.stop(), 5000); // record 5s
+    }
 
-// Menu toggle
-menuBtn.addEventListener("click",()=>{sidePanel.classList.toggle("active");});
+    function showSettings() {
+      document.getElementById("settings").style.display = "block";
+      document.getElementById("feed").style.display = "none";
+    }
+    function showFeed() {
+      document.getElementById("settings").style.display = "none";
+      document.getElementById("feed").style.display = "block";
+    }
+    function signOut() { supabase.auth.signOut(); location.reload(); }
+    function updateAvatar() { alert("Avatar update coming soon!"); }
+  </script>
 
-// Auth
-authBtn.addEventListener("click",async()=>{
-  const email=prompt("Enter email:"); const password=prompt("Enter password:");
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if(error) alert("Login failed: "+error.message);
-});
-logoutBtn.addEventListener("click",async()=>{await supabase.auth.signOut(); updateUserUI(null);});
-
-async function updateUserUI(session){
-  if(session?.user){
-    userEmail.textContent=session.user.email;
-    authBtn.style.display="none"; logoutBtn.style.display="block";
-  } else {
-    userEmail.textContent="Not logged in"; authBtn.style.display="block"; logoutBtn.style.display="none";
-  }
-}
-supabase.auth.onAuthStateChange((_e,session)=>{updateUserUI(session); loadFeed();});
-
-// Recording
-document.getElementById("recordBtn").onclick=async()=>{
-  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  preview.srcObject=stream; recordedBlobs=[];
-  mediaRecorder=new MediaRecorder(stream);
-  mediaRecorder.ondataavailable=e=>{if(e.data.size>0) recordedBlobs.push(e.data);}
-  mediaRecorder.start();
-  alert("Recording started!");
-};
-document.getElementById("stopBtn").onclick=async()=>{
-  mediaRecorder.stop();
-  const blob=new Blob(recordedBlobs,{type:"video/webm"});
-  const file=new File([blob],"trend_"+Date.now()+".webm",{type:"video/webm"});
-  const session=(await supabase.auth.getSession()).data.session;
-  if(!session){alert("Login required"); return;}
-  const {data,error}=await supabase.storage.from("videos").upload(file.name,file);
-  if(error){alert("Upload error: "+error.message); return;}
-  const url=supabase.storage.from("videos").getPublicUrl(file.name).data.publicUrl;
-  await supabase.from("trends").insert([{url,caption:document.getElementById("postCaption").value||"",type:"video",username:session.user.email}]);
-  alert("Video uploaded!");
-  loadFeed();
-};
-
-// Post with URL
-document.getElementById("postSubmit").onclick=async()=>{
-  const session=(await supabase.auth.getSession()).data.session;
-  if(!session){alert("Login required"); return;}
-  const url=document.getElementById("postUrl").value;
-  await supabase.from("trends").insert([{url,caption:document.getElementById("postCaption").value||"",type:"video",username:session.user.email}]);
-  alert("Trend posted!");
-  loadFeed();
-};
-
-// Load feed
-async function loadFeed(){
-  const {data,error}=await supabase.from("trends").select("*").order("created_at",{ascending:false});
-  if(error){console.error(error); return;}
-  feed.innerHTML="";
-  data.forEach(post=>{
-    const card=document.createElement("div"); card.className="trend-card";
-    const media=document.createElement("video"); media.src=post.url; media.autoplay=true; media.loop=true; media.muted=true;
-    card.appendChild(media);
-    const info=document.createElement("div"); info.className="trend-info";
-    info.innerHTML=`<h2>@${post.username||"anon"}</h2><p>${post.caption||""}</p>`;
-    card.appendChild(info);
-    const actions=document.createElement("div"); actions.className="trend-actions";
-    actions.innerHTML=`<div class="action-btn">❤️</div><div class="action-btn">💬</div>${post.username==="sonofjean2@gmail.com"?'<div class="action-btn">🗑️</div>':''}`;
-    card.appendChild(actions);
-    feed.appendChild(card);
-  });
-}
-
-// AI Caption (placeholder)
-document.getElementById("aiCaptionBtn").onclick=()=>{
-  alert("✨ AI suggests: 'Vibes unmatched 🔥'");
-};
-
-// AI Image
-document.getElementById("aiImageBtn").onclick=()=>{
-  const prompt=document.getElementById("aiPrompt").value||"aesthetic vibes";
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  window.open(url,"_blank");
-};
-
-loadFeed();
-</script>
+  <!-- TensorFlow -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 </body>
 </html>
