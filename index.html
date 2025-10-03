@@ -7,34 +7,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --white: #ffffff;
-  --black: #111111;
-  --orange: #ff6a3d;
-  --soft-gray: #f5f5f5;
-  --muted: #666666;
-  --card-bg: #ffffff;
-  --card-shadow: rgba(0,0,0,0.1);
-  --radius: 12px;
+  --white:#ffffff;
+  --black:#111111;
+  --orange:#ff6a3d;
+  --soft-gray:#f5f5f5;
+  --muted:#666666;
+  --card-bg:#ffffff;
+  --card-shadow:rgba(0,0,0,0.1);
+  --radius:12px;
 }
-* {margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif;}
+* {margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body {background: var(--soft-gray); color: var(--black);}
 header {
   position: sticky; top:0; width:100%; background: var(--white);
   padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center;
-  box-shadow: 0 4px 20px var(--card-shadow); z-index:100;
+  box-shadow:0 4px 20px var(--card-shadow); z-index:100;
 }
-header h1 {font-size:1.6rem; font-weight:700; color: var(--black);}
+header h1 {font-size:1.6rem;font-weight:700;color: var(--black);}
 header button {
   background: var(--orange); color: var(--white); border:none;
-  padding:0.5rem 1rem; border-radius:999px; cursor:pointer; font-weight:600;
-  transition: all 0.3s;
+  padding:0.5rem 1rem; border-radius:999px; cursor:pointer; font-weight:600; transition:0.3s;
 }
 header button:hover {background:#ff4500;}
-main {max-width:900px; margin:2rem auto; padding:0 1rem;}
+main {max-width:900px;margin:2rem auto;padding:0 1rem;}
 .feed {display:flex; flex-direction:column; gap:2rem;}
 .trend-card {
   background: var(--card-bg); border-radius: var(--radius); padding:1rem;
-  box-shadow: 0 4px 20px var(--card-shadow); transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow:0 4px 20px var(--card-shadow); transition: transform 0.3s, box-shadow 0.3s;
 }
 .trend-card:hover {transform: translateY(-3px); box-shadow:0 10px 25px var(--card-shadow);}
 .trend-card img, .trend-card video, .trend-card iframe {width:100%; border-radius: var(--radius); margin-top:0.5rem;}
@@ -87,23 +86,30 @@ main {max-width:900px; margin:2rem auto; padding:0 1rem;}
 
 <div class="post-btn" id="postBtn">+</div>
 
-<div class="modal-bg" id="modalBg">
+<!-- Login / SignUp Modal -->
+<div class="modal-bg" id="loginModalBg">
   <div class="modal">
-    <div class="close-btn" id="closeModal">×</div>
+    <div class="close-btn" id="closeLoginModal">×</div>
+    <h2>Sign In / Sign Up</h2>
+    <input type="text" id="emailInput" placeholder="Enter your email">
+    <button id="magicLinkBtn">Send Magic Link</button>
+  </div>
+</div>
+
+<!-- Post Modal -->
+<div class="modal-bg" id="postModalBg">
+  <div class="modal">
+    <div class="close-btn" id="closePostModal">×</div>
     <h2>Post a Trend</h2>
-    <input type="text" id="emailInput" placeholder="Email">
     <textarea id="captionInput" placeholder="Caption..."></textarea>
     <input type="text" id="imagePrompt" placeholder="AI Image Prompt (optional)">
+    <input type="text" id="videoUrl" placeholder="Video or YouTube link (optional)">
     <div style="display:flex;gap:0.5rem;margin:0.5rem 0;">
       <button id="generateImageBtn" style="flex:1;">🎨 Generate Image</button>
       <button id="recordVideoBtn" style="flex:1;">🎥 Record 5s Video</button>
     </div>
     <div id="preview"></div>
-    <input type="text" id="videoUrl" placeholder="Video or YouTube link (optional)">
-    <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
-      <button id="magicLinkBtn" class="ghost" style="flex:1;">Send Magic Link</button>
-      <button id="postTrendBtn" class="primary" style="flex:1;">Post</button>
-    </div>
+    <button id="postTrendBtn">Post</button>
   </div>
 </div>
 
@@ -115,28 +121,38 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const authBtn = document.getElementById("authBtn");
-const modalBg = document.getElementById("modalBg");
-const closeModal = document.getElementById("closeModal");
+const loginModalBg = document.getElementById("loginModalBg");
+const closeLoginModal = document.getElementById("closeLoginModal");
 const postBtn = document.getElementById("postBtn");
-const magicLinkBtn = document.getElementById("magicLinkBtn");
+const postModalBg = document.getElementById("postModalBg");
+const closePostModal = document.getElementById("closePostModal");
+
 const emailInput = document.getElementById("emailInput");
+const magicLinkBtn = document.getElementById("magicLinkBtn");
 const captionInput = document.getElementById("captionInput");
 const imagePrompt = document.getElementById("imagePrompt");
-const preview = document.getElementById("preview");
-const recordVideoBtn = document.getElementById("recordVideoBtn");
-const generateImageBtn = document.getElementById("generateImageBtn");
-const postTrendBtn = document.getElementById("postTrendBtn");
 const videoUrl = document.getElementById("videoUrl");
+const generateImageBtn = document.getElementById("generateImageBtn");
+const recordVideoBtn = document.getElementById("recordVideoBtn");
+const postTrendBtn = document.getElementById("postTrendBtn");
+const preview = document.getElementById("preview");
 const feed = document.getElementById("feed");
 
 let currentUser=null, generatedImage=null, recordedVideoBlob=null, mediaRecorder, recordedBlobs=[];
 
-// Modal toggle
-postBtn.addEventListener("click",()=>{modalBg.style.display="flex";});
-closeModal.addEventListener("click",()=>{modalBg.style.display="none";});
+// Open login modal
+authBtn.addEventListener("click",()=>{loginModalBg.style.display="flex";});
+closeLoginModal.addEventListener("click",()=>{loginModalBg.style.display="none";});
+
+// Open post modal only if logged in
+postBtn.addEventListener("click",()=>{
+  if(!currentUser){ alert("Please sign in first."); loginModalBg.style.display="flex"; return;}
+  postModalBg.style.display="flex";
+});
+closePostModal.addEventListener("click",()=>{postModalBg.style.display="none";});
 
 // Magic link
-magicLinkBtn.addEventListener("click",async ()=>{
+magicLinkBtn.addEventListener("click", async ()=>{
   const email = emailInput.value;
   if(!email) return alert("Enter your email!");
   const {error} = await supabase.auth.signInWithOtp({email, options:{emailRedirectTo:window.location.href}});
@@ -146,7 +162,7 @@ magicLinkBtn.addEventListener("click",async ()=>{
 // Detect session
 async function checkSession(){
   const {data:{session}} = await supabase.auth.getSession();
-  if(session){ currentUser=session.user; authBtn.style.display="none"; }
+  if(session){ currentUser=session.user; authBtn.style.display="none";}
 }
 checkSession();
 supabase.auth.onAuthStateChange((_event, session)=>{
@@ -162,7 +178,7 @@ generateImageBtn.addEventListener("click",()=>{
   preview.innerHTML=`<img src="${generatedImage}">`;
 });
 
-// Record 5s Video
+// Record 5s video
 recordVideoBtn.addEventListener("click", async ()=>{
   try{
     const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
@@ -180,7 +196,7 @@ recordVideoBtn.addEventListener("click", async ()=>{
       videoEl.src=URL.createObjectURL(recordedVideoBlob);
       videoEl.controls=true;
     };
-  }catch(e){alert("Camera/mic access denied or unavailable.")}
+  }catch(e){alert("Camera/mic access denied or unavailable.");}
 });
 
 // Post trend
@@ -189,7 +205,6 @@ postTrendBtn.addEventListener("click",async ()=>{
   const caption=captionInput.value.trim();
   let url=null, video_url=null, type="text";
 
-  // Upload AI image
   if(generatedImage){
     const resp=await fetch(generatedImage);
     const blob=await resp.blob();
@@ -201,7 +216,6 @@ postTrendBtn.addEventListener("click",async ()=>{
     generatedImage=null;
   }
 
-  // Upload recorded video
   if(recordedVideoBlob){
     const filePath=`video-${Date.now()}.webm`;
     const {error}=await supabase.storage.from("videos").upload(filePath, recordedVideoBlob, {upsert:true});
@@ -211,11 +225,10 @@ postTrendBtn.addEventListener("click",async ()=>{
     recordedVideoBlob=null;
   }
 
-  // YouTube link
   const ytLink=videoUrl.value.trim();
-  if(ytLink) video_url=ytLink; 
+  if(ytLink) video_url=ytLink;
 
-  const {error} = await supabase.from("trends").insert([{
+  const {error}=await supabase.from("trends").insert([{
     user_id:currentUser.id,
     caption,
     url,
@@ -225,7 +238,7 @@ postTrendBtn.addEventListener("click",async ()=>{
   }]);
   if(error) return alert(error.message);
 
-  captionInput.value=""; imagePrompt.value=""; videoUrl.value=""; preview.innerHTML=""; modalBg.style.display="none";
+  captionInput.value=""; imagePrompt.value=""; videoUrl.value=""; preview.innerHTML=""; postModalBg.style.display="none";
   loadFeed();
 });
 
