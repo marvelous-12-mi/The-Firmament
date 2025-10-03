@@ -1,202 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TrendTime AI 🔥</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TrendTime — AI Social Surprise</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --primary:#ff6a00;
-  --secondary:#ff1f71;
-  --dark:#0f0f0f;
-  --card:#1a1a1a;
-  --accent:#00ffea;
-  --light:#fff;
-}
-
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:var(--dark);color:white;overflow-x:hidden;}
-header{position:sticky;top:0;width:100%;z-index:100;background:linear-gradient(90deg,var(--primary),var(--secondary));display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
-header h1{font-size:1.6rem;font-weight:700;letter-spacing:1px;text-shadow:0 0 10px rgba(0,0,0,0.5);}
-header button{background:white;color:var(--dark);border:none;padding:0.5rem 1rem;border-radius:999px;cursor:pointer;font-weight:bold;transition:0.3s;}
-header button:hover{background:var(--secondary);color:white;}
-
-/* Side Panel */
-.side-panel{position:fixed;top:0;left:-400px;width:380px;height:100vh;background:var(--card);box-shadow:5px 0 25px rgba(0,0,0,0.6);transition:left 0.3s ease;padding:2rem;z-index:200;overflow-y:auto;}
-.side-panel.active{left:0;}
-.side-panel h2,h3{margin-bottom:1rem;color:var(--accent);}
-.side-panel input,.side-panel select,.side-panel button{margin:0.5rem 0;padding:0.7rem;width:100%;border-radius:10px;border:none;background:#222;color:white;}
-.side-panel input::placeholder{color:#aaa;}
-.side-panel button{cursor:pointer;background:linear-gradient(145deg,var(--primary),var(--secondary));color:white;font-weight:bold;transition:0.3s;}
-.side-panel button:hover{opacity:0.9;}
-
-/* Sections */
-.settings-section{margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.2);}
-.settings-section h3{margin-bottom:0.7rem;color:var(--accent);}
-.settings-section video{width:100%;border-radius:10px;margin-bottom:0.5rem;}
-
-/* Feed */
-.feed{display:flex;flex-direction:column;gap:2rem;padding:1rem;max-width:900px;margin:auto;}
-.trend-card{background:var(--card);border-radius:1.5rem;overflow:hidden;position:relative;box-shadow:0 0 25px rgba(255,106,0,0.2);transition:0.3s;}
-.trend-card:hover{transform:scale(1.01);}
-.trend-card video,.trend-card canvas{width:100%;height:60vh;object-fit:cover;border-radius:1.5rem;}
-.trend-info{margin-top:0.5rem;padding:0 1rem;}
-.trend-info h2{font-size:1.3rem;margin-bottom:0.3rem;color:var(--primary);}
-.trend-info p{font-size:1rem;color:#ccc;margin-bottom:0.5rem;}
-.trend-actions{display:flex;gap:1rem;padding:0 1rem;margin-bottom:0.5rem;}
-.action-btn{background:linear-gradient(145deg,var(--primary),var(--secondary));width:45px;height:45px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.2rem;cursor:pointer;box-shadow:0 0 15px rgba(255,106,0,0.8);transition:transform 0.2s;}
-.action-btn:hover{transform:scale(1.1);}
-
-/* Post button */
-.post-btn{position:fixed;bottom:2rem;right:2rem;background:linear-gradient(145deg,var(--secondary),var(--primary));color:white;font-size:1.6rem;width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;box-shadow:0 0 25px rgba(255,30,100,0.9);cursor:pointer;transition:all 0.3s ease;z-index:200;animation:pulse 2s infinite;}
-@keyframes pulse{0%{box-shadow:0 0 15px rgba(255,106,0,0.6);}50%{box-shadow:0 0 35px rgba(255,30,100,1);}100%{box-shadow:0 0 15px rgba(255,106,0,0.6);}}
-
-/* Comments */
-.comment-section{margin-top:0.5rem;padding:0 1rem;}
-.comment-section input{width:70%;display:inline-block;}
-.comment-section button{width:25%;display:inline-block;}
+  :root{
+    --bg:#0a001f;
+    --card:#1b0033;
+    --muted:#9ee3f8;
+    --accent1:#ff3ec5;
+    --accent2:#00fff0;
+    --glass: rgba(255,255,255,0.05);
+  }
+  *{box-sizing:border-box;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  body{
+    margin:0;
+    background:linear-gradient(180deg,#0a001f,#00040f);
+    color:#fff;
+    min-height:100vh;
+    overflow:hidden;
+  }
+  header{
+    height:68px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    background:linear-gradient(90deg,var(--accent1),var(--accent2));
+    box-shadow:0 6px 30px rgba(0,255,255,0.2);
+    position:sticky;
+    top:0;
+    z-index:40;
+  }
+  header h1{font-size:1.2rem;margin:0;letter-spacing:0.6px;text-shadow:0 0 10px #00fff0}
+  header .actions{display:flex;gap:10px;align-items:center}
+  button.btn{
+    background:linear-gradient(90deg,var(--accent1),var(--accent2));
+    color:#000;border:none;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+  }
+  button.btn:hover{filter:drop-shadow(0 0 10px var(--accent2))}
+  button.icon-btn{
+    background:var(--glass);
+    border:1px solid rgba(255,255,255,0.06);
+    color:var(--muted);
+    padding:8px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
+  }
+  button.icon-btn:hover{filter:drop-shadow(0 0 10px var(--accent1))}
+  /* layout */
+  .app{display:grid;grid-template-columns:320px 1fr 360px;gap:18px;padding:18px;height:calc(100vh - 68px)}
+  @media (max-width:1100px){ .app{grid-template-columns:1fr} .right-col{display:none} }
+  .left, .right {background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.05));border-radius:14px;padding:16px;overflow:auto;box-shadow:0 10px 30px rgba(0,255,255,0.1)}
+  .center{overflow:hidden;border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:12px}
+  /* feed */
+  .feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;padding:8px}
+  .feed::-webkit-scrollbar{width:8px}
+  .feed::-webkit-scrollbar-thumb{background:var(--accent2);border-radius:4px}
+  .post-card{
+    position:relative;
+    background:var(--card);
+    height:calc(100vh - 200px);
+    margin-bottom:18px;
+    border-radius:12px;
+    overflow:hidden;
+    scroll-snap-align:start;
+    box-shadow:0 12px 40px rgba(0,255,255,0.2);
+    transition:0.3s;
+  }
+  .post-card:hover{box-shadow:0 12px 40px rgba(255,30,200,0.5) inset,0 12px 40px rgba(0,255,255,0.5)}
+  .post-media{width:100%;height:100%;object-fit:cover;background:#000;transition:0.3s}
+  .post-media:hover{transform:scale(1.05)}
+  .post-info{
+    position:absolute;
+    left:18px;
+    bottom:18px;
+    right:120px;
+    padding:12px;
+    background:linear-gradient(180deg, rgba(0,255,255,0.03), rgba(0,0,0,0.35));
+    border-radius:10px;
+  }
+  .meta{display:flex;gap:12px;align-items:center}
+  .avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.06)}
+  .username{font-weight:700}
+  .caption{color:var(--muted);margin-top:6px}
+  .post-controls{
+    position:absolute;
+    right:18px;
+    bottom:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    align-items:center
+  }
+  .round{
+    width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,var(--accent1),var(--accent2));
+    box-shadow:0 4px 20px rgba(255,30,100,0.2);
+    cursor:pointer;
+    transition:0.2s;
+  }
+  .round:hover{transform:scale(1.1);box-shadow:0 4px 40px rgba(255,30,200,0.4)}
+  .small{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);cursor:pointer;transition:0.2s}
+  .small:hover{transform:scale(1.1);box-shadow:0 0 15px var(--accent2)}
+  /* comments */
+  .comments{margin-top:10px;background:rgba(0,0,0,0.35);padding:8px;border-radius:8px;max-height:140px;overflow:auto}
+  .comment-item{padding:6px;border-bottom:1px solid rgba(255,255,255,0.02);font-size:14px}
+  /* tips bubble */
+  .tips-bubble{
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    padding:12px 16px;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    border-radius:999px;
+    font-weight:600;
+    color:#000;
+    cursor:pointer;
+    box-shadow:0 4px 20px rgba(255,30,200,0.4);
+    z-index:60;
+    transition:0.2s;
+  }
+  .tips-bubble:hover{transform:scale(1.05)}
 </style>
 </head>
 <body>
 
 <header>
-  <button id="menuBtn">☰</button>
-  <h1>🔥 TrendTime AI</h1>
-  <button id="authBtn">Login</button>
+  <h1>TrendTime 🌐</h1>
+  <div class="actions">
+    <button id="openFeedShuffle" class="icon-btn" title="Shuffle feed">🔀</button>
+    <button id="openPostModal" class="btn">Post</button>
+    <button id="openLogin" class="btn">Sign In / Sign Up</button>
+  </div>
 </header>
 
-<div class="side-panel" id="sidePanel">
-  <h2>Welcome</h2>
-  <p id="userEmail">Not logged in</p>
-  <button id="logoutBtn">Logout</button>
-
-  <div class="settings-section">
-    <h3>Record & Post a Trend</h3>
-    <video id="preview" autoplay muted></video>
-    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-      <button id="recordBtn">Start Recording</button>
-      <button id="stopBtn">Stop & Upload</button>
+<div class="app" style="padding-top:10px">
+  <aside class="left">
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+      <img id="leftAvatar" class="avatar" src="https://placehold.co/80x80?text=U" alt="avatar">
+      <div>
+        <div id="leftUsername" style="font-weight:700">Not signed in</div>
+        <div class="small-muted" id="leftEmail">—</div>
+      </div>
     </div>
-    <input id="postCaption" type="text" placeholder="Caption">
-    <select id="videoFilter">
-      <option value="none">No Filter</option>
-      <option value="mosaic">Mosaic</option>
-      <option value="edges">Edges</option>
-    </select>
-    <button id="postSubmit">Post</button>
-  </div>
+    <div class="panel-title">Quick Actions</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+      <button id="openRecordModal" class="btn">Record & Upload</button>
+      <button id="openSettings" class="icon-btn">Settings</button>
+    </div>
+  </aside>
 
-  <div class="settings-section">
-    <h3>Profile Settings</h3>
-    <input type="text" id="username" placeholder="Username">
-    <input type="file" id="avatarUpload" accept="image/*">
-    <button id="saveProfile">Save Profile</button>
-  </div>
+  <main class="center">
+    <div style="display:flex;gap:12px;align-items:center;padding:8px">
+      <h2 style="margin:0">Feed</h2>
+      <div class="muted" style="margin-left:8px">Swipe / scroll to explore</div>
+      <div style="margin-left:auto"><button id="refreshFeed" class="icon-btn">⟳ Refresh</button></div>
+    </div>
+    <div class="feed" id="feedWrap" aria-live="polite"></div>
+  </main>
 
-  <div class="settings-section">
-    <h3>AI Tools</h3>
-    <button id="aiCaptionBtn">Generate Caption for Last Video</button>
-    <input type="text" id="aiPrompt" placeholder="Prompt for AI Image">
-    <button id="aiImageBtn">Generate AI Image</button>
-  </div>
+  <aside class="right">
+    <div class="panel-title">Compose (AI helpers)</div>
+    <div class="field">
+      <label class="small-muted">Caption</label>
+      <input id="composeCaption" type="text" placeholder="Write a caption or use AI">
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button id="aiCaptionBtn" class="btn">✨ Suggest Caption</button>
+        <button id="aiHashtagsBtn" class="icon-btn"># tags</button>
+      </div>
+    </div>
+  </aside>
 </div>
 
-<main class="feed"></main>
-<div class="post-btn" id="postBtn">➕</div>
+<div class="tips-bubble" id="tipsBubble">💡 AI Tips</div>
+
+<!-- MODAL -->
+<div id="modalBackdrop" class="modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:80">
+  <div id="modalContainer" class="modal" style="background:var(--card);padding:18px;border-radius:12px;width:90%;max-width:520px"></div>
+</div>
 
 <script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
-const supabase = createClient(supabaseUrl,supabaseKey);
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const supabase = createClient('https://kpdgmbjdaynplyjacuxd.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXgiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc1OTE2MDcyMywiZXhwIjoyMDc0NzM2NzIzfQ.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ');
 
-const menuBtn=document.getElementById("menuBtn");
-const sidePanel=document.getElementById("sidePanel");
-const authBtn=document.getElementById("authBtn");
-const logoutBtn=document.getElementById("logoutBtn");
-const userEmail=document.getElementById("userEmail");
-const postSubmit=document.getElementById("postSubmit");
-const postCaption=document.getElementById("postCaption");
-const videoFilter=document.getElementById("videoFilter");
-const preview=document.getElementById("preview");
-const feed=document.querySelector(".feed");
+const feedWrap = document.getElementById('feedWrap');
+const openLoginBtn = document.getElementById('openLogin');
+const refreshFeedBtn = document.getElementById('refreshFeed');
+const shuffleFeedBtn = document.getElementById('openFeedShuffle');
+const tipsBubble = document.getElementById('tipsBubble');
+const aiCaptionBtn = document.getElementById('aiCaptionBtn');
+const aiHashtagsBtn = document.getElementById('aiHashtagsBtn');
+const composeCaptionInput = document.getElementById('composeCaption');
 
-let mediaRecorder, recordedBlobs=[];
+let currentUser = null;
+let postsCache = [];
 
-// Menu toggle
-menuBtn.addEventListener("click",()=>{sidePanel.classList.toggle("active");});
-document.addEventListener("click",(e)=>{if(sidePanel.classList.contains("active")&&!sidePanel.contains(e.target)&&e.target!==menuBtn){sidePanel.classList.remove("active");}});
+// ---------- AI Tips bubble ----------
+tipsBubble.addEventListener('click',()=>alert('💡 Use AI Caption & Hashtags for more reach!\n🎥 Record vertical clips for best results'));
 
-// Auth
-authBtn.addEventListener("click",async()=>{
-  const { data, error }=await supabase.auth.signInWithOAuth({provider:"google"});
-  if(error) console.error(error);
-});
-logoutBtn.addEventListener("click",async()=>{await supabase.auth.signOut(); updateUserUI(null);});
-
-async function updateUserUI(session){
-  if(session?.user){userEmail.textContent=session.user.email; authBtn.style.display="none"; logoutBtn.style.display="block";}
-  else{userEmail.textContent="Not logged in"; authBtn.style.display="block"; logoutBtn.style.display="none";}
-}
-supabase.auth.onAuthStateChange((_e,session)=>{updateUserUI(session); loadFeed();});
-
-// Recording
-document.getElementById("recordBtn").onclick=async()=>{
-  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  preview.srcObject=stream; preview.play();
-  recordedBlobs=[]; mediaRecorder=new MediaRecorder(stream);
-  mediaRecorder.ondataavailable=e=>{if(e.data.size>0) recordedBlobs.push(e.data);}
-  mediaRecorder.start();
-};
-document.getElementById("stopBtn").onclick=async()=>{
-  mediaRecorder.stop();
-  const blob=new Blob(recordedBlobs,{type:"video/webm"});
-  const file=new File([blob],"trend_"+Date.now()+".webm",{type:"video/webm"});
-  const session = (await supabase.auth.getSession()).data.session;
-  if(!session){alert("Login required"); return;}
-  const { data, error }=await supabase.storage.from("videos").upload(file.name,file);
-  if(error){console.error(error);return;}
-  const url=supabase.storage.from("videos").getPublicUrl(file.name).data.publicUrl;
-  await supabase.from("trends").insert([{url,caption:postCaption.value,type:"video",username:session.user.email.split("@")[0]}]);
-  loadFeed();
-};
-
-// Feed
+// ---------- Load feed ----------
 async function loadFeed(){
-  const { data,error }=await supabase.from("trends").select("*").order("created_at",{ascending:false});
-  if(error){console.error(error);return;}
-  feed.innerHTML="";
-  data.forEach(post=>{
-    const card=document.createElement("div"); card.className="trend-card";
-    const media=document.createElement("video"); media.src=post.url; media.autoplay=true; media.loop=true; media.muted=true;
-    card.appendChild(media);
-    const info=document.createElement("div"); info.className="trend-info";
-    info.innerHTML=`<h2>@${post.username||"anon"}</h2><p>${post.caption||""}</p>`;
+  const { data,error } = await supabase.from('trends').select('*').order('created_at',{ascending:false}).limit(50);
+  postsCache = data||[];
+  feedWrap.innerHTML = '';
+  postsCache.forEach(post=>{
+    const card = document.createElement('div'); card.className='post-card';
+    let mediaEl;
+    if(post.type==='youtube'||post.url.includes('youtube')){
+      mediaEl = document.createElement('iframe');
+      mediaEl.src = post.url.includes('embed') ? post.url : post.url.replace('watch?v=','embed/');
+      mediaEl.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'); 
+      mediaEl.className='post-media';
+    } else {
+      mediaEl = document.createElement('video');
+      mediaEl.src = post.url; mediaEl.className='post-media';
+      mediaEl.muted = true; mediaEl.loop = true;
+    }
+    card.appendChild(mediaEl);
+    const info = document.createElement('div'); info.className='post-info';
+    info.innerHTML = `<div class="meta"><img class="avatar" src="${post.avatar||'https://placehold.co/80x80'}"><div><div class="username">${post.username||'anon'}</div></div></div><div class="caption">${post.caption||''}</div>`;
     card.appendChild(info);
-    const actions=document.createElement("div"); actions.className="trend-actions";
-    actions.innerHTML=`<div class="action-btn">❤️</div><div class="action-btn">💬</div>${post.username==="sonofjean2@gmail.com"?'<div class="action-btn">🗑️</div>':''}`;
+    const actions = document.createElement('div'); actions.className='post-controls';
+    actions.innerHTML = `<div class="round" data-id="${post.id}">❤️ ${post.likes||0}</div>
+                         <div class="small" data-id="${post.id}">💬</div>
+                         <div class="small" data-id="${post.id}">🗑️</div>
+                         <div class="small" data-id="${post.id}">🤖 AI</div>`;
     card.appendChild(actions);
-    feed.appendChild(card);
+    feedWrap.appendChild(card);
+    // AI reaction button
+    actions.querySelectorAll('.small').forEach(btn=>{
+      btn.addEventListener('click',async e=>{
+        if(btn.textContent.includes('🤖')){
+          btn.textContent='🤖...';
+          const txt = await fetch(`https://text.pollinations.ai/${encodeURIComponent('Give a fun emoji reaction')}`).then(r=>r.text());
+          alert('AI reacts: '+txt);
+          btn.textContent='🤖 AI';
+        }
+      });
+    });
   });
 }
-
-// AI Caption
-document.getElementById("aiCaptionBtn").onclick=async()=>{
-  const lastVideo = feed.querySelector("video");
-  if(!lastVideo){alert("Record a video first"); return;}
-  const prompt="Describe this video in a trendy caption";
-  alert("AI caption generated! Paste it: " + prompt);
-};
-
-// AI Image
-document.getElementById("aiImageBtn").onclick=async()=>{
-  const prompt=document.getElementById("aiPrompt").value;
-  if(!prompt){alert("Enter a prompt"); return;}
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-  window.open(url,"_blank");
-};
-
 loadFeed();
 </script>
 </body>
