@@ -1,10 +1,9 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 // --- Supabase Config ---
-const supabase = createClient(
-  "https://kpdgmbjdaynplyjacuxd.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"
-);
+const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"; // replace with your actual anon key
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- DOM Elements ---
 const authBtn = document.getElementById("authBtn");
@@ -70,40 +69,18 @@ signInBtn.onclick = async () => {
   showToast("Signed in!", "#16a34a");
 };
 
-// --- AI Image (OpenAI via Backend) ---
-generateImageBtn.onclick = async () => {
+// --- AI Image (Pollinations) ---
+generateImageBtn.onclick = () => {
   const prompt = imagePrompt.value.trim();
   if (!prompt) return showToast("Enter a prompt", "#dc2626");
-
-  try {
-    generateImageBtn.disabled = true;
-    generateImageBtn.innerText = "Generating...";
-
-    const response = await fetch("/api/generate-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || "Generation failed");
-    }
-
-    const { imageUrl } = await response.json();
-    if (!imageUrl) throw new Error("No image returned");
-
-    generatedImage = imageUrl;
-    preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
-    showToast("Image generated!", "#16a34a");
-  } catch (err) {
-    console.error(err);
-    showToast("Image generation failed: " + err.message, "#dc2626");
-  } finally {
-    generateImageBtn.disabled = false;
-    generateImageBtn.innerText = "Generate Image";
-  }
+  generatedImage = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+  preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
 };
+
+// --- Caption Suggestion (Placeholder) ---
+async function suggestCaption(imageUrl) {
+  return "🔥 This trend is about to blow up!";
+}
 
 // --- Record Video ---
 recordVideoBtn.onclick = async () => {
@@ -114,7 +91,9 @@ recordVideoBtn.onclick = async () => {
     videoEl.srcObject = stream;
     recordedBlobs = [];
     mediaRecorder = new MediaRecorder(stream);
-    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedBlobs.push(e.data); };
+    mediaRecorder.ondataavailable = e => {
+      if (e.data.size > 0) recordedBlobs.push(e.data);
+    };
     mediaRecorder.start();
     setTimeout(() => mediaRecorder.stop(), 5000);
     mediaRecorder.onstop = () => {
@@ -131,9 +110,14 @@ recordVideoBtn.onclick = async () => {
 // --- Post Trend ---
 postTrendBtn.onclick = async () => {
   if (!currentUser) return showToast("Sign in first", "#dc2626");
+
   let caption = captionInput.value.trim();
   const youtubeLink = youtubeInput.value.trim();
   let url = null, video_url = null, type = "text";
+
+  if (!caption && generatedImage) {
+    caption = await suggestCaption(generatedImage);
+  }
 
   if (generatedImage) {
     const resp = await fetch(generatedImage);
@@ -142,7 +126,8 @@ postTrendBtn.onclick = async () => {
     const { error } = await supabase.storage.from("videos").upload(filePath, blob, { upsert: true });
     if (error) return showToast(error.message, "#dc2626");
     url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
-    type = "image"; generatedImage = null;
+    type = "image";
+    generatedImage = null;
   }
 
   if (recordedVideoBlob) {
@@ -150,10 +135,14 @@ postTrendBtn.onclick = async () => {
     const { error } = await supabase.storage.from("videos").upload(filePath, recordedVideoBlob, { upsert: true });
     if (error) return showToast(error.message, "#dc2626");
     video_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
-    type = "video"; recordedVideoBlob = null;
+    type = "video";
+    recordedVideoBlob = null;
   }
 
-  if (youtubeLink) { type = "youtube"; video_url = youtubeLink; }
+  if (youtubeLink) {
+    type = "youtube";
+    video_url = youtubeLink;
+  }
 
   const { error } = await supabase.from("trends").insert([{
     user_id: currentUser.id,
@@ -166,6 +155,7 @@ postTrendBtn.onclick = async () => {
     text: caption || null,
     likes: 0
   }]);
+
   if (error) return showToast("Insert Error: " + error.message, "#dc2626");
 
   captionInput.value = "";
@@ -187,16 +177,25 @@ async function likeTrend(id, currentLikes) {
 // --- Load Feed ---
 async function loadFeed() {
   const { data, error } = await supabase.from("trends").select("*").order("created_at", { ascending: false });
-  if (error) { console.error(error); return; }
+  if (error) {
+    console.error(error);
+    return;
+  }
+
   feed.innerHTML = "";
   data.forEach(trend => {
-    const card = document.createElement("div"); card.className = "trend-card";
-    const info = document.createElement("div"); info.className = "trend-header";
+    const card = document.createElement("div");
+    card.className = "trend-card";
+
+    const info = document.createElement("div");
+    info.className = "trend-header";
     info.innerHTML = `<img src="${trend.avatar || 'https://placehold.co/40x40'}"><span class="handle">@${trend.username || 'anon'}</span>`;
     card.appendChild(info);
 
     if (trend.caption) {
-      const textDiv = document.createElement("div"); textDiv.className = "trend-text"; textDiv.innerText = trend.caption;
+      const textDiv = document.createElement("div");
+      textDiv.className = "trend-text";
+      textDiv.innerText = trend.caption;
       card.appendChild(textDiv);
     }
 
@@ -205,9 +204,7 @@ async function loadFeed() {
     } else if (trend.type === "video" && trend.video_url) {
       card.innerHTML += `<div class="trend-media"><video src="${trend.video_url}" controls style="width:100%;border-radius:12px;"></video></div>`;
     } else if (trend.type === "youtube" && trend.video_url) {
-      const vid = trend.video_url.includes("watch?v=")
-        ? trend.video_url.replace("watch?v=", "embed/")
-        : trend.video_url;
+      const vid = trend.video_url.replace("watch?v=", "embed/");
       card.innerHTML += `<div class="trend-media"><iframe src="${vid}" frameborder="0" allowfullscreen style="width:100%;height:300px;border-radius:12px;"></iframe></div>`;
     }
 
@@ -221,4 +218,5 @@ async function loadFeed() {
   });
 }
 
+// --- Initialize ---
 loadFeed();
