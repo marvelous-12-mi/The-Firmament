@@ -1,28 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrendTime Feed</title>
-  <link rel="stylesheet" href="feed.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script type="module" src="feed.js" defer></script>
+<title>TrendTime Feed</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-purple.css">
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Poppins:400,600'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="feed.css">
+<script type="module" src="feed.js" defer></script>
+<style>
+  html,body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
+  body {background-color: #f8f5ff;}
+</style>
 </head>
-<body>
-  <header class="navbar">
-    <div class="logo">⚡ TrendTime</div>
-    <button id="postBtn" class="btn primary">＋ Create</button>
-    <img id="headerAvatar" src="https://placehold.co/48x48" class="avatar" />
-  </header>
+<body class="w3-theme-l5">
 
-  <main id="feed" class="feed-container">
-    <div class="loading">✨ Fetching trends...</div>
-  </main>
+<!-- Navbar -->
+<div class="w3-top">
+ <div class="w3-bar w3-theme-d2 w3-large">
+  <a href="#" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-bolt w3-margin-right"></i><b>TrendTime</b></a>
+  <a href="post.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white"><i class="fa fa-pencil"></i> Create</a>
+  <a href="#" id="profileLink" class="w3-bar-item w3-button w3-hide-small w3-right w3-padding-large w3-hover-white">
+    <img id="headerAvatar" src="https://placehold.co/48x48" class="w3-circle" style="height:32px;width:32px" alt="Avatar">
+  </a>
+ </div>
+</div>
 
-  <footer class="footer">
-    <p>© 2025 TrendTime — Connect. Create. Inspire.</p>
-  </footer>
+<!-- Page Container -->
+<div class="w3-container w3-content" style="max-width:1200px;margin-top:80px">
+  <div class="w3-row">
 
-  <div id="toast"></div>
+    <!-- Left Column -->
+    <div class="w3-col m3">
+      <div class="w3-card w3-round w3-white">
+        <div class="w3-container">
+         <h4 class="w3-center">My Profile</h4>
+         <p class="w3-center"><img id="userAvatar" src="https://placehold.co/100x100" class="w3-circle" style="height:106px;width:106px" alt="Avatar"></p>
+         <input type="file" id="avatarUpload" accept="image/*" style="display:none">
+         <p class="w3-center"><button class="w3-button w3-small w3-theme-d3" id="changeAvatarBtn">Change Avatar</button></p>
+         <hr>
+         <p><i class="fa fa-user fa-fw w3-margin-right w3-text-theme"></i><span id="usernameDisplay">Your name</span></p>
+         <p><i class="fa fa-heart fa-fw w3-margin-right w3-text-theme"></i>Creating moments that matter</p>
+         <p><i class="fa fa-calendar fa-fw w3-margin-right w3-text-theme"></i>Joined 2025</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Column -->
+    <div class="w3-col m7">
+      <div id="feed" class="w3-container">
+        <div class="w3-center w3-padding">✨ Loading the latest trends...</div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="w3-col m2">
+      <div class="w3-card w3-round w3-white w3-center w3-padding">
+        <p><b>Quote of the Day</b></p>
+        <p style="font-style:italic;color:#7b2ff7;">“Your vibe attracts your tribe.”</p>
+      </div>
+      <br>
+      <div class="w3-card w3-round w3-white w3-center w3-padding">
+        <p>💬 Stay kind. Stay inspired.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-theme-d4 w3-center w3-padding-16">
+  <p>© 2025 <b>TrendTime</b> — Connect. Create. Inspire.</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+document.getElementById("changeAvatarBtn").onclick = () => {
+  document.getElementById("avatarUpload").click();
+};
+
+document.getElementById("avatarUpload").onchange = function() {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById("userAvatar").src = e.target.result;
+      document.getElementById("headerAvatar").src = e.target.result;
+      localStorage.setItem("avatar", e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+window.onload = () => {
+  const savedAvatar = localStorage.getItem("avatar");
+  if (savedAvatar) {
+    document.getElementById("userAvatar").src = savedAvatar;
+    document.getElementById("headerAvatar").src = savedAvatar;
+  }
+};
+</script>
+
 </body>
 </html>
