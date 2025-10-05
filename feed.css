@@ -1,183 +1,165 @@
-/* TrendTime Feed – Purple Edition */
+/* Feed.css — TrendTime aesthetic */
+
 body {
-  background: #faf7ff;
-  font-family: "Poppins", sans-serif;
+  font-family: "Open Sans", sans-serif;
+  background-color: #ffffff;
+  color: #2e2e2e;
   margin: 0;
   padding: 0;
-  color: #222;
 }
 
-/* 🌐 NAVBAR */
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(90deg, #8a00ff, #c600ff);
+header {
+  background: linear-gradient(135deg, #7b2ff7, #f107a3);
   color: white;
-  padding: 0.8rem 2rem;
-  box-shadow: 0 2px 10px rgba(138, 0, 255, 0.2);
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.logo {
-  font-size: 1.4rem;
+header h1 {
+  margin: 0;
   font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 1.5rem;
 }
 
-.navbar .avatar {
-  width: 45px;
-  height: 45px;
+header img {
   border-radius: 50%;
+  border: 2px solid #fff;
+  width: 48px;
+  height: 48px;
   cursor: pointer;
   transition: transform 0.2s ease;
-  border: 2px solid white;
 }
-.navbar .avatar:hover {
+
+header img:hover {
   transform: scale(1.05);
 }
 
-/* ✨ BUTTONS */
-.btn {
+#feed {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 15px;
+}
+
+.trend-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trend-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(123, 47, 247, 0.15);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.avatar-sm {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  margin-right: 10px;
+  border: 2px solid #e1e1e1;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #6a0dad;
+}
+
+.time {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.caption {
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.media {
+  width: 100%;
+  border-radius: 10px;
+  margin: 10px 0;
+  object-fit: cover;
+  max-height: 400px;
+}
+
+.trend-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.like-btn {
+  background: #f3e8ff;
   border: none;
+  color: #7b2ff7;
+  padding: 8px 16px;
   border-radius: 25px;
-  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.like-btn:hover {
+  background: #e7d5ff;
+  transform: scale(1.05);
+}
+
+#postBtn {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 25px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
-.btn.primary {
-  background: linear-gradient(90deg, #b400ff, #ff3fd8);
-  color: white;
-}
-.btn.primary:hover {
-  box-shadow: 0 0 12px rgba(255, 63, 216, 0.4);
+#postBtn:hover {
+  opacity: 0.9;
 }
 
-/* 📰 FEED LAYOUT */
-.feed-container {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
-
-.loading {
+.error {
   text-align: center;
-  padding: 2rem;
-  color: #8a00ff;
+  color: #dc2626;
+  padding: 15px;
+}
+
+.empty {
+  text-align: center;
+  color: #6b21a8;
+  padding: 20px;
   font-weight: 500;
 }
 
-/* 💬 POST CARD */
-.trend-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
-  padding: 1.2rem 1.4rem;
-  margin-bottom: 1.5rem;
-  transition: 0.3s ease;
-}
-.trend-card:hover {
-  box-shadow: 0 5px 20px rgba(138, 0, 255, 0.15);
-}
-
-/* HEADER */
-.trend-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.trend-header .avatar {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  margin-right: 0.9rem;
-  border: 2px solid #ff3fd8;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.trend-header .avatar:hover {
-  transform: scale(1.05);
-}
-
-.trend-header .meta h4 {
-  margin: 0;
-  font-weight: 600;
-  color: #5b0060;
-}
-.trend-header .meta span {
-  font-size: 0.85rem;
-  color: #777;
-}
-
-/* CONTENT */
-.trend-card p {
-  font-size: 1rem;
-  line-height: 1.6;
-  margin: 0.5rem 0 1rem;
-  color: #444;
-}
-
-.trend-img {
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 0.8rem;
-}
-
-video {
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 0.8rem;
-}
-
-/* ⚙️ FOOTER */
-.footer {
-  text-align: center;
-  padding: 1rem;
-  color: #555;
-  background: #f5ecff;
-  border-top: 1px solid #e1caff;
-  font-size: 0.9rem;
-}
-
-/* 🔔 TOAST MESSAGE */
 #toast {
+  display: none;
   position: fixed;
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  background: #b400ff;
+  background: #a855f7;
   color: white;
-  padding: 0.9rem 2rem;
+  padding: 12px 25px;
   border-radius: 30px;
-  box-shadow: 0 0 15px rgba(180, 0, 255, 0.3);
-  display: none;
-  animation: popIn 0.4s ease;
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 📱 RESPONSIVE */
-@media (max-width: 600px) {
-  .navbar {
-    flex-direction: column;
-    gap: 0.6rem;
-    text-align: center;
-  }
-
-  .feed-container {
-    margin: 1rem auto;
-  }
-
-  .trend-card {
-    padding: 1rem;
-  }
-
-  .trend-header .avatar {
-    width: 45px;
-    height: 45px;
-  }
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  font-weight: 600;
+  z-index: 999;
 }
