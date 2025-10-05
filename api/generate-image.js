@@ -12,23 +12,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const openaiResp = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`, // ✅ use env var
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ prompt, n: 1, size })
-    });
+    const googleResp = await fetch(
+      "https://us-central1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us-central1/publishers/google/models/imagegeneration:predict",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.GOOGLE_AI_API_KEY}`, // ✅ use env var
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: { imageSize: size }
+        })
+      }
+    );
 
-    if (!openaiResp.ok) {
-      const errText = await openaiResp.text();
-      res.status(502).json({ error: "OpenAI error", details: errText });
+    if (!googleResp.ok) {
+      const errText = await googleResp.text();
+      res.status(502).json({ error: "Google AI error", details: errText });
       return;
     }
 
-    const data = await openaiResp.json();
-    const imageUrl = data?.data?.[0]?.url || null;
+    const data = await googleResp.json();
+    const imageUrl = data?.predictions?.[0]?.bytesBase64Encoded || null;
     res.status(200).json({ imageUrl });
   } catch (err) {
     res.status(500).json({ error: "Image generation failed", details: String(err.message || err) });
