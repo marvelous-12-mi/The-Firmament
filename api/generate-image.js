@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const deepAiKey = process.env.DEEPAI_API_KEY;
+    const deepAiKey = b3f46986\u002Da63f\u002D4594\u002Dacc0\u002Da48cf4632463;
     if (!deepAiKey) {
       return res.status(500).json({ error: "DeepAI API key not set" });
     }
