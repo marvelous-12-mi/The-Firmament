@@ -1,37 +1,35 @@
+// /api/generate-image.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "Missing prompt" });
+
   try {
-    const { prompt } = req.body;
-    if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
-    }
-
-    const deepAiKey = b3f46986\u002Da63f\u002D4594\u002Dacc0\u002Da48cf4632463;
-    if (!deepAiKey) {
-      return res.status(500).json({ error: "DeepAI API key not set" });
-    }
-
-    const response = await fetch("https://api.deepai.org/api/text2img", {
+    const resp = await fetch("https://api.deepai.org/api/text2img", {
       method: "POST",
       headers: {
-        "Api-Key": deepAiKey,
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
+        "api-key": process.env.DEEPAI_API_KEY, // ✅ stored in Vercel Environment Variable
       },
-      body: new URLSearchParams({ text: prompt }),
+      body: JSON.stringify({ text: prompt }),
     });
 
-    const data = await response.json();
+    const data = await resp.json();
 
-    if (!response.ok || !data.output_url) {
-      throw new Error(data.error || "Failed to generate image");
+    if (!resp.ok) {
+      throw new Error(data?.error || `DeepAI error: ${resp.status}`);
     }
 
-    res.status(200).json({ imageUrl: data.output_url });
+    if (!data.output_url) {
+      throw new Error("No image URL returned from DeepAI");
+    }
+
+    return res.status(200).json({ imageUrl: data.output_url });
   } catch (err) {
+    console.error("❌ DeepAI generation failed:", err.message);
     res.status(500).json({ error: err.message });
   }
 }
