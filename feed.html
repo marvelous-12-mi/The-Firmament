@@ -1,231 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrendTime Feed</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:400,600" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="feed.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script type="module" src="feed.js" defer></script>
-
-  <style>
-    :root {
-      --primary: #a100ff;
-      --accent: #ff3fd8;
-      --bg: #f8f5fc;
-      --text: #2a023a;
-      --card-bg: #fff;
-    }
-
-    body {
-      background: var(--bg);
-      font-family: "Poppins", sans-serif;
-      color: var(--text);
-    }
-
-    /* Navbar */
-    .navbar {
-      background: linear-gradient(90deg, var(--accent), var(--primary));
-      box-shadow: 0 4px 10px rgba(161, 0, 255, 0.2);
-      color: white !important;
-    }
-
-    .navbar .w3-button {
-      color: #fff !important;
-      font-weight: 600;
-    }
-
-    .navbar .w3-button:hover {
-      background: rgba(255, 255, 255, 0.15) !important;
-      border-radius: 20px;
-    }
-
-    /* Profile Card */
-    .profile-card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      box-shadow: 0 2px 10px rgba(161, 0, 255, 0.15);
-      padding: 1.5rem;
-      text-align: center;
-    }
-
-    .profile-card h4 {
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .profile-card img {
-      width: 110px;
-      height: 110px;
-      object-fit: cover;
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(255, 63, 216, 0.3);
-      margin-bottom: 0.5rem;
-    }
-
-    .avatar-upload {
-      display: flex;
-      justify-content: center;
-      margin-top: 0.5rem;
-    }
-
-    .avatar-upload input {
-      display: none;
-    }
-
-    .avatar-upload label {
-      color: var(--accent);
-      cursor: pointer;
-      font-weight: 500;
-      text-decoration: underline;
-      font-size: 0.9rem;
-    }
-
-    /* Trend Cards */
-    .trend-card {
-      border-radius: 14px;
-      background: var(--card-bg);
-      box-shadow: 0 2px 10px rgba(161, 0, 255, 0.12);
-      margin-bottom: 20px;
-      padding: 1.2rem;
-      transition: all 0.3s ease;
-    }
-
-    .trend-card:hover {
-      box-shadow: 0 0 15px rgba(161, 0, 255, 0.25);
-      transform: translateY(-3px);
-    }
-
-    .trend-username {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .trend-card img,
-    .trend-card video {
-      width: 100%;
-      border-radius: 12px;
-      margin-top: 8px;
-    }
-
-    /* Buttons */
-    .btn {
-      background: linear-gradient(90deg, var(--accent), var(--primary));
-      color: white !important;
-      border: none;
-      border-radius: 25px;
-      padding: 8px 18px;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .btn:hover {
-      box-shadow: 0 0 10px var(--accent);
-      transform: translateY(-2px);
-    }
-
-    /* Floating Button */
-    .floating-btn {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      background: linear-gradient(90deg, var(--accent), var(--primary));
-      color: #fff;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      box-shadow: 0 0 15px rgba(161, 0, 255, 0.4);
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .floating-btn:hover {
-      box-shadow: 0 0 25px rgba(255, 63, 216, 0.5);
-      transform: scale(1.1);
-    }
-
-    /* Toast */
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--accent);
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 25px;
-      display: none;
-      font-weight: 500;
-      z-index: 999;
-    }
-
-    footer {
-      background: linear-gradient(90deg, var(--accent), var(--primary));
-      color: #fff;
-      text-align: center;
-      padding: 1rem;
-      margin-top: 40px;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-    }
-  </style>
 </head>
-
 <body>
+  <header class="navbar">
+    <div class="logo">⚡ TrendTime</div>
+    <button id="postBtn" class="btn primary">＋ Create</button>
+    <img id="headerAvatar" src="https://placehold.co/48x48" class="avatar" />
+  </header>
 
-<!-- Navbar -->
-<div class="w3-top navbar w3-padding-small w3-card">
-  <a href="#" class="w3-bar-item w3-button w3-large"><i class="fa fa-bolt"></i> TrendTime</a>
-  <a href="post.html" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-plus"></i> Create</a>
-  <a href="#" id="logoutBtn" class="w3-bar-item w3-button w3-hide-small w3-right"><i class="fa fa-sign-out"></i> Logout</a>
-</div>
+  <main id="feed" class="feed-container">
+    <div class="loading">✨ Fetching trends...</div>
+  </main>
 
-<!-- Page Container -->
-<div class="w3-container w3-content" style="max-width:1200px;margin-top:90px">    
-  <div class="w3-row-padding">
-    <!-- Left Column -->
-    <div class="w3-col m3">
-      <div class="profile-card">
-        <h4>My Space</h4>
-        <img id="profileAvatar" src="https://placehold.co/110x110" alt="Avatar">
-        <div class="avatar-upload">
-          <input type="file" id="avatarUpload" accept="image/*">
-          <label for="avatarUpload">Change avatar</label>
-        </div>
-        <p id="profileEmail" class="w3-opacity">Loading...</p>
-      </div>
-    </div>
+  <footer class="footer">
+    <p>© 2025 TrendTime — Connect. Create. Inspire.</p>
+  </footer>
 
-    <!-- Middle Column -->
-    <div class="w3-col m7">
-      <div id="feed" class="w3-padding">⚡ Loading your personalized feed...</div>
-    </div>
-
-    <!-- Right Column -->
-    <div class="w3-col m2">
-      <div class="w3-card w3-round w3-white w3-center w3-padding">
-        <p><strong>✨ You’re doing amazing.</strong><br>Share what inspires you today.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Floating Button -->
-<div class="floating-btn" onclick="window.location.href='post.html'">
-  <i class="fa fa-plus"></i>
-</div>
-
-<!-- Footer -->
-<footer>
-  <p>💜 TrendTime — A place to express yourself freely.</p>
-</footer>
-
-<div id="toast"></div>
-
+  <div id="toast"></div>
 </body>
 </html>
