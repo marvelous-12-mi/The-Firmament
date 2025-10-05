@@ -1,6 +1,5 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// --- Supabase Config ---
 const supabase = createClient(
   "https://kpdgmbjdaynplyjacuxd.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"
@@ -12,15 +11,13 @@ const logoutBtn = document.getElementById("logoutBtn");
 const profileEmail = document.getElementById("profileEmail");
 const profileAvatar = document.getElementById("profileAvatar");
 
-// --- Toast Helper ---
-function showToast(msg, color = "#0078d7") {
+function showToast(msg, color = "#a100ff") {
   toast.textContent = msg;
   toast.style.background = color;
   toast.style.display = "block";
   setTimeout(() => (toast.style.display = "none"), 3000);
 }
 
-// --- Load Current User ---
 async function loadUser() {
   const { data } = await supabase.auth.getUser();
   const user = data?.user;
@@ -32,7 +29,6 @@ async function loadUser() {
   }
 }
 
-// --- Fetch Feed from Supabase ---
 async function loadFeed() {
   const { data, error } = await supabase
     .from("trends")
@@ -72,7 +68,7 @@ async function loadFeed() {
           }
         </div>
         <button class="w3-button w3-theme-d1 w3-margin-bottom like-btn" data-id="${trend.id}">
-          <i class="fa fa-thumbs-up"></i> Like (${trend.likes})
+          <i class="fa fa-heart"></i> Like (${trend.likes})
         </button>
       </div>`
     )
@@ -83,24 +79,21 @@ async function loadFeed() {
   });
 }
 
-// --- Like Handler ---
 async function handleLike(id) {
   const { data: trend } = await supabase.from("trends").select("likes").eq("id", id).single();
   const newLikes = (trend?.likes || 0) + 1;
 
   const { error } = await supabase.from("trends").update({ likes: newLikes }).eq("id", id);
-  if (error) return showToast("Failed to like trend", "red");
+  if (error) return showToast("Failed to like trend", "#ff3fd8");
 
-  showToast("Liked!");
+  showToast("❤️ Liked!");
   loadFeed();
 }
 
-// --- Logout ---
 logoutBtn.addEventListener("click", async () => {
   await supabase.auth.signOut();
   window.location.href = "index.html";
 });
 
-// --- Init ---
 loadUser();
 loadFeed();
