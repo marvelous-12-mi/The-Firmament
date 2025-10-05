@@ -3,41 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime | Connect, Create & Explore</title>
+  <title>TrendTime - Dashboard</title>
   <link rel="stylesheet" href="index.css" />
-  <link rel="icon" href="https://placehold.co/64x64/ff007f/ffffff?text=T" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <header class="navbar">
-    <div class="logo">🌐 TrendTime</div>
-    <nav class="nav-links">
-      <a href="feed.html">Feed</a>
-      <a href="post.html">Create</a>
-      <a href="#" id="authBtn">Sign In</a>
-      <img id="headerAvatar" src="https://placehold.co/40x40" alt="Avatar" class="avatar">
-    </nav>
-  </header>
+  <div class="login-container">
+    <h1>TrendTime</h1>
+    <p class="subtitle">Log in or create your account</p>
 
-  <main class="hero">
-    <section class="intro">
-      <h1>Welcome to <span>TrendTime</span></h1>
-      <p>Share your moments, generate AI images, upload videos, and explore trending stories — all in one place.</p>
-      <div class="hero-buttons">
-        <a href="feed.html" class="btn primary">Explore Feed</a>
-        <a href="post.html" class="btn secondary">Create Trend</a>
-      </div>
-    </section>
-    <section class="hero-image">
-      <img src="https://placehold.co/600x400/ff007f/ffffff?text=Trend+Wave" alt="Social Preview">
-    </section>
-  </main>
+    <input id="email" type="email" placeholder="Email" required />
+    <input id="password" type="password" placeholder="Password" required />
 
-  <footer>
-    <p>© 2025 TrendTime. Built for creators — powered by Supabase & AI.</p>
-  </footer>
+    <button id="signInBtn">Sign In</button>
+    <button id="signUpBtn" class="outline">Sign Up</button>
 
-  <script src="index.js"></script>
+    <div id="loader" class="loader"></div>
+    <p id="status" class="status"></p>
+
+    <button id="logoutBtn" class="logout-btn">Log Out</button>
+  </div>
+
+  <script type="module" src="index.js"></script>
 </body>
 </html>
