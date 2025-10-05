@@ -75,9 +75,9 @@ postTrendBtn.onclick = async () => {
   if (generatedImage) {
     const blob = await (await fetch(generatedImage)).blob();
     const filePath = `image-${Date.now()}.png`;
-    const { error } = await supabase.storage.from("videos").upload(filePath, blob, { upsert: true });
+    const { error } = await supabase.storage.from("images").upload(filePath, blob, { upsert: true });
     if (error) return showToast(error.message, "#dc2626");
-    url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
+    url = supabase.storage.from("images").getPublicUrl(filePath).data.publicUrl;
     type = "image";
   }
 
