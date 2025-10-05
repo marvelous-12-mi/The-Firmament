@@ -1,124 +1,89 @@
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
   margin: 0;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  color: #fff;
 }
 
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 30px;
-  background: rgba(20, 20, 40, 0.8);
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.login-container {
+  background: #2f2f42;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  width: 320px;
+  text-align: center;
 }
 
-.logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #ff007f;
+h1 {
+  font-size: 2rem;
+  color: #00c3ff;
 }
 
-.nav-links a {
-  margin: 0 15px;
-  text-decoration: none;
-  color: #ddd;
-  font-weight: 500;
-  transition: color 0.3s;
+.subtitle {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
 }
 
-.nav-links a:hover {
-  color: #ff007f;
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border: none;
+  border-radius: 8px;
+  background: #3c3c55;
+  color: white;
+  font-size: 1rem;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-around;
-  padding: 50px 20px;
-  min-height: 80vh;
-}
-
-.intro {
-  max-width: 500px;
-}
-
-.intro h1 {
-  font-size: 2.5rem;
-  line-height: 1.2;
-}
-
-.intro span {
-  color: #ff007f;
-}
-
-.intro p {
-  margin: 15px 0 25px;
-  font-size: 1.1rem;
-  color: #ccc;
-}
-
-.hero-buttons .btn {
-  padding: 12px 25px;
-  border-radius: 30px;
-  text-decoration: none;
-  margin-right: 15px;
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #00c3ff;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
   transition: background 0.3s;
 }
 
-.btn.primary {
-  background: #ff007f;
-  color: #fff;
+button:hover {
+  background: #00a1cc;
 }
 
-.btn.primary:hover {
-  background: #e60073;
-}
-
-.btn.secondary {
+button.outline {
   background: transparent;
-  border: 2px solid #ff007f;
-  color: #ff007f;
+  border: 1px solid #00c3ff;
 }
 
-.btn.secondary:hover {
-  background: #ff007f;
-  color: #fff;
+.logout-btn {
+  background: #ff4c4c;
+  margin-top: 15px;
 }
 
-.hero-image img {
-  max-width: 500px;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(255, 0, 127, 0.4);
+.loader {
+  display: none;
+  width: 24px;
+  height: 24px;
+  margin: 10px auto;
+  border: 3px solid #ccc;
+  border-top-color: #00c3ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-footer {
-  text-align: center;
-  padding: 20px;
-  background: rgba(10, 10, 30, 0.8);
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.status {
+  display: none;
   font-size: 0.9rem;
-  color: #aaa;
-}
-
-@media (max-width: 768px) {
-  .hero {
-    flex-direction: column;
-  }
-
-  .hero-image img {
-    margin-top: 30px;
-    max-width: 90%;
-  }
+  margin-top: 10px;
 }
