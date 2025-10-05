@@ -1,10 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 // --- Supabase Config ---
-const supabase = createClient(
-  "https://kpdgmbjdaynplyjacuxd.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"
-);
 
 // --- DOM Elements ---
 const authBtn = document.getElementById("authBtn");
@@ -72,7 +68,7 @@ signInBtn.onclick = async () => {
   showToast("Signed in!", "#16a34a");
 };
 
-// --- AI Image (OpenAI via Backend) ---
+// --- AI Image (Google AI via Backend) ---
 generateImageBtn.onclick = async () => {
   const prompt = imagePrompt.value.trim();
   if (!prompt) return showToast("Enter a prompt", "#dc2626");
@@ -95,7 +91,7 @@ generateImageBtn.onclick = async () => {
     const { imageUrl } = await response.json();
     if (!imageUrl) throw new Error("No image returned");
 
-    generatedImage = imageUrl;
+    generatedImage = `data:image/png;base64,${imageUrl}`;
     preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
     showToast("Image generated!", "#16a34a");
   } catch (err) {
@@ -151,8 +147,7 @@ postTrendBtn.onclick = async () => {
     type = "text";
 
   if (generatedImage) {
-    const resp = await fetch(generatedImage);
-    const blob = await resp.blob();
+    const blob = await (await fetch(generatedImage)).blob();
     const filePath = `image-${Date.now()}.png`;
 
     const { error } = await supabase.storage
@@ -279,4 +274,5 @@ async function loadFeed() {
   });
 }
 
+// --- Initial Load ---
 loadFeed();
