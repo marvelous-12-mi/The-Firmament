@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <title>TrendTime - Dashboard</title>
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
   <div class="login-container">
-    <h1>💜 TrendTime</h1>
+    <h1>TrendTime</h1>
     <p class="subtitle">Log in or create your account</p>
 
     <input id="email" type="email" placeholder="Email" required />
@@ -20,52 +19,10 @@
 
     <div id="loader" class="loader"></div>
     <p id="status" class="status"></p>
+
+    <button id="logoutBtn" class="logout-btn">Log Out</button>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(
-      "https://kpdgmbjdaynplyjacuxd.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ
-
-    const email = document.getElementById("email");
-    const password = document.getElementById("password");
-    const signInBtn = document.getElementById("signInBtn");
-    const signUpBtn = document.getElementById("signUpBtn");
-    const status = document.getElementById("status");
-
-    async function checkProfile(userId) {
-      const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-      return data;
-    }
-
-    signInBtn.onclick = async () => {
-      status.innerText = "Signing in...";
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.value,
-        password: password.value,
-      });
-      if (error) return (status.innerText = error.message);
-
-      const profile = await checkProfile(data.user.id);
-      if (profile) {
-        window.location.href = "feed.html";
-      } else {
-        window.location.href = "setup.html";
-      }
-    };
-
-    signUpBtn.onclick = async () => {
-      status.innerText = "Creating account...";
-      const { data, error } = await supabase.auth.signUp({
-        email: email.value,
-        password: password.value,
-      });
-      if (error) return (status.innerText = error.message);
-      status.innerText = "Account created! Redirecting...";
-      setTimeout(() => (window.location.href = "setup.html"), 1500);
-    };
-  </script>
+  <script type="module" src="index.js"></script>
 </body>
 </html>
-
