@@ -1,28 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrendTime Feed</title>
-  <link rel="stylesheet" href="feed.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+  <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-light-blue.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:400,600" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <script type="module" src="feed.js" defer></script>
+  <style>
+    body {
+      background: #ffffff;
+      font-family: "Poppins", sans-serif;
+      color: #222;
+    }
+    .w3-bar {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .trend-card img,
+    .trend-card video {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0078d7;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 25px;
+      display: none;
+      z-index: 999;
+    }
+    .trend-username {
+      font-weight: 600;
+      color: #0078d7;
+    }
+  </style>
 </head>
-<body>
-  <header class="navbar">
-    <div class="logo">⚡ TrendTime</div>
-    <button id="postBtn" class="btn primary">＋ Create</button>
-    <img id="headerAvatar" src="https://placehold.co/48x48" class="avatar" />
-  </header>
 
-  <main id="feed" class="feed-container">
-    <div class="loading">✨ Fetching trends...</div>
-  </main>
+<body class="w3-theme-l5">
 
-  <footer class="footer">
-    <p>© 2025 TrendTime — Connect. Create. Inspire.</p>
-  </footer>
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-theme-d2 w3-large">
+    <a href="#" class="w3-bar-item w3-button w3-padding-large w3-theme-d4">
+      <i class="fa fa-bolt w3-margin-right"></i>TrendTime
+    </a>
+    <a href="post.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">
+      <i class="fa fa-pencil"></i> New Trend
+    </a>
+    <a href="#" id="logoutBtn" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">
+      <i class="fa fa-sign-out"></i> Logout
+    </a>
+  </div>
+</div>
 
-  <div id="toast"></div>
+<!-- Page Container -->
+<div class="w3-container w3-content" style="max-width:1200px;margin-top:80px">    
+  <div class="w3-row">
+    <!-- Left Column -->
+    <div class="w3-col m3">
+      <div class="w3-card w3-round w3-white">
+        <div class="w3-container w3-center">
+          <h4>My Profile</h4>
+          <img id="profileAvatar" src="https://placehold.co/100x100" class="w3-circle" style="width:100px;height:100px" alt="Avatar">
+          <p id="profileEmail" class="w3-small w3-opacity">Loading...</p>
+        </div>
+      </div>
+      <br>
+    </div>
+
+    <!-- Middle Column -->
+    <div class="w3-col m7">
+      <div id="feed">
+        <div class="w3-center w3-padding">⚡ Loading latest trends...</div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="w3-col m2">
+      <div class="w3-card w3-round w3-white w3-center">
+        <div class="w3-container">
+          <p>Need Inspiration?</p>
+          <img src="https://placehold.co/200x150" alt="Trend Ideas" style="width:100%;">
+          <p><strong>Discover fresh content!</strong></p>
+          <p><button onclick="location.reload()" class="w3-button w3-block w3-theme-l4">Refresh Feed</button></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-theme-d3 w3-padding-16 w3-center">
+  <p>© 2025 TrendTime — Create. Share. Inspire.</p>
+</footer>
+
+<!-- Toast -->
+<div id="toast"></div>
+
 </body>
 </html>
