@@ -1,115 +1,106 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// 🧩 Your Supabase credentials
-const SUPABASE_URL = "https://kpdgmbjdaynplyjacuxd.supabase.co";
-const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// --- Supabase Config ---
+const supabase = createClient(
+  "https://kpdgmbjdaynplyjacuxd.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"
+);
 
 const feedContainer = document.getElementById("feed");
-const postBtn = document.getElementById("postBtn");
 const toast = document.getElementById("toast");
-const headerAvatar = document.getElementById("headerAvatar");
+const logoutBtn = document.getElementById("logoutBtn");
+const profileEmail = document.getElementById("profileEmail");
+const profileAvatar = document.getElementById("profileAvatar");
 
-// ⚡ Load feed when page opens
-window.addEventListener("DOMContentLoaded", loadTrends);
-
-// ➕ Go to create post page
-postBtn.addEventListener("click", () => (window.location.href = "post.html"));
-
-// 🔥 Fetch and display all trends
-async function loadTrends() {
-  try {
-    feedContainer.innerHTML = `<div class="loading">✨ Fetching trends...</div>`;
-
-    const { data: trends, error } = await supabase
-      .from("trends")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    if (!trends || trends.length === 0) {
-      feedContainer.innerHTML = `<p class="empty">No trends yet — be the first to post! 🚀</p>`;
-      return;
-    }
-
-    feedContainer.innerHTML = trends.map(renderTrend).join("");
-  } catch (err) {
-    console.error("Error loading feed:", err);
-    showToast("⚠️ Unable to load feed.");
-  }
-}
-
-// 🧱 Render one trend card
-function renderTrend(trend) {
-  const date = new Date(trend.created_at).toLocaleString();
-  const isImage = trend.type === "image";
-  const isVideo = trend.type === "video";
-  const isYouTube = trend.type === "youtube";
-
-  let media = "";
-  if (isImage && trend.url)
-    media = `<img src="${trend.url}" alt="trend image" class="post-img" />`;
-  else if (isVideo && trend.video_url)
-    media = `<video controls class="post-video"><source src="${trend.video_url}" type="video/webm"></video>`;
-  else if (isYouTube && trend.video_url)
-    media = `<iframe class="post-youtube" src="https://www.youtube.com/embed/${extractYouTubeID(
-      trend.video_url
-    )}" frameborder="0" allowfullscreen></iframe>`;
-
-  return `
-    <article class="trend-card">
-      <div class="trend-header">
-        <img src="${
-          trend.avatar || "https://placehold.co/48x48"
-        }" class="avatar" />
-        <div class="info">
-          <h3>${trend.username || "Anonymous"}</h3>
-          <p class="timestamp">${date}</p>
-        </div>
-      </div>
-      <p class="caption">${trend.caption || ""}</p>
-      ${media || ""}
-      <div class="trend-actions">
-        <button class="like-btn" onclick="likeTrend(${trend.id})">❤️ ${
-    trend.likes || 0
-  }</button>
-      </div>
-    </article>
-  `;
-}
-
-// 🎬 Extract YouTube video ID
-function extractYouTubeID(url) {
-  const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&#\s?]+)/);
-  return match ? match[1] : null;
-}
-
-// ❤️ Like trend
-window.likeTrend = async function (id) {
-  try {
-    const { data, error } = await supabase
-      .from("trends")
-      .update({ likes: supabase.rpc("increment_likes", { trend_id: id }) })
-      .eq("id", id)
-      .select();
-
-    if (error) throw error;
-
-    showToast("❤️ Trend liked!");
-    loadTrends();
-  } catch (err) {
-    console.error("Like failed:", err);
-    showToast("❌ Error liking trend.");
-  }
-};
-
-// 🔔 Toast popup
-function showToast(message, color = "#ff3fd8") {
-  toast.textContent = message;
+// --- Toast Helper ---
+function showToast(msg, color = "#0078d7") {
+  toast.textContent = msg;
   toast.style.background = color;
   toast.style.display = "block";
-  setTimeout(() => (toast.style.display = "none"), 2500);
+  setTimeout(() => (toast.style.display = "none"), 3000);
 }
+
+// --- Load Current User ---
+async function loadUser() {
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user;
+  if (user) {
+    profileEmail.textContent = user.email;
+    profileAvatar.src = user.user_metadata?.avatar_url || "https://placehold.co/100x100";
+  } else {
+    window.location.href = "index.html";
+  }
+}
+
+// --- Fetch Feed from Supabase ---
+async function loadFeed() {
+  const { data, error } = await supabase
+    .from("trends")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    feedContainer.innerHTML = `<p class='w3-center w3-text-red'>Error loading feed: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    feedContainer.innerHTML = `<p class='w3-center'>No trends yet. Be the first to post!</p>`;
+    return;
+  }
+
+  feedContainer.innerHTML = data
+    .map(
+      (trend) => `
+      <div class="w3-container w3-card w3-white w3-round w3-margin trend-card">
+        <br>
+        <img src="${trend.avatar || "https://placehold.co/60x60"}" alt="Avatar"
+             class="w3-left w3-circle w3-margin-right" style="width:60px">
+        <span class="w3-right w3-opacity">${new Date(trend.created_at).toLocaleString()}</span>
+        <h4 class="trend-username">${trend.username}</h4><br>
+        <hr class="w3-clear">
+        <p>${trend.caption || ""}</p>
+        <div class="trend-content">
+          ${
+            trend.type === "image"
+              ? `<img src="${trend.url}" alt="Trend Image">`
+              : trend.type === "video"
+              ? `<video src="${trend.video_url}" controls></video>`
+              : trend.type === "youtube"
+              ? `<iframe width="100%" height="315" src="${trend.video_url.replace("watch?v=", "embed/")}" frameborder="0" allowfullscreen></iframe>`
+              : ""
+          }
+        </div>
+        <button class="w3-button w3-theme-d1 w3-margin-bottom like-btn" data-id="${trend.id}">
+          <i class="fa fa-thumbs-up"></i> Like (${trend.likes})
+        </button>
+      </div>`
+    )
+    .join("");
+
+  document.querySelectorAll(".like-btn").forEach((btn) => {
+    btn.addEventListener("click", () => handleLike(btn.dataset.id));
+  });
+}
+
+// --- Like Handler ---
+async function handleLike(id) {
+  const { data: trend } = await supabase.from("trends").select("likes").eq("id", id).single();
+  const newLikes = (trend?.likes || 0) + 1;
+
+  const { error } = await supabase.from("trends").update({ likes: newLikes }).eq("id", id);
+  if (error) return showToast("Failed to like trend", "red");
+
+  showToast("Liked!");
+  loadFeed();
+}
+
+// --- Logout ---
+logoutBtn.addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  window.location.href = "index.html";
+});
+
+// --- Init ---
+loadUser();
+loadFeed();
