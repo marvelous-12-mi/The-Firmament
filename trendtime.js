@@ -1,7 +1,10 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
+const supabaseUrl = process.env.NEXT_PUBLIC_supabaseUrl;
+const supabaseKey = process.env.NEXT_PUBLIC_supabaseKey;
 // --- Supabase Config ---
-
+const superbase = CreateClient(
+  superbaseUrl, supabaseKey
+);
 // --- DOM Elements ---
 const authBtn = document.getElementById("authBtn");
 const headerAvatar = document.getElementById("headerAvatar");
