@@ -1,389 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>TrendTime Pro 🔥</title>
-  <meta name="description" content="TrendTime Pro — Post trends with AI images, short videos, and YouTube links.">
-  <meta name="theme-color" content="#ff6a00">
-  <link rel="icon" href="/favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0/dist/tf.min.js"></script>
-  <style>
-:root {
-  --white: #ffffff;
-  --black: #0d0d0d;
-  --babyblue-light: #d0eaff;
-  --babyblue-dark: #a0cfff;
-  --gradient: linear-gradient(135deg, var(--babyblue-light), var(--babyblue-dark));
-  --accent: #0d0d0d;
-  --card: rgba(255, 255, 255, 0.85);
-  --muted: #999999;
-  --glass: rgba(255, 255, 255, 0.2);
-  --shadow: rgba(0, 0, 0, 0.2);
-  --success: #16a34a;
-  --error: #dc2626;
-  --glow: 0 0 12px rgba(160, 207, 255, 0.6);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-body {
-  background: var(--gradient);
-  color: var(--black);
-  transition: background 0.6s ease;
-  overflow-x: hidden;
-}
-
-/* Header */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background: var(--black);
-  color: var(--white);
-  border-bottom: 1px solid #00000033;
-  box-shadow: var(--glow);
-}
-
-header h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--babyblue-dark);
-  text-shadow: 0 1px 2px var(--shadow);
-  animation: fadeInDown 0.8s ease;
-}
-
-/* Buttons */
-.btn {
-  background: var(--black);
-  color: var(--white);
-  border: none;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s ease;
-  box-shadow: var(--glow);
-}
-
-.btn:hover {
-  background: var(--babyblue-dark);
-  color: var(--black);
-  transform: scale(1.05);
-}
-
-/* Avatar */
-.avatar-small {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--babyblue-dark);
-  box-shadow: var(--glow);
-}
-
-/* Main */
-main {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  animation: fadeInUp 1s ease;
-}
-
-/* Cards */
-.trend-card {
-  background: var(--card);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  padding: 1rem;
-  box-shadow: 0 4px 14px var(--shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.trend-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px var(--shadow);
-}
-
-.trend-header {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.trend-header img {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--babyblue-light);
-}
-
-.trend-header .handle {
-  font-weight: 700;
-  color: var(--black);
-}
-
-.trend-text {
-  font-size: 1rem;
-  margin-top: 0.5rem;
-  line-height: 1.6;
-  color: var(--black);
-}
-
-/* Media */
-.trend-media img,
-.trend-media video,
-.trend-media iframe {
-  width: 100%;
-  border-radius: 12px;
-  display: block;
-  background: var(--white);
-  box-shadow: var(--glow);
-}
-
-/* Floating Post Button */
-.post-btn {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: var(--black);
-  color: var(--white);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2rem;
-  cursor: pointer;
-  box-shadow: 0 0 25px rgba(160, 207, 255, 0.45);
-  z-index: 180;
-  transition: 0.25s ease;
-}
-
-.post-btn:hover {
-  transform: scale(1.08);
-  background: var(--babyblue-dark);
-  color: var(--black);
-}
-
-/* Modal */
-.modal-bg {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 300;
-}
-
-.modal {
-  width: 92%;
-  max-width: 520px;
-  background: var(--card);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px var(--shadow);
-  padding: 1.5rem;
-  position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
-  backdrop-filter: blur(10px);
-}
-
-.modal h2 {
-  color: var(--babyblue-dark);
-  margin-bottom: 0.75rem;
-  font-weight: 700;
-}
-
-.close-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--black);
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-weight: 700;
-  box-shadow: var(--glow);
-}
-
-/* Inputs */
-.input,
-.textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--babyblue-dark);
-  border-radius: 10px;
-  font-size: 0.95rem;
-  background: var(--babyblue-light);
-  outline: none;
-  transition: border 0.3s ease;
-}
-
-.input:focus,
-.textarea:focus {
-  border-color: var(--black);
-}
-
-/* Toast */
-#toast {
-  position: fixed;
-  left: 50%;
-  bottom: 1.25rem;
-  transform: translateX(-50%);
-  background: var(--black);
-  color: var(--white);
-  padding: 0.75rem 1rem;
-  border-radius: 999px;
-  display: none;
-  z-index: 999;
-  box-shadow: 0 8px 20px var(--shadow);
-  font-weight: 600;
-}
-
-/* Skeleton */
-.skeleton {
-  background: linear-gradient(90deg, #d0eaff 25%, #a0cfff 37%, #d0eaff 63%);
-  background-size: 400% 100%;
-  animation: skeleton 1.4s ease infinite;
-  border-radius: 12px;
-  height: 220px;
-}
-
-@keyframes skeleton {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-
-/* Animations */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 560px) {
-  header h1 {
-    font-size: 1.5rem;
-  }
-  .post-btn {
-    width: 62px;
-    height: 62px;
-    font-size: 1.75rem;
-  }
-}
-
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendTime | Connect, Create & Explore</title>
+  <link rel="stylesheet" href="index.css" />
+  <link rel="icon" href="https://placehold.co/64x64/ff007f/ffffff?text=T" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
 
-  <header>
-    <h1>TrendTime Pro 🔥</h1>
-    <div class="header-right">
-      <img id="headerAvatar" class="avatar-small" src="https://placehold.co/64x64" alt="avatar"/>
-      <button id="authBtn" class="btn">Sign In</button>
-    </div>
+<body>
+  <header class="navbar">
+    <div class="logo">🌐 TrendTime</div>
+    <nav class="nav-links">
+      <a href="feed.html">Feed</a>
+      <a href="post.html">Create</a>
+      <a href="#" id="authBtn">Sign In</a>
+      <img id="headerAvatar" src="https://placehold.co/40x40" alt="Avatar" class="avatar">
+    </nav>
   </header>
 
-  <main>
-    <div id="feed" class="feed">
-      <div class="trend-card">
-        <div class="skeleton"></div>
+  <main class="hero">
+    <section class="intro">
+      <h1>Welcome to <span>TrendTime</span></h1>
+      <p>Share your moments, generate AI images, upload videos, and explore trending stories — all in one place.</p>
+      <div class="hero-buttons">
+        <a href="feed.html" class="btn primary">Explore Feed</a>
+        <a href="post.html" class="btn secondary">Create Trend</a>
       </div>
-      <div class="trend-card">
-        <div class="skeleton"></div>
-      </div>
-    </div>
+    </section>
+    <section class="hero-image">
+      <img src="https://placehold.co/600x400/ff007f/ffffff?text=Trend+Wave" alt="Social Preview">
+    </section>
   </main>
 
-  <div id="postBtn" class="post-btn">+</div>
+  <footer>
+    <p>© 2025 TrendTime. Built for creators — powered by Supabase & AI.</p>
+  </footer>
 
-  <!-- Auth Modal -->
-  <div id="authModal" class="modal-bg" aria-modal="true" role="dialog">
-    <div class="modal">
-      <div id="closeAuth" class="close-btn" aria-label="Close">×</div>
-      <h2>Sign In / Sign Up</h2>
-      <div class="field">
-        <input id="emailInput" class="input" type="email" placeholder="Email" required/>
-      </div>
-      <div class="field">
-        <input id="passwordInput" class="input" type="password" placeholder="Password" required/>
-      </div>
-      <div class="row">
-        <button id="signInBtn" class="btn btn-full">Sign In</button>
-        <button id="signUpBtn" class="btn btn-full">Sign Up</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Post Modal -->
-  <div id="postModal" class="modal-bg" aria-modal="true" role="dialog">
-    <div class="modal">
-      <div id="closePost" class="close-btn" aria-label="Close">×</div>
-      <h2>Post a trend</h2>
-      <div class="field">
-        <textarea id="captionInput" class="textarea" placeholder="What's trending?"></textarea>
-      </div>
-      <div class="field">
-        <input id="youtubeInput" class="input" type="text" placeholder="YouTube Link (optional)"/>
-      </div>
-      <div class="field">
-        <input id="imagePrompt" class="input" type="text" placeholder="AI Image Prompt (optional)"/>
-      </div>
-      <div class="row">
-        <button id="generateImageBtn" class="btn btn-full">🎨 Generate image</button>
-        <button id="recordVideoBtn" class="btn btn-full">🎥 Record 5s video</button>
-      </div>
-      <div id="preview" class="field"></div>
-      <button id="postTrendBtn" class="btn btn-full">Post Trend 🚀</button>
-    </div>
-  </div>
-
-  <div id="toast">Ready.</div>
-
-  <!-- App JS -->
-  <script type="module" src="trendtime.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>
-```
-
