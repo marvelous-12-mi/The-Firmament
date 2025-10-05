@@ -1,7 +1,11 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 // --- Supabase Config ---
-const supabase = createClient("https://kpdgmbjdaynplyjacuxd.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ");
+const supabase = createClient(
+  "https://kpdgmbjdaynplyjacuxd.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ"
+);
+
 // --- DOM Elements ---
 const authBtn = document.getElementById("authBtn");
 const headerAvatar = document.getElementById("headerAvatar");
@@ -68,7 +72,7 @@ signInBtn.onclick = async () => {
   showToast("Signed in!", "#16a34a");
 };
 
-// --- AI Image (Google AI via Backend) ---
+// --- AI Image (DeepAI via backend) ---
 generateImageBtn.onclick = async () => {
   const prompt = imagePrompt.value.trim();
   if (!prompt) return showToast("Enter a prompt", "#dc2626");
@@ -89,9 +93,8 @@ generateImageBtn.onclick = async () => {
     }
 
     const { imageUrl } = await response.json();
-    if (!imageUrl) throw new Error("No image returned");
+    generatedImage = imageUrl;
 
-    generatedImage = `data:image/png;base64,${imageUrl}`;
     preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
     showToast("Image generated!", "#16a34a");
   } catch (err) {
@@ -117,11 +120,9 @@ recordVideoBtn.onclick = async () => {
 
     recordedBlobs = [];
     mediaRecorder = new MediaRecorder(stream);
-
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) recordedBlobs.push(e.data);
     };
-
     mediaRecorder.start();
     setTimeout(() => mediaRecorder.stop(), 5000);
 
@@ -153,7 +154,6 @@ postTrendBtn.onclick = async () => {
     const { error } = await supabase.storage
       .from("videos")
       .upload(filePath, blob, { upsert: true });
-
     if (error) return showToast(error.message, "#dc2626");
 
     url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
@@ -163,17 +163,14 @@ postTrendBtn.onclick = async () => {
 
   if (recordedVideoBlob) {
     const filePath = `video-${Date.now()}.webm`;
-
     const { error } = await supabase.storage
       .from("videos")
       .upload(filePath, recordedVideoBlob, { upsert: true });
-
     if (error) return showToast(error.message, "#dc2626");
 
     video_url = supabase.storage
       .from("videos")
       .getPublicUrl(filePath).data.publicUrl;
-
     type = "video";
     recordedVideoBlob = null;
   }
@@ -204,75 +201,53 @@ postTrendBtn.onclick = async () => {
   imagePrompt.value = "";
   preview.innerHTML = "";
   postModal.style.display = "none";
-
   showToast("Trend posted!", "#16a34a");
   loadFeed();
 };
 
-// --- Like Button Handler ---
+// --- Like + Feed ---
 async function likeTrend(id, currentLikes) {
   const { error } = await supabase
     .from("trends")
     .update({ likes: currentLikes + 1 })
     .eq("id", id);
-
-  if (error) return showToast("Like error", "#dc2626");
-  loadFeed();
+  if (!error) loadFeed();
 }
 
-// --- Load Feed ---
 async function loadFeed() {
   const { data, error } = await supabase
     .from("trends")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error(error);
-    return;
-  }
-
+  if (error) return console.error(error);
   feed.innerHTML = "";
 
   data.forEach((trend) => {
     const card = document.createElement("div");
     card.className = "trend-card";
+    card.innerHTML = `
+      <div class="trend-header">
+        <img src="${trend.avatar || "https://placehold.co/40x40"}">
+        <span class="handle">@${trend.username || "anon"}</span>
+      </div>
+      <div class="trend-text">${trend.caption || ""}</div>
+    `;
 
-    const info = document.createElement("div");
-    info.className = "trend-header";
-    info.innerHTML = `<img src="${
-      trend.avatar || "https://placehold.co/40x40"
-    }"><span class="handle">@${trend.username || "anon"}</span>`;
-    card.appendChild(info);
-
-    if (trend.caption) {
-      const textDiv = document.createElement("div");
-      textDiv.className = "trend-text";
-      textDiv.innerText = trend.caption;
-      card.appendChild(textDiv);
-    }
-
-    if (trend.type === "image" && trend.url) {
+    if (trend.type === "image" && trend.url)
       card.innerHTML += `<div class="trend-media"><img src="${trend.url}" style="width:100%;border-radius:12px;"></div>`;
-    } else if (trend.type === "video" && trend.video_url) {
+    else if (trend.type === "video" && trend.video_url)
       card.innerHTML += `<div class="trend-media"><video src="${trend.video_url}" controls style="width:100%;border-radius:12px;"></video></div>`;
-    } else if (trend.type === "youtube" && trend.video_url) {
-      const vid = trend.video_url.includes("watch?v=")
-        ? trend.video_url.replace("watch?v=", "embed/")
-        : trend.video_url;
-
-      card.innerHTML += `<div class="trend-media"><iframe src="${vid}" frameborder="0" allowfullscreen style="width:100%;height:300px;border-radius:12px;"></iframe></div>`;
-    }
+    else if (trend.type === "youtube" && trend.video_url)
+      card.innerHTML += `<div class="trend-media"><iframe src="${trend.video_url.replace("watch?v=", "embed/")}" frameborder="0" allowfullscreen style="width:100%;height:300px;border-radius:12px;"></iframe></div>`;
 
     const likeBtn = document.createElement("button");
     likeBtn.className = "btn";
     likeBtn.innerText = `❤️ ${trend.likes || 0}`;
     likeBtn.onclick = () => likeTrend(trend.id, trend.likes || 0);
     card.appendChild(likeBtn);
-
     feed.appendChild(card);
   });
 }
 
-// --- Initial Load ---
 loadFeed();
