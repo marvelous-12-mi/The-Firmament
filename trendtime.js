@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-const supabaseUrl = process.env.NEXT_PUBLIC_supabaseUrl;
-const supabaseKey = process.env.NEXT_PUBLIC_supabaseKey;
+const supabaseUrl = process.env.supabaseUrl;
+const supabaseKey = process.env.supabaseKey;
 // --- Supabase Config ---
 const superbase = CreateClient(
   superbaseUrl, supabaseKey
