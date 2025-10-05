@@ -94,7 +94,6 @@ generateImageBtn.onclick = async () => {
 
     const { imageUrl } = await response.json();
     generatedImage = imageUrl;
-
     preview.innerHTML = `<img src="${generatedImage}" style="width:100%;border-radius:12px;">`;
     showToast("Image generated!", "#16a34a");
   } catch (err) {
@@ -109,10 +108,7 @@ generateImageBtn.onclick = async () => {
 // --- Record Video ---
 recordVideoBtn.onclick = async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
     preview.innerHTML = `<video autoplay muted></video>`;
     const videoEl = preview.querySelector("video");
@@ -132,7 +128,7 @@ recordVideoBtn.onclick = async () => {
       videoEl.src = URL.createObjectURL(recordedVideoBlob);
       videoEl.controls = true;
     };
-  } catch (err) {
+  } catch {
     showToast("Camera/mic access required!", "#dc2626");
   }
 };
@@ -143,17 +139,12 @@ postTrendBtn.onclick = async () => {
 
   let caption = captionInput.value.trim();
   const youtubeLink = youtubeInput.value.trim();
-  let url = null,
-    video_url = null,
-    type = "text";
+  let url = null, video_url = null, type = "text";
 
   if (generatedImage) {
     const blob = await (await fetch(generatedImage)).blob();
     const filePath = `image-${Date.now()}.png`;
-
-    const { error } = await supabase.storage
-      .from("videos")
-      .upload(filePath, blob, { upsert: true });
+    const { error } = await supabase.storage.from("videos").upload(filePath, blob, { upsert: true });
     if (error) return showToast(error.message, "#dc2626");
 
     url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
@@ -163,14 +154,10 @@ postTrendBtn.onclick = async () => {
 
   if (recordedVideoBlob) {
     const filePath = `video-${Date.now()}.webm`;
-    const { error } = await supabase.storage
-      .from("videos")
-      .upload(filePath, recordedVideoBlob, { upsert: true });
+    const { error } = await supabase.storage.from("videos").upload(filePath, recordedVideoBlob, { upsert: true });
     if (error) return showToast(error.message, "#dc2626");
 
-    video_url = supabase.storage
-      .from("videos")
-      .getPublicUrl(filePath).data.publicUrl;
+    video_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
     type = "video";
     recordedVideoBlob = null;
   }
@@ -180,19 +167,17 @@ postTrendBtn.onclick = async () => {
     video_url = youtubeLink;
   }
 
-  const { error } = await supabase.from("trends").insert([
-    {
-      user_id: currentUser.id,
-      caption: caption || null,
-      url,
-      video_url,
-      type,
-      username: currentUser.email.split("@")[0] || "anon",
-      avatar: currentUser.user_metadata?.avatar_url || null,
-      text: caption || null,
-      likes: 0,
-    },
-  ]);
+  const { error } = await supabase.from("trends").insert([{
+    user_id: currentUser.id,
+    caption: caption || null,
+    url,
+    video_url,
+    type,
+    username: currentUser.email.split("@")[0] || "anon",
+    avatar: currentUser.user_metadata?.avatar_url || null,
+    text: caption || null,
+    likes: 0,
+  }]);
 
   if (error) return showToast("Insert Error: " + error.message, "#dc2626");
 
@@ -207,23 +192,16 @@ postTrendBtn.onclick = async () => {
 
 // --- Like + Feed ---
 async function likeTrend(id, currentLikes) {
-  const { error } = await supabase
-    .from("trends")
-    .update({ likes: currentLikes + 1 })
-    .eq("id", id);
+  const { error } = await supabase.from("trends").update({ likes: currentLikes + 1 }).eq("id", id);
   if (!error) loadFeed();
 }
 
 async function loadFeed() {
-  const { data, error } = await supabase
-    .from("trends")
-    .select("*")
-    .order("created_at", { ascending: false });
-
+  const { data, error } = await supabase.from("trends").select("*").order("created_at", { ascending: false });
   if (error) return console.error(error);
   feed.innerHTML = "";
 
-  data.forEach((trend) => {
+  data.forEach(trend => {
     const card = document.createElement("div");
     card.className = "trend-card";
     card.innerHTML = `
@@ -246,8 +224,10 @@ async function loadFeed() {
     likeBtn.innerText = `❤️ ${trend.likes || 0}`;
     likeBtn.onclick = () => likeTrend(trend.id, trend.likes || 0);
     card.appendChild(likeBtn);
+
     feed.appendChild(card);
   });
 }
 
+// --- Initialize ---
 loadFeed();
