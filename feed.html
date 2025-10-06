@@ -3,38 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime Feed</title>
+  <title>TrendTime — Feed</title>
+  <link rel="stylesheet" href="feed.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="feed.css">
+  <script type="module" src="feed.js" defer></script>
 </head>
 <body>
-
-  <!-- 🔮 Navbar -->
-  <nav class="navbar">
+  <!-- Header -->
+  <header class="navbar">
     <div class="nav-left">
-      <h1 class="logo">Trend<span>Time</span></h1>
+      <div class="logo">⚡ TrendTime</div>
     </div>
     <div class="nav-right">
-      <button id="createPostBtn">＋ Post</button>
-      <button id="changeAvatarBtn">Change Avatar</button>
-      <button id="logoutBtn">Logout</button>
+      <button id="createBtn" class="btn primary">＋ Create</button>
+      <div class="avatar-wrapper">
+        <img id="headerAvatar" src="https://placehold.co/40x40" class="avatar" />
+      </div>
     </div>
-  </nav>
+  </header>
 
-  <!-- 📸 Avatar Input -->
-  <input type="file" id="avatarInput" accept="image/*" hidden />
-
-  <!-- 📰 Feed -->
-  <main class="feed">
-    <h2>Explore Trends</h2>
-    <div id="trendsList" class="trends-list">
-      <p>Loading trends...</p>
-    </div>
+  <!-- Feed Section -->
+  <main id="feed" class="feed">
+    <div class="loading">✨ Loading the world’s latest trends...</div>
   </main>
 
-  <!-- 🔔 Toast -->
-  <div id="toast" class="toast"></div>
+  <!-- Floating Button -->
+  <button id="floatingPostBtn" class="floating-btn">＋</button>
 
-  <script type="module" src="feed.js"></script>
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 TrendTime — Connect. Create. Inspire.</p>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast"></div>
 </body>
 </html>
