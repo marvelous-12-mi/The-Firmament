@@ -13,52 +13,81 @@ const profileAvatar = document.getElementById("profileAvatar");
 const userAvatar = document.getElementById("userAvatar");
 const usernameDisplay = document.getElementById("usernameDisplay");
 
-function showToast(msg, color = "#8a00ff") {
-  toast.innerText = msg;
+// Toast notification
+function showToast(message, color = "#8a00ff") {
+  toast.innerText = message;
   toast.style.background = color;
   toast.style.display = "block";
   setTimeout(() => (toast.style.display = "none"), 3000);
 }
 
-// Load user
-let { data: userData } = await supabase.auth.getUser();
-let user = userData?.user;
-if (user) {
-  usernameDisplay.textContent = user.email.split("@")[0];
-  profileAvatar.src = user.user_metadata?.avatar_url || "https://placehold.co/100x100";
-  userAvatar.src = profileAvatar.src;
-} else {
+// Load current user
+const { data: userData, error: userError } = await supabase.auth.getUser();
+const user = userData?.user;
+
+if (userError || !user) {
   window.location.href = "index.html";
 }
 
-// Avatar upload
+usernameDisplay.textContent = user.email.split("@")[0];
+profileAvatar.src = user.user_metadata?.avatar_url || "https://placehold.co/100x100";
+userAvatar.src = profileAvatar.src;
+
+// Handle avatar upload
 changeAvatarBtn.onclick = () => avatarInput.click();
+
 avatarInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  const filePath = `avatars/${user.id}/${file.name}`;
-  const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+  const filePath = `${user.id}/${fileName}`;
 
-  if (error) return showToast("Upload failed", "#dc2626");
+  // Ensure bucket exists: "avatars"
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true,
+    });
 
-  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-  const newUrl = data.publicUrl;
+  if (uploadError) {
+    console.error(uploadError);
+    return showToast("Upload failed 😢 (check Supabase bucket permissions)", "#e11d48");
+  }
 
-  await supabase.auth.updateUser({ data: { avatar_url: newUrl } });
-  profileAvatar.src = newUrl;
-  userAvatar.src = newUrl;
-  showToast("Avatar updated!");
+  // Get public URL
+  const { data: publicData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+  const publicUrl = publicData.publicUrl;
+
+  // Update user metadata
+  const { error: updateError } = await supabase.auth.updateUser({
+    data: { avatar_url: publicUrl },
+  });
+
+  if (updateError) {
+    console.error(updateError);
+    return showToast("Error saving avatar", "#e11d48");
+  }
+
+  profileAvatar.src = publicUrl;
+  userAvatar.src = publicUrl;
+  showToast("✅ Avatar updated successfully!");
 });
 
-// Load posts
+// Load feed posts
 async function loadFeed() {
   const { data, error } = await supabase
     .from("trends")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) return showToast("Error loading trends", "#dc2626");
+  if (error) {
+    console.error(error);
+    return showToast("Failed to load trends", "#e11d48");
+  }
+
   if (!data.length) {
     feed.innerHTML = `<p class="w3-center w3-text-grey">No trends yet. Create your first one!</p>`;
     return;
@@ -69,7 +98,7 @@ async function loadFeed() {
       (t) => `
       <div class="post-card">
         <div class="post-header">
-          <img src="${t.avatar}" alt="${t.username}" />
+          <img src="${t.avatar || "https://placehold.co/40x40"}" alt="${t.username}" />
           <h4>${t.username}</h4>
         </div>
         <div class="post-media">
@@ -81,9 +110,9 @@ async function loadFeed() {
               : ""
           }
         </div>
-        <div class="post-caption">${t.caption}</div>
+        <div class="post-caption">${t.caption || ""}</div>
         <div class="post-footer">
-          <button><i class="fa fa-heart"></i> ${t.likes}</button>
+          <button><i class="fa fa-heart"></i> ${t.likes || 0}</button>
           <span>${new Date(t.created_at).toLocaleString()}</span>
         </div>
       </div>`
