@@ -1,30 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
+:root {
+  --bg: #fafafa;
+  --text: #222;
+  --card: #fff;
+  --accent: #6a00f4;
+  --accent2: #b5179e;
+  --border: #e5e5e5;
+}
+
+body.dark {
+  --bg: #0f0f11;
+  --text: #eee;
+  --card: #1b1b1f;
+  --accent: #9d4edd;
+  --accent2: #d94bff;
+  --border: #333;
+}
+
 body {
+  background: var(--bg);
+  color: var(--text);
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, #fef9ff 0%, #f4ecff 100%);
-  color: #222;
   margin: 0;
+  transition: background 0.3s, color 0.3s;
 }
 
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: white;
+  z-index: 10;
+  background: var(--card);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 18px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
 }
 
 .logo {
-  background: linear-gradient(90deg, #6a00f4, #b5179e);
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
   -webkit-background-clip: text;
-  color: transparent;
+  -webkit-text-fill-color: transparent;
   font-weight: 700;
   font-size: 1.4rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mode-btn {
+  font-size: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
 }
 
 .user {
@@ -34,21 +66,26 @@ body {
 }
 
 .avatar {
-  border-radius: 50%;
   width: 45px;
   height: 45px;
+  border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
 }
 
 .me-name {
   font-weight: 600;
-  color: #6200ee;
+  color: var(--accent);
 }
 
 .stories-section {
-  background: white;
-  border-bottom: 1px solid #eee;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
   overflow-x: auto;
   white-space: nowrap;
   padding: 12px;
@@ -65,26 +102,21 @@ body {
   align-items: center;
   min-width: 70px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s;
 }
 
 .story img {
   width: 65px;
   height: 65px;
   border-radius: 50%;
-  border: 3px solid #b5179e;
+  border: 3px solid var(--accent2);
   object-fit: cover;
-  transition: transform 0.2s ease;
-}
-
-.story img:hover {
-  transform: scale(1.1);
 }
 
 .story p {
   font-size: 12px;
   margin-top: 5px;
-  color: #6200ee;
+  color: var(--accent);
 }
 
 .feed {
@@ -95,14 +127,19 @@ body {
 }
 
 .post-card {
-  background: #fff;
+  background: var(--card);
   border-radius: 18px;
   width: 100%;
   max-width: 500px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(98, 0, 238, 0.08);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
   overflow: hidden;
   animation: popIn 0.3s ease;
+  transition: transform 0.3s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
 }
 
 @keyframes popIn {
@@ -119,7 +156,6 @@ body {
 
 .post-top .name {
   font-weight: 600;
-  color: #222;
 }
 
 .post-top .time {
@@ -133,15 +169,16 @@ body {
   object-fit: cover;
 }
 
-.post-body .caption {
-  padding: 10px 14px;
+.caption {
+  padding: 12px 16px;
   font-size: 14px;
 }
 
 .post-actions {
   display: flex;
-  justify-content: space-between;
-  padding: 8px 14px 12px;
+  justify-content: space-around;
+  padding: 8px 14px 14px;
+  border-top: 1px solid var(--border);
 }
 
 .icon-btn {
@@ -150,31 +187,32 @@ body {
   font-size: 22px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  color: var(--text);
 }
 
 .icon-btn:hover {
   transform: scale(1.2);
+  color: var(--accent);
 }
 
 .icon-btn.liked {
   color: #e60073;
-  transform: scale(1.3);
 }
 
 .fab {
   position: fixed;
   bottom: 25px;
   right: 25px;
-  background: linear-gradient(45deg, #6a00f4, #b5179e);
+  background: linear-gradient(45deg, var(--accent), var(--accent2));
   color: white;
-  font-size: 26px;
+  font-size: 28px;
   border: none;
   border-radius: 50%;
   width: 60px;
   height: 60px;
-  box-shadow: 0 5px 15px rgba(98, 0, 238, 0.4);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s;
 }
 
 .fab:hover {
@@ -186,7 +224,7 @@ body {
   bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
-  background: #6a00f4;
+  background: var(--accent);
   color: white;
   padding: 10px 20px;
   border-radius: 20px;
@@ -194,60 +232,12 @@ body {
   font-size: 14px;
 }
 
-.modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal.hidden { display: none; }
-
-.modal-content {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  width: 85%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.modal-content textarea {
-  width: 100%;
-  height: 80px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
-  resize: none;
-}
-
-.modal-content button {
-  margin: 5px;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-#submitPost { background: #6a00f4; color: white; }
-#closeModal { background: #eee; color: #333; }
-
-.loading {
-  text-align: center;
-  padding: 50px 0;
-  color: #555;
-}
-
 .spinner {
   display: inline-block;
   width: 25px;
   height: 25px;
   border: 3px solid #ccc;
-  border-top-color: #6a00f4;
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
