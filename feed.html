@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TrendTime — Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="feed.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script type="module" src="feed.js" defer></script>
 </head>
 <body>
-  <!-- Header -->
-  <header class="navbar">
-    <div class="nav-left">
-      <div class="logo">⚡ TrendTime</div>
+  <header class="tt-header">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <div class="title">TrendTime</div>
     </div>
-    <div class="nav-right">
+
+    <div class="search-wrap">
+      <input id="search" placeholder="Search trends, users or tags..." />
+    </div>
+
+    <div class="actions">
       <button id="createBtn" class="btn primary">＋ Create</button>
-      <div class="avatar-wrapper">
-        <img id="headerAvatar" src="https://placehold.co/40x40" class="avatar" />
-      </div>
+      <img id="meAvatar" class="me-avatar" src="https://placehold.co/40x40" alt="me" />
     </div>
   </header>
 
-  <!-- Feed Section -->
+  <section class="stories" id="stories">
+    <!-- story pills injected here -->
+  </section>
+
   <main id="feed" class="feed">
-    <div class="loading">✨ Loading the world’s latest trends...</div>
+    <div class="feed-placeholder">✨ Loading latest moments...</div>
   </main>
 
-  <!-- Floating Button -->
-  <button id="floatingPostBtn" class="floating-btn">＋</button>
+  <button id="fab" class="fab" title="Create post">＋</button>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>© 2025 TrendTime — Connect. Create. Inspire.</p>
-  </footer>
+  <div id="toast" class="toast" aria-live="polite"></div>
 
-  <!-- Toast -->
-  <div id="toast"></div>
+  <script type="module" src="feed.js"></script>
 </body>
 </html>
