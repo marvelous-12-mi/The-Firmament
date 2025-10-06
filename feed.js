@@ -6,78 +6,89 @@ const supabaseKey =
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const feed = document.getElementById("feed");
-const loader = document.getElementById("loader");
 const toast = document.getElementById("toast");
+const changeAvatarBtn = document.getElementById("changeAvatarBtn");
+const avatarInput = document.getElementById("avatarInput");
+const profileAvatar = document.getElementById("profileAvatar");
 const userAvatar = document.getElementById("userAvatar");
-const createPostBtn = document.getElementById("createPostBtn");
+const usernameDisplay = document.getElementById("usernameDisplay");
 
-let { data: userData } = await supabase.auth.getUser();
-let currentUser = userData?.user;
-
-function showToast(msg, color = "#ff3fd8") {
+function showToast(msg, color = "#8a00ff") {
   toast.innerText = msg;
   toast.style.background = color;
   toast.style.display = "block";
   setTimeout(() => (toast.style.display = "none"), 3000);
 }
 
-createPostBtn.onclick = () => (window.location.href = "post.html");
-
-if (currentUser) {
-  userAvatar.src =
-    currentUser.user_metadata?.avatar_url || "https://placehold.co/40x40";
-  userAvatar.onclick = () =>
-    window.location.href = `profile.html?user=${currentUser.id}`;
+// Load user
+let { data: userData } = await supabase.auth.getUser();
+let user = userData?.user;
+if (user) {
+  usernameDisplay.textContent = user.email.split("@")[0];
+  profileAvatar.src = user.user_metadata?.avatar_url || "https://placehold.co/100x100";
+  userAvatar.src = profileAvatar.src;
 } else {
-  userAvatar.onclick = () => (window.location.href = "index.html");
+  window.location.href = "index.html";
 }
 
-async function loadTrends() {
+// Avatar upload
+changeAvatarBtn.onclick = () => avatarInput.click();
+avatarInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const filePath = `avatars/${user.id}/${file.name}`;
+  const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+
+  if (error) return showToast("Upload failed", "#dc2626");
+
+  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+  const newUrl = data.publicUrl;
+
+  await supabase.auth.updateUser({ data: { avatar_url: newUrl } });
+  profileAvatar.src = newUrl;
+  userAvatar.src = newUrl;
+  showToast("Avatar updated!");
+});
+
+// Load posts
+async function loadFeed() {
   const { data, error } = await supabase
     .from("trends")
     .select("*")
     .order("created_at", { ascending: false });
 
-  loader.style.display = "none";
-
-  if (error) {
-    showToast("Failed to load feed", "#dc2626");
-    return;
-  }
-
+  if (error) return showToast("Error loading trends", "#dc2626");
   if (!data.length) {
-    feed.innerHTML = `<p style="text-align:center;color:#777;">No trends yet — create one!</p>`;
+    feed.innerHTML = `<p class="w3-center w3-text-grey">No trends yet. Create your first one!</p>`;
     return;
   }
 
   feed.innerHTML = data
-    .map((trend) => {
-      let media = "";
-      if (trend.type === "image") {
-        media = `<img src="${trend.url}" alt="trend">`;
-      } else if (trend.type === "video") {
-        media = `<video src="${trend.video_url}" controls></video>`;
-      } else if (trend.type === "youtube") {
-        const videoId = trend.video_url.split("v=")[1];
-        media = `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
-      }
-
-      return `
-      <div class="post">
+    .map(
+      (t) => `
+      <div class="post-card">
         <div class="post-header">
-          <img src="${trend.avatar}" alt="${trend.username}" class="avatar" 
-            onclick="window.location.href='profile.html?user=${trend.user_id}'" />
-          <h3>${trend.username}</h3>
+          <img src="${t.avatar}" alt="${t.username}" />
+          <h4>${t.username}</h4>
         </div>
-        ${media}
-        <div class="caption">${trend.caption}</div>
+        <div class="post-media">
+          ${
+            t.type === "image"
+              ? `<img src="${t.url}" alt="Trend image">`
+              : t.type === "video"
+              ? `<video controls src="${t.video_url}"></video>`
+              : ""
+          }
+        </div>
+        <div class="post-caption">${t.caption}</div>
         <div class="post-footer">
-          <button class="likeBtn">❤️ ${trend.likes}</button>
-          <span>${new Date(trend.created_at).toLocaleString()}</span>
+          <button><i class="fa fa-heart"></i> ${t.likes}</button>
+          <span>${new Date(t.created_at).toLocaleString()}</span>
         </div>
-      </div>`;
-    })
+      </div>`
+    )
     .join("");
 }
 
-loadTrends();
+loadFeed();
