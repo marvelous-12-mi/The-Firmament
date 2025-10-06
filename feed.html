@@ -5,79 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TrendTime Feed</title>
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-  <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-purple.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="feed.css" />
-  <script type="module" src="feed.js" defer></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <link rel="stylesheet" href="feed.css">
 </head>
+<body class="w3-light-gray">
 
-<body class="w3-theme-l5">
-
-  <!-- Navbar -->
-  <div class="w3-top">
-    <div class="w3-bar w3-theme-d2 w3-large w3-padding-small">
-      <a href="#" class="w3-bar-item w3-button w3-theme-d4 w3-hover-none w3-hover-text-white"><i class="fa fa-bolt"></i> TrendTime</a>
-      <a href="post.html" class="w3-bar-item w3-button w3-hide-small w3-hover-white"><i class="fa fa-plus-circle"></i> Create</a>
-      <a href="#" class="w3-bar-item w3-button w3-hide-small w3-hover-white"><i class="fa fa-globe"></i></a>
-      <a href="#" class="w3-bar-item w3-button w3-hide-small w3-hover-white"><i class="fa fa-envelope"></i></a>
-      <a href="#" class="w3-bar-item w3-button w3-hide-small w3-right w3-hover-white" title="Profile">
-        <img id="userAvatar" src="https://placehold.co/40x40" class="w3-circle" style="height:35px;width:35px" alt="Avatar">
-      </a>
+  <!-- 🔮 Navbar -->
+  <div class="nav-bar w3-purple w3-padding w3-card">
+    <div class="nav-content">
+      <h2 class="logo">Trend<span>Time</span></h2>
+      <div class="nav-actions">
+        <button id="createPostBtn" class="w3-button w3-round-large w3-pink">＋ Post</button>
+        <button id="changeAvatarBtn" class="w3-button w3-round-large w3-white w3-text-purple">Change Avatar</button>
+        <button id="logoutBtn" class="w3-button w3-round-large w3-text-white">Logout</button>
+      </div>
     </div>
   </div>
 
-  <!-- Page Container -->
-  <div class="w3-container w3-content" style="max-width:1400px;margin-top:80px">
-    <div class="w3-row">
-
-      <!-- Left Column -->
-      <div class="w3-col m3">
-        <div class="w3-card w3-round w3-white">
-          <div class="w3-container">
-            <h4 class="w3-center" id="usernameDisplay">My Profile</h4>
-            <p class="w3-center">
-              <img id="profileAvatar" src="https://placehold.co/100x100" class="w3-circle" style="height:100px;width:100px" alt="Avatar">
-            </p>
-            <p class="w3-center">
-              <button id="changeAvatarBtn" class="w3-button w3-small w3-theme-d1">Change Avatar</button>
-              <input type="file" id="avatarInput" accept="image/*" style="display:none;">
-            </p>
-            <hr>
-            <p><i class="fa fa-pencil fa-fw w3-margin-right w3-text-theme"></i> Creator</p>
-            <p><i class="fa fa-map-marker fa-fw w3-margin-right w3-text-theme"></i> Global</p>
-            <p><i class="fa fa-calendar fa-fw w3-margin-right w3-text-theme"></i> Since 2025</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Middle Column -->
-      <div class="w3-col m7">
-        <div id="feed" class="w3-container">
-          <div class="w3-center w3-padding-large">
-            <i class="fa fa-spinner fa-spin fa-2x w3-text-purple"></i>
-            <p>Loading trends...</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column -->
-      <div class="w3-col m2">
-        <div class="w3-card w3-round w3-white w3-padding">
-          <p><strong>Trending Tags</strong></p>
-          <p>
-            <span class="w3-tag w3-small w3-theme-d5">AI</span>
-            <span class="w3-tag w3-small w3-theme-d4">Design</span>
-            <span class="w3-tag w3-small w3-theme-d3">News</span>
-            <span class="w3-tag w3-small w3-theme-d2">Tech</span>
-            <span class="w3-tag w3-small w3-theme-d1">Creators</span>
-          </p>
-        </div>
-      </div>
-
+  <!-- 📰 Feed Container -->
+  <div class="feed-container" id="feedContainer">
+    <h3 class="feed-title">✨ Discover What's Trending</h3>
+    <div id="trendsList" class="trends-list">
+      <p class="loading">Loading the latest trends...</p>
     </div>
   </div>
 
-  <div id="toast"></div>
+  <!-- 📸 Avatar Upload (Hidden) -->
+  <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
 
+  <!-- 🔔 Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="feed.js"></script>
 </body>
 </html>
