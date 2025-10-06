@@ -1,245 +1,158 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+/* TrendVerse — Addictive neon social feed (light + dark) */
+/* Keep this file as feed.css and link from feed.html */
 
-:root {
-  --bg: #fafafa;
-  --text: #222;
-  --card: #fff;
-  --accent: #6a00f4;
-  --accent2: #b5179e;
-  --border: #e5e5e5;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root{
+  --bg:#faf6ff;
+  --card:#ffffff;
+  --muted:#8b7ca8;
+  --accent1:#7f00ff;
+  --accent2:#ff3fd8;
+  --glass: rgba(255,255,255,0.6);
+  --shadow: 0 10px 30px rgba(125,0,255,0.08);
+  --radius:16px;
 }
 
 body.dark {
-  --bg: #0f0f11;
-  --text: #eee;
-  --card: #1b1b1f;
-  --accent: #9d4edd;
-  --accent2: #d94bff;
-  --border: #333;
+  --bg: #0a0710;
+  --card: #0f0b16;
+  --muted: #bda5e0;
+  --accent1:#b57bff;
+  --accent2:#ff9ad8;
+  --glass: rgba(255,255,255,0.03);
+  --shadow: 0 12px 40px rgba(0,0,0,0.6);
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  transition: background 0.3s, color 0.3s;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background: linear-gradient(180deg,var(--bg), #efe6ff);
+  font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  color: #120427;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--card);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--border);
+/* Header */
+.topbar{
+  position:sticky; top:0; z-index:120;
+  width:100%; max-width:920px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:14px 20px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0.5));
+  border-bottom: 1px solid rgba(140,110,255,0.06);
+  backdrop-filter: blur(8px);
+}
+.topbar .brand{display:flex;align-items:center;gap:12px}
+.brand-logo{
+  width:52px;height:52px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:20px;
+  background: linear-gradient(135deg,var(--accent1),var(--accent2));
+  box-shadow:0 10px 30px rgba(155,0,255,0.12);
+  transform:rotate(-8deg);
+}
+.brand-title{font-weight:700;font-size:18px;color:var(--accent1)}
+.brand-sub{font-size:12px;color:var(--muted)}
+
+/* header actions */
+.header-actions{display:flex;align-items:center;gap:12px}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:18px;padding:8px;border-radius:10px}
+.icon-btn.ghost{background:transparent}
+.me-wrap{display:flex;align-items:center}
+.me-avatar{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #fff;cursor:pointer;
+  box-shadow: 0 6px 20px rgba(155,0,255,0.12);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.me-avatar:hover{transform:scale(1.06);box-shadow:0 16px 40px rgba(155,0,255,0.22)}
+
+/* Stories */
+.stories{
+  width:100%; max-width:920px; display:flex; gap:14px; overflow-x:auto;
+  padding:14px; margin-top:14px;
+  background:transparent;
+  scroll-behavior:smooth;
+}
+.stories::-webkit-scrollbar{height:8px;}
+.stories::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:8px}
+
+.story{
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:8px; width:84px; cursor:pointer;
+  transition: transform .22s ease;
+}
+.story:hover{transform:translateY(-8px)}
+.story-ring{
+  width:78px;height:78px;border-radius:50%; display:flex;align-items:center;justify-content:center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  padding:6px; position:relative;
+  box-shadow: var(--shadow);
+}
+.add-ring{background: linear-gradient(135deg,var(--accent1),var(--accent2)); color:#fff; font-weight:700; font-size:22px;}
+.story .simg{width:100%;height:100%;border-radius:50%;object-fit:cover; border:4px solid rgba(0,0,0,0.02)}
+.story-label{font-size:12px;color:var(--muted);text-align:center;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Feed container */
+.feed{
+  width:100%; max-width:920px; display:flex; flex-direction:column; gap:18px; padding:18px;
+  margin-bottom:120px;
 }
 
-.logo {
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 700;
-  font-size: 1.4rem;
+/* Post card */
+.post-card{
+  background:var(--card); border-radius:18px; overflow:hidden; box-shadow:var(--shadow);
+  border: 1px solid rgba(140,110,255,0.04);
+  transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s;
+  will-change: transform, opacity;
+  opacity:0; transform:translateY(18px) scale(.995);
 }
+.post-card.visible{opacity:1; transform:none}
+.post-top{display:flex;align-items:center;gap:12px;padding:12px}
+.post-top .avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.6)}
+.post-top .meta{display:flex;flex-direction:column}
+.post-top .meta .name{font-weight:700;color:var(--accent1)}
+.post-top .meta .time{font-size:12px;color:var(--muted)}
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.post-body{padding:0 12px 12px}
+.post-body .caption{margin:12px 0;color:#2b1147;line-height:1.45}
+.post-media img, .post-media video, .post-media iframe{width:100%;height:auto;border-radius:12px;display:block}
+
+/* Actions row */
+.post-actions{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid rgba(140,110,255,0.03)}
+.actions-left{display:flex;gap:10px;align-items:center}
+.action-btn{border:none;background:none;cursor:pointer;font-size:20px;padding:8px;border-radius:10px;transition:transform .18s}
+.action-btn:hover{transform:scale(1.12)}
+.like-count{font-weight:700;color:var(--accent1)}
+
+/* floating heart */
+.heart-float{position:fixed;pointer-events:none;font-size:26px;z-index:9999;animation:heartUp .95s cubic-bezier(.2,.9,.3,1)}
+@keyframes heartUp{0%{transform:translateY(0) scale(.8);opacity:1}70%{transform:translateY(-80px) scale(1.2);opacity:1}100%{transform:translateY(-160px) scale(1.5);opacity:0}}
+
+/* FAB */
+.fab{
+  position:fixed;right:26px;bottom:28px;width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent2),var(--accent1));color:#fff;font-size:26px;border:none;
+  box-shadow:0 20px 40px rgba(155,0,255,0.24);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform .22s, box-shadow .22s;
 }
+.fab:hover{transform:scale(1.05);box-shadow:0 30px 60px rgba(155,0,255,0.32)}
 
-.mode-btn {
-  font-size: 20px;
-  border: none;
-  background: none;
-  cursor: pointer;
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:120px;padding:10px 18px;border-radius:26px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;font-weight:700;display:none;z-index:999}
+
+/* loading spinner */
+.loading{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 0;color:var(--muted)}
+.spinner{width:40px;height:40px;border-radius:50%;border:4px solid rgba(0,0,0,0.06);border-top-color:var(--accent1);animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* responsive */
+@media (max-width:820px){
+  .post-top .avatar{width:48px;height:48px}
+  .post-card{border-radius:14px}
+  .stories{padding:10px}
 }
-
-.user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.avatar:hover {
-  transform: scale(1.05);
-}
-
-.me-name {
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.stories-section {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  white-space: nowrap;
-  padding: 12px;
-}
-
-.stories {
-  display: flex;
-  gap: 16px;
-}
-
-.story {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 70px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.story img {
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-  border: 3px solid var(--accent2);
-  object-fit: cover;
-}
-
-.story p {
-  font-size: 12px;
-  margin-top: 5px;
-  color: var(--accent);
-}
-
-.feed {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-}
-
-.post-card {
-  background: var(--card);
-  border-radius: 18px;
-  width: 100%;
-  max-width: 500px;
-  margin-bottom: 20px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
-  overflow: hidden;
-  animation: popIn 0.3s ease;
-  transition: transform 0.3s ease;
-}
-
-.post-card:hover {
-  transform: translateY(-3px);
-}
-
-@keyframes popIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.post-top {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  gap: 10px;
-}
-
-.post-top .name {
-  font-weight: 600;
-}
-
-.post-top .time {
-  font-size: 12px;
-  color: #888;
-}
-
-.post-body img, .post-body video {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-}
-
-.caption {
-  padding: 12px 16px;
-  font-size: 14px;
-}
-
-.post-actions {
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 14px 14px;
-  border-top: 1px solid var(--border);
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  color: var(--text);
-}
-
-.icon-btn:hover {
-  transform: scale(1.2);
-  color: var(--accent);
-}
-
-.icon-btn.liked {
-  color: #e60073;
-}
-
-.fab {
-  position: fixed;
-  bottom: 25px;
-  right: 25px;
-  background: linear-gradient(45deg, var(--accent), var(--accent2));
-  color: white;
-  font-size: 28px;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.fab:hover {
-  transform: scale(1.1);
-}
-
-.toast {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--accent);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 20px;
-  display: none;
-  font-size: 14px;
-}
-
-.spinner {
-  display: inline-block;
-  width: 25px;
-  height: 25px;
-  border: 3px solid #ccc;
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
