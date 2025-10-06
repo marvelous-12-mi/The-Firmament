@@ -1,65 +1,73 @@
 body {
-  font-family: "Poppins", sans-serif;
-  background: #faf7ff;
-  color: #2b005c;
   margin: 0;
-  padding: 0;
+  background: #fafafa;
+  font-family: "Poppins", sans-serif;
+  color: #222;
 }
 
-/* 🌐 Navbar */
-.nav-bar {
-  background: linear-gradient(90deg, #7b00ff, #d100b9);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(100, 0, 150, 0.3);
-}
-.nav-content {
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  background: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1000px;
-  margin: auto;
+  padding: 0.8rem 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  z-index: 10;
 }
 .logo {
   font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 1.4rem;
+  color: #6a00ff;
 }
 .logo span {
-  color: #ffb3f5;
+  color: #ff00c8;
+}
+.nav-right button {
+  margin-left: 0.5rem;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #9a00ff, #ff00c8);
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.nav-right button:hover {
+  opacity: 0.85;
 }
 
-/* 📜 Feed */
-.feed-container {
+/* Feed */
+.feed {
   max-width: 600px;
   margin: 2rem auto;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 0 25px rgba(160, 0, 255, 0.15);
-  padding: 1.5rem;
+  padding: 0 1rem;
 }
-
-.feed-title {
+.feed h2 {
   text-align: center;
-  color: #7b00ff;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  color: #6a00ff;
 }
 
-/* 🗞️ Trend Post */
 .trend-card {
-  background: #fdfcff;
-  border: 1px solid #eee;
+  background: #fff;
   border-radius: 15px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  box-shadow: 0 0 10px rgba(100, 0, 200, 0.1);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
   transition: 0.3s;
 }
 .trend-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(140, 0, 255, 0.1);
 }
+
 .trend-header {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
+  padding: 0.8rem 1rem;
 }
 .trend-header img {
   width: 45px;
@@ -68,35 +76,39 @@ body {
   margin-right: 0.8rem;
   object-fit: cover;
 }
-.trend-header h4 {
+.trend-header .info h4 {
   margin: 0;
   font-weight: 600;
-  color: #3b0063;
 }
-.trend-header span {
+.trend-header .info span {
   font-size: 0.8rem;
-  color: gray;
+  color: #777;
+}
+
+.trend-body {
+  padding: 0 1rem 1rem;
 }
 .trend-body p {
   margin: 0.5rem 0;
 }
-.trend-body img, 
+.trend-body img,
 .trend-body video {
   width: 100%;
   border-radius: 10px;
   margin-top: 0.5rem;
+  background: #f5f5f5;
 }
 
-/* 🔔 Toast */
+/* Toast */
 .toast {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(90deg, #a000ff, #ff00c8);
+  background: linear-gradient(90deg, #9a00ff, #ff00c8);
   color: #fff;
-  padding: 0.8rem 1.6rem;
-  border-radius: 30px;
-  display: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
   font-weight: 500;
+  display: none;
 }
