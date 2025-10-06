@@ -9,9 +9,12 @@
 <body>
   <header class="topbar">
     <h1 class="logo">TrendTime+</h1>
-    <div class="user">
-      <img id="meAvatar" class="avatar me" src="https://i.pravatar.cc/100?img=5" alt="You" />
-      <span id="meName" class="me-name">Loading...</span>
+    <div class="actions">
+      <button id="modeToggle" class="mode-btn">🌙</button>
+      <div class="user">
+        <img id="meAvatar" class="avatar me" src="https://i.pravatar.cc/100?img=10" alt="Avatar" />
+        <span id="meName" class="me-name">Loading...</span>
+      </div>
     </div>
   </header>
 
@@ -23,23 +26,13 @@
     <section id="feed" class="feed">
       <div class="loading">
         <span class="spinner"></span>
-        <p>Fetching your feed...</p>
+        <p>Fetching your personalized feed...</p>
       </div>
     </section>
   </main>
 
   <!-- Floating add button -->
   <button id="fab" class="fab">＋</button>
-
-  <!-- Add Post Modal -->
-  <div id="postModal" class="modal hidden">
-    <div class="modal-content">
-      <h2>What's trending?</h2>
-      <textarea id="captionInput" placeholder="Write something cool..."></textarea>
-      <button id="submitPost">Post 🚀</button>
-      <button id="closeModal">Cancel</button>
-    </div>
-  </div>
 
   <div id="toast" class="toast"></div>
 
