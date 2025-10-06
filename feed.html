@@ -1,40 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime+</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TrendVerse — Feed</title>
   <link rel="stylesheet" href="feed.css" />
 </head>
 <body>
   <header class="topbar">
-    <h1 class="logo">TrendTime+</h1>
-    <div class="actions">
-      <button id="modeToggle" class="mode-btn">🌙</button>
-      <div class="user">
-        <img id="meAvatar" class="avatar me" src="https://i.pravatar.cc/100?img=10" alt="Avatar" />
-        <span id="meName" class="me-name">Loading...</span>
+    <div class="brand">
+      <div class="brand-logo">∞</div>
+      <div class="brand-text">
+        <div class="brand-title">TrendVerse</div>
+        <div class="brand-sub">Create · Spark · Repeat</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="modeToggle" class="icon-btn ghost" title="Toggle theme">🌙</button>
+      <button id="notifications" class="icon-btn ghost" title="Notifications">🔔</button>
+      <div class="me-wrap">
+        <img id="meAvatar" class="me-avatar" src="https://placehold.co/64x64" alt="my avatar" title="Click to change avatar" />
       </div>
     </div>
   </header>
 
-  <main>
-    <section class="stories-section">
-      <div id="stories" class="stories"></div>
-    </section>
+  <!-- Stories row -->
+  <section id="stories" class="stories" aria-label="Stories">
+    <div class="story add-story" id="addStory" title="Add a story">
+      <div class="story-ring add-ring"><span class="plus">＋</span></div>
+      <div class="story-label">You</div>
+    </div>
+    <!-- dynamic stories injected here -->
+  </section>
 
-    <section id="feed" class="feed">
-      <div class="loading">
-        <span class="spinner"></span>
-        <p>Fetching your personalized feed...</p>
-      </div>
-    </section>
+  <!-- Feed -->
+  <main id="feed" class="feed">
+    <div class="loading" id="initialLoading">
+      <div class="spinner"></div>
+      <div class="loading-text">Fetching the freshest moments...</div>
+    </div>
   </main>
 
-  <!-- Floating add button -->
-  <button id="fab" class="fab">＋</button>
+  <!-- floating create button -->
+  <button id="fab" class="fab" title="Create a trend">+</button>
 
-  <div id="toast" class="toast"></div>
+  <!-- file input for avatar upload (hidden) -->
+  <input id="avatarInput" type="file" accept="image/*" style="display:none" />
+
+  <!-- toast -->
+  <div id="toast" class="toast" aria-live="polite"></div>
 
   <script type="module" src="feed.js"></script>
 </body>
