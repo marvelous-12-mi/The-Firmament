@@ -3,7 +3,6 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const feed = document.getElementById("feed");
@@ -27,6 +26,8 @@ createPostBtn.onclick = () => (window.location.href = "post.html");
 if (currentUser) {
   userAvatar.src =
     currentUser.user_metadata?.avatar_url || "https://placehold.co/40x40";
+  userAvatar.onclick = () =>
+    window.location.href = `profile.html?user=${currentUser.id}`;
 } else {
   userAvatar.onclick = () => (window.location.href = "index.html");
 }
@@ -64,7 +65,8 @@ async function loadTrends() {
       return `
       <div class="post">
         <div class="post-header">
-          <img src="${trend.avatar}" alt="${trend.username}" class="avatar" />
+          <img src="${trend.avatar}" alt="${trend.username}" class="avatar" 
+            onclick="window.location.href='profile.html?user=${trend.user_id}'" />
           <h3>${trend.username}</h3>
         </div>
         ${media}
