@@ -3,42 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime Feed</title>
+  <title>TrendTime+</title>
   <link rel="stylesheet" href="feed.css" />
-  <script type="module" src="feed.js" defer></script>
 </head>
 <body>
-  <!-- Header -->
   <header class="topbar">
-    <div class="logo">
-      <h1>TrendTime</h1>
-    </div>
-    <div class="nav-icons">
-      <button class="icon">🔍</button>
-      <img id="meAvatar" src="https://placehold.co/50x50" alt="You" />
-    </div>
+    <h1 class="logo">TrendTime+</h1>
+    <img id="meAvatar" class="avatar me" src="https://placehold.co/50x50" alt="You" />
   </header>
 
-  <!-- Stories -->
-  <section id="stories" class="stories">
-    <div class="story add-story">
-      <div class="story-ring"><span>+</span></div>
-      <p>You</p>
-    </div>
-  </section>
+  <main>
+    <section class="stories-section">
+      <div id="stories" class="stories"></div>
+    </section>
 
-  <!-- Feed -->
-  <main id="feed" class="feed">
-    <div class="loading">
-      <span class="spinner"></span>
-      <p>Fetching your feed...</p>
-    </div>
+    <section id="feed" class="feed">
+      <div class="loading">
+        <span class="spinner"></span>
+        <p>Fetching your feed...</p>
+      </div>
+    </section>
   </main>
 
-  <!-- Floating Action -->
-  <button id="fab" title="Create Trend">+</button>
+  <button id="fab" class="fab">＋</button>
+  <div id="toast" class="toast"></div>
 
-  <!-- Toast -->
-  <div id="toast"></div>
+  <script type="module" src="feed.js"></script>
 </body>
 </html>
