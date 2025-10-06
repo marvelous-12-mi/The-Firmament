@@ -11,27 +11,39 @@ const toast = document.getElementById("toast");
 const stories = document.getElementById("stories");
 const meAvatar = document.getElementById("meAvatar");
 const meName = document.getElementById("meName");
-const modal = document.getElementById("postModal");
-const captionInput = document.getElementById("captionInput");
-const submitPost = document.getElementById("submitPost");
-const closeModal = document.getElementById("closeModal");
+const modeToggle = document.getElementById("modeToggle");
 
-// 👤 Simulate login
+// user info
 let currentUser = localStorage.getItem("trendUser");
+let avatarURL = localStorage.getItem("trendAvatar");
+
 if (!currentUser) {
-  currentUser = prompt("Choose your TrendTime username:");
+  currentUser = prompt("Pick your username for TrendTime:");
   localStorage.setItem("trendUser", currentUser);
 }
-meName.textContent = currentUser;
 
-// Toast
+if (!avatarURL) {
+  avatarURL = `https://i.pravatar.cc/150?u=${currentUser}`;
+  localStorage.setItem("trendAvatar", avatarURL);
+}
+
+meName.textContent = currentUser;
+meAvatar.src = avatarURL;
+
+// toggle theme
+modeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  modeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+});
+
+// toast
 function showToast(msg) {
   toast.textContent = msg;
   toast.style.display = "block";
   setTimeout(() => (toast.style.display = "none"), 2500);
 }
 
-// Load stories
+// stories
 function loadStories() {
   const users = [
     { name: "Jean", img: "https://i.pravatar.cc/100?img=11" },
@@ -44,22 +56,17 @@ function loadStories() {
     const s = document.createElement("div");
     s.className = "story";
     s.innerHTML = `<img src="${u.img}" alt="${u.name}"><p>${u.name}</p>`;
-    s.addEventListener("click", () => {
-      showToast(`${u.name}'s story 🔥`);
-    });
+    s.addEventListener("click", () => showToast(`${u.name}'s story 🔥`));
     stories.appendChild(s);
   });
 }
 
-// Render posts
+// render posts
 function renderPost(p) {
   const div = document.createElement("div");
   div.className = "post-card";
-  const avatar = p.avatar || "https://i.pravatar.cc/60";
-  const media = p.url
-    ? `<img src="${p.url}" alt="Post image">`
-    : "";
-
+  const avatar = p.avatar || "https://i.pravatar.cc/100";
+  const media = p.url ? `<img src="${p.url}" alt="Post image">` : "";
   div.innerHTML = `
     <div class="post-top">
       <img class="avatar" src="${avatar}" alt="${p.username}">
@@ -90,7 +97,7 @@ function renderPost(p) {
   return div;
 }
 
-// Load feed
+// load feed
 async function loadFeed() {
   const { data, error } = await supabase
     .from("trends")
@@ -107,41 +114,15 @@ async function loadFeed() {
   data.forEach((p) => feed.appendChild(renderPost(p)));
 }
 
-// Real-time updates
+// realtime
 supabase
   .channel("trends")
-  .on("postgres_changes", { event: "*", schema: "public", table: "trends" }, (payload) => {
-    loadFeed();
-  })
+  .on("postgres_changes", { event: "*", schema: "public", table: "trends" }, () => loadFeed())
   .subscribe();
 
-// Add post
-fab.addEventListener("click", () => modal.classList.remove("hidden"));
-closeModal.addEventListener("click", () => modal.classList.add("hidden"));
-
-submitPost.addEventListener("click", async () => {
-  const caption = captionInput.value.trim();
-  if (!caption) return showToast("Type something first!");
-
-  const { error } = await supabase.from("trends").insert([
-    {
-      username: currentUser,
-      caption,
-      avatar: meAvatar.src,
-      likes: 0,
-    },
-  ]);
-
-  captionInput.value = "";
-  modal.classList.add("hidden");
-
-  if (error) {
-    showToast("Failed to post 😢");
-  } else {
-    showToast("Posted 🎉");
-    loadFeed();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+// go to post.html
+fab.addEventListener("click", () => {
+  window.location.href = "post.html";
 });
 
 loadStories();
