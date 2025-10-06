@@ -8,26 +8,24 @@
   <script type="module" src="feed.js" defer></script>
 </head>
 <body>
-  <!-- Navigation -->
   <header class="navbar">
-    <div class="nav-left">
+    <div class="logo">
       <h1>TrendTime</h1>
     </div>
 
-    <div class="nav-center">
-      <input type="text" id="searchInput" placeholder="Search trends or users..." />
+    <div class="search-bar">
+      <input id="searchInput" type="text" placeholder="Search trends, users..." />
     </div>
 
-    <div class="nav-right">
-      <button id="createPostBtn">＋</button>
+    <div class="user-actions">
+      <button id="createPostBtn" class="create-btn">Post ✨</button>
       <img id="userAvatar" class="avatar" src="https://placehold.co/40x40" alt="avatar" />
     </div>
   </header>
 
-  <!-- Feed -->
-  <main class="feed" id="feed"></main>
-
-  <p class="loader" id="loader">Loading trends...</p>
+  <main class="feed" id="feed">
+    <p id="loader" class="loader">Loading trends...</p>
+  </main>
 
   <div id="toast"></div>
 </body>
