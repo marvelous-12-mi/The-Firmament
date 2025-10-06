@@ -1,163 +1,174 @@
 body {
   margin: 0;
-  background: #fafafa;
+  background: #f8f6fb;
   font-family: "Poppins", sans-serif;
-  color: #333;
+  color: #2e2e2e;
 }
 
-/* Navbar (Instagram style) */
+/* Navbar */
 .navbar {
-  position: sticky;
-  top: 0;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+  background: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  z-index: 100;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e0f3;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-.nav-left h1 {
-  font-family: "Billabong", cursive;
-  font-size: 30px;
-  color: #8a00ff;
-  margin: 0;
+.logo h1 {
+  font-weight: 700;
+  background: linear-gradient(90deg, #ff3fd8, #8a00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 26px;
 }
 
-.nav-center input {
-  background: #f0f0f0;
+.search-bar input {
+  background: #f0ebf8;
   border: none;
   padding: 8px 14px;
-  border-radius: 10px;
-  width: 240px;
-  transition: 0.2s;
+  border-radius: 25px;
+  width: 260px;
   font-size: 14px;
+  transition: 0.3s;
 }
-.nav-center input:focus {
+.search-bar input:focus {
   background: #fff;
   outline: none;
-  box-shadow: 0 0 6px rgba(138, 0, 255, 0.3);
+  box-shadow: 0 0 8px rgba(138, 0, 255, 0.2);
 }
 
-.nav-right {
+.user-actions {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.nav-right button {
-  background: linear-gradient(90deg, #ff00c3, #8a00ff);
+.create-btn {
+  background: linear-gradient(90deg, #8a00ff, #ff3fd8);
   color: #fff;
   border: none;
-  padding: 8px 10px;
-  border-radius: 50%;
-  font-size: 18px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
   cursor: pointer;
   transition: 0.3s;
 }
-.nav-right button:hover {
-  box-shadow: 0 0 10px #ff3fd8;
+.create-btn:hover {
+  box-shadow: 0 0 12px rgba(255, 63, 216, 0.4);
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 2px solid #ff3fd8;
   cursor: pointer;
   object-fit: cover;
-  transition: transform 0.2s;
-}
-.avatar:hover {
-  transform: scale(1.05);
 }
 
-/* Feed container */
+/* Feed */
 .feed {
-  max-width: 600px;
+  max-width: 680px;
   margin: 40px auto;
   display: flex;
   flex-direction: column;
   gap: 25px;
+  padding: 0 10px;
 }
 
-/* Post styling */
+/* Post card */
 .post {
   background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(138, 0, 255, 0.08);
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.post:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(138, 0, 255, 0.15);
 }
 
 .post-header {
   display: flex;
   align-items: center;
-  padding: 10px 15px;
+  padding: 12px 16px;
 }
 .post-header img {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  margin-right: 10px;
-  border: 1.5px solid #ff3fd8;
+  margin-right: 12px;
+  border: 2px solid #ff3fd8;
   object-fit: cover;
 }
 .post-header h3 {
-  font-size: 14px;
   margin: 0;
+  font-size: 15px;
   font-weight: 600;
+  color: #4a007f;
 }
 
 .post img,
 .post video {
   width: 100%;
-  height: auto;
   display: block;
+  border-top: 1px solid #f2e5ff;
+  border-bottom: 1px solid #f2e5ff;
 }
 
 .post .caption {
-  padding: 12px 15px;
+  padding: 12px 16px;
   font-size: 14px;
+  color: #333;
 }
 
 .post-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 15px 12px;
+  padding: 8px 16px 12px;
+  font-size: 13px;
+  color: #777;
 }
 
-.post-footer button {
+.likeBtn {
   background: none;
   border: none;
+  cursor: pointer;
   color: #8a00ff;
   font-size: 15px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  cursor: pointer;
+  gap: 4px;
 }
-.post-footer button:hover {
+.likeBtn:hover {
   color: #ff3fd8;
 }
 
+/* Loader */
 .loader {
   text-align: center;
-  margin-top: 50px;
   color: #8a00ff;
   font-weight: 600;
+  padding: 40px 0;
 }
 
+/* Toast */
 #toast {
   position: fixed;
-  bottom: 20px;
+  bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
-  background: #ff3fd8;
+  background: linear-gradient(90deg, #ff3fd8, #8a00ff);
   color: white;
-  padding: 12px 20px;
+  padding: 12px 22px;
   border-radius: 30px;
   display: none;
-  box-shadow: 0 0 10px #8a00ff;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(138, 0, 255, 0.3);
 }
