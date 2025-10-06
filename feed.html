@@ -10,25 +10,30 @@
 <body>
   <!-- Header -->
   <header class="topbar">
-    <h1>TrendTime</h1>
+    <div class="logo">
+      <h1>TrendTime</h1>
+    </div>
     <div class="nav-icons">
-      <button id="searchBtn" title="Search">🔍</button>
-      <img id="userAvatar" src="https://placehold.co/60x60" alt="Profile" />
+      <button class="icon">🔍</button>
+      <img id="meAvatar" src="https://placehold.co/50x50" alt="You" />
     </div>
   </header>
 
   <!-- Stories -->
-  <section class="stories">
+  <section id="stories" class="stories">
     <div class="story add-story">
       <div class="story-ring"><span>+</span></div>
       <p>You</p>
     </div>
-    <div id="storyFeed"></div>
+    <!-- Story list inject here -->
   </section>
 
   <!-- Feed -->
-  <main class="feed" id="feedContainer">
-    <p class="loading">✨ Loading trends just for you...</p>
+  <main id="feed" class="feed">
+    <div class="loading">
+      <span class="spinner"></span>
+      <p>Fetching your feed...</p>
+    </div>
   </main>
 
   <!-- Floating Action -->
