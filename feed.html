@@ -1,61 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrendTime Feed</title>
-  <link rel="stylesheet" href="feed.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendTime • Feed</title>
+  <link rel="stylesheet" href="feed.css" />
   <script type="module" src="feed.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header class="navbar glassy">
-    <div class="logo">⚡ <span>TrendTime</span></div>
-    <button id="postBtn" class="btn primary">＋ Create</button>
-    <div class="avatar-wrapper">
-      <img id="headerAvatar" src="https://placehold.co/48x48" class="avatar" />
-      <input type="file" id="avatarUpload" accept="image/*" hidden />
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <h1>TrendTime</h1>
     </div>
-  </header>
+    <div class="nav-center">
+      <input id="searchInput" type="text" placeholder="Search trends or users..." />
+    </div>
+    <div class="nav-right">
+      <button id="newPostBtn"><i class="fa fa-plus"></i></button>
+      <img id="currentUserAvatar" src="https://placehold.co/40x40" class="avatar clickable" title="My Profile">
+    </div>
+  </nav>
 
-  <main class="layout">
-    <aside class="sidebar glassy">
-      <div class="profile-card">
-        <img id="sideAvatar" src="https://placehold.co/100x100" class="avatar-large" />
-        <h3 id="usernameDisplay">Guest</h3>
-        <p>Creating moments that spark inspiration ✨</p>
-        <button id="changeAvatarBtn" class="btn secondary small">Change Avatar</button>
-      </div>
-      <div class="quote-card">
-        <h4>💬 Quote of the Day</h4>
-        <p>“Create what you wish existed.”</p>
-      </div>
-    </aside>
+  <!-- Feed -->
+  <main id="feed" class="feed"></main>
 
-    <section id="feed" class="feed-container">
-      <div class="loading">✨ Fetching latest trends...</div>
-    </section>
+  <!-- Floating Loader -->
+  <div id="loader" class="loader">Loading trends...</div>
 
-    <aside class="rightbar glassy">
-      <h4>Trending Creators 🔥</h4>
-      <ul id="trendingList">
-        <li>Loading...</li>
-      </ul>
-      <h4 style="margin-top:2rem;">#Explore</h4>
-      <div class="tags">
-        <span>#Art</span>
-        <span>#Design</span>
-        <span>#Tech</span>
-        <span>#AI</span>
-        <span>#Music</span>
-      </div>
-    </aside>
-  </main>
-
-  <footer class="footer">
-    <p>© 2025 <b>TrendTime</b> — Create. Connect. Inspire.</p>
-  </footer>
-
+  <!-- Toast -->
   <div id="toast"></div>
 </body>
 </html>
