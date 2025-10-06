@@ -1,41 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TrendTime — Feed</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendTime Feed</title>
   <link rel="stylesheet" href="feed.css" />
+  <script type="module" src="feed.js" defer></script>
 </head>
 <body>
-  <header class="tt-header">
-    <div class="brand">
-      <div class="logo">⚡</div>
-      <div class="title">TrendTime</div>
-    </div>
-
-    <div class="search-wrap">
-      <input id="search" placeholder="Search trends, users or tags..." />
-    </div>
-
-    <div class="actions">
-      <button id="createBtn" class="btn primary">＋ Create</button>
-      <img id="meAvatar" class="me-avatar" src="https://placehold.co/40x40" alt="me" />
-    </div>
+  <!-- Header -->
+  <header>
+    <h1>TrendTime</h1>
+    <img id="profileAvatar" src="https://via.placeholder.com/44" alt="Profile Avatar" />
   </header>
 
+  <!-- Stories -->
   <section class="stories" id="stories">
-    <!-- story pills injected here -->
+    <div class="story">
+      <img class="simg" src="https://via.placeholder.com/60x60?text=You" alt="You" />
+      <div>You</div>
+    </div>
+
+    <!-- Stories will be injected dynamically here -->
   </section>
 
-  <main id="feed" class="feed">
-    <div class="feed-placeholder">✨ Loading latest moments...</div>
-  </main>
+  <!-- Feed -->
+  <section class="feed" id="feed">
+    <p class="feed-placeholder">Loading the latest trends...</p>
+  </section>
 
-  <button id="fab" class="fab" title="Create post">＋</button>
+  <!-- Floating Action Button -->
+  <button id="fab">+</button>
 
-  <div id="toast" class="toast" aria-live="polite"></div>
+  <!-- Toast Message -->
+  <div id="toast"></div>
 
-  <script type="module" src="feed.js"></script>
+  <!-- Story Modal -->
+  <div id="storyModal" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+  ">
+    <div id="storyContent" style="
+      width: 90%;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    ">
+      <img id="storyImage" src="" alt="Story" style="width: 100%; height: auto;" />
+      <button id="closeStory" style="
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #8a00ff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        cursor: pointer;
+      ">✕</button>
+    </div>
+  </div>
 </body>
 </html>
