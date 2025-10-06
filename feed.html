@@ -3,33 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime • Feed</title>
+  <title>TrendTime Feed</title>
   <link rel="stylesheet" href="feed.css" />
   <script type="module" src="feed.js" defer></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <!-- Top Navbar -->
-  <nav class="navbar">
+  <!-- Navigation -->
+  <header class="navbar">
     <div class="nav-left">
       <h1>TrendTime</h1>
     </div>
+
     <div class="nav-center">
-      <input id="searchInput" type="text" placeholder="Search trends or users..." />
+      <input type="text" id="searchInput" placeholder="Search trends or users..." />
     </div>
+
     <div class="nav-right">
-      <button id="newPostBtn"><i class="fa fa-plus"></i></button>
-      <img id="currentUserAvatar" src="https://placehold.co/40x40" class="avatar clickable" title="My Profile">
+      <button id="createPostBtn">＋</button>
+      <img id="userAvatar" class="avatar" src="https://placehold.co/40x40" alt="avatar" />
     </div>
-  </nav>
+  </header>
 
   <!-- Feed -->
-  <main id="feed" class="feed"></main>
+  <main class="feed" id="feed"></main>
 
-  <!-- Floating Loader -->
-  <div id="loader" class="loader">Loading trends...</div>
+  <p class="loader" id="loader">Loading trends...</p>
 
-  <!-- Toast -->
   <div id="toast"></div>
 </body>
 </html>
