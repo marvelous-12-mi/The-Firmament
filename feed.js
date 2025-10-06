@@ -6,119 +6,141 @@ const supabaseKey =
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const feed = document.getElementById("feed");
-const toast = document.getElementById("toast");
 const fab = document.getElementById("fab");
+const toast = document.getElementById("toast");
 const stories = document.getElementById("stories");
 const meAvatar = document.getElementById("meAvatar");
+const meName = document.getElementById("meName");
+const modal = document.getElementById("postModal");
+const captionInput = document.getElementById("captionInput");
+const submitPost = document.getElementById("submitPost");
+const closeModal = document.getElementById("closeModal");
 
-async function loadFeed() {
-  feed.innerHTML = `
-    <div class="loading">
-      <span class="spinner"></span>
-      <p>Fetching your feed...</p>
+// 👤 Simulate login
+let currentUser = localStorage.getItem("trendUser");
+if (!currentUser) {
+  currentUser = prompt("Choose your TrendTime username:");
+  localStorage.setItem("trendUser", currentUser);
+}
+meName.textContent = currentUser;
+
+// Toast
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.style.display = "block";
+  setTimeout(() => (toast.style.display = "none"), 2500);
+}
+
+// Load stories
+function loadStories() {
+  const users = [
+    { name: "Jean", img: "https://i.pravatar.cc/100?img=11" },
+    { name: "Mia", img: "https://i.pravatar.cc/100?img=22" },
+    { name: "Noah", img: "https://i.pravatar.cc/100?img=33" },
+    { name: "Liam", img: "https://i.pravatar.cc/100?img=44" },
+    { name: "Ava", img: "https://i.pravatar.cc/100?img=55" },
+  ];
+  users.forEach((u) => {
+    const s = document.createElement("div");
+    s.className = "story";
+    s.innerHTML = `<img src="${u.img}" alt="${u.name}"><p>${u.name}</p>`;
+    s.addEventListener("click", () => {
+      showToast(`${u.name}'s story 🔥`);
+    });
+    stories.appendChild(s);
+  });
+}
+
+// Render posts
+function renderPost(p) {
+  const div = document.createElement("div");
+  div.className = "post-card";
+  const avatar = p.avatar || "https://i.pravatar.cc/60";
+  const media = p.url
+    ? `<img src="${p.url}" alt="Post image">`
+    : "";
+
+  div.innerHTML = `
+    <div class="post-top">
+      <img class="avatar" src="${avatar}" alt="${p.username}">
+      <div>
+        <p class="name">${p.username}</p>
+        <p class="time">${new Date(p.created_at).toLocaleString()}</p>
+      </div>
+    </div>
+    <div class="post-body">
+      ${media}
+      <p class="caption">${p.caption || ""}</p>
+    </div>
+    <div class="post-actions">
+      <button class="icon-btn like">❤️ ${p.likes || 0}</button>
+      <button class="icon-btn">💬</button>
+      <button class="icon-btn">🔗</button>
     </div>
   `;
 
-  const { data: trends, error } = await supabase
+  const likeBtn = div.querySelector(".like");
+  likeBtn.addEventListener("click", async () => {
+    likeBtn.classList.toggle("liked");
+    let newLikes = (p.likes || 0) + 1;
+    likeBtn.innerHTML = `❤️ ${newLikes}`;
+    await supabase.from("trends").update({ likes: newLikes }).eq("id", p.id);
+  });
+
+  return div;
+}
+
+// Load feed
+async function loadFeed() {
+  const { data, error } = await supabase
     .from("trends")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("❌ Supabase error:", error);
-    showToast("Error loading feed 😢");
-    feed.innerHTML = `<p class="empty">Couldn't load feed. Check console for details.</p>`;
-    return;
-  }
-
-  if (!trends || trends.length === 0) {
-    feed.innerHTML = `<p class="empty">No trends yet — be the first to post ✨</p>`;
+    console.error(error);
+    feed.innerHTML = `<p class="empty">Could not load feed 😢</p>`;
     return;
   }
 
   feed.innerHTML = "";
-  trends.forEach((trend) => feed.appendChild(renderTrend(trend)));
+  data.forEach((p) => feed.appendChild(renderPost(p)));
 }
 
-function renderTrend(trend) {
-  const div = document.createElement("div");
-  div.className = "post-card";
+// Real-time updates
+supabase
+  .channel("trends")
+  .on("postgres_changes", { event: "*", schema: "public", table: "trends" }, (payload) => {
+    loadFeed();
+  })
+  .subscribe();
 
-  const avatar = trend.avatar || "https://placehold.co/60x60";
-  const media = trend.url
-    ? `<img src="${trend.url}" alt="Post Image">`
-    : trend.video_url
-    ? `<video src="${trend.video_url}" controls></video>`
-    : "";
+// Add post
+fab.addEventListener("click", () => modal.classList.remove("hidden"));
+closeModal.addEventListener("click", () => modal.classList.add("hidden"));
 
-  div.innerHTML = `
-    <div class="post-top">
-      <img class="avatar" src="${avatar}" alt="${trend.username}" />
-      <div>
-        <p class="name">${trend.username || "Unknown"}</p>
-        <p class="time">${new Date(trend.created_at).toLocaleString()}</p>
-      </div>
-    </div>
-    <div class="post-body">
-      ${media}
-      <p class="caption">${trend.caption || ""}</p>
-    </div>
-    <div class="post-actions">
-      <button class="icon-btn">❤️</button>
-      <button class="icon-btn">💬</button>
-      <button class="icon-btn">🔁</button>
-    </div>
-  `;
-  return div;
-}
-
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.style.display = "block";
-  setTimeout(() => (toast.style.display = "none"), 3000);
-}
-
-function loadStories() {
-  const users = [
-    { name: "Jean", img: "https://i.pravatar.cc/100?img=5" },
-    { name: "Lia", img: "https://i.pravatar.cc/100?img=6" },
-    { name: "Sam", img: "https://i.pravatar.cc/100?img=7" },
-    { name: "Mia", img: "https://i.pravatar.cc/100?img=8" },
-  ];
-  users.forEach((u) => {
-    const s = document.createElement("div");
-    s.className = "story";
-    s.innerHTML = `
-      <img src="${u.img}" alt="${u.name}">
-      <p>${u.name}</p>
-    `;
-    stories.appendChild(s);
-  });
-}
-
-// Floating add button — posts a trend
-fab.addEventListener("click", async () => {
-  const caption = prompt("What's trending in your world?");
-  if (!caption) return;
-
-  const username = "sonofjean2";
-  const avatar = meAvatar.src;
+submitPost.addEventListener("click", async () => {
+  const caption = captionInput.value.trim();
+  if (!caption) return showToast("Type something first!");
 
   const { error } = await supabase.from("trends").insert([
     {
-      username,
+      username: currentUser,
       caption,
-      avatar,
-      type: "text",
+      avatar: meAvatar.src,
+      likes: 0,
     },
   ]);
 
+  captionInput.value = "";
+  modal.classList.add("hidden");
+
   if (error) {
-    console.error(error);
-    showToast("Upload failed 😢");
+    showToast("Failed to post 😢");
   } else {
     showToast("Posted 🎉");
     loadFeed();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 });
 
