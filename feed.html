@@ -4,34 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TrendTime Feed</title>
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="feed.css">
 </head>
-<body class="w3-light-gray">
+<body>
 
   <!-- 🔮 Navbar -->
-  <div class="nav-bar w3-purple w3-padding w3-card">
-    <div class="nav-content">
-      <h2 class="logo">Trend<span>Time</span></h2>
-      <div class="nav-actions">
-        <button id="createPostBtn" class="w3-button w3-round-large w3-pink">＋ Post</button>
-        <button id="changeAvatarBtn" class="w3-button w3-round-large w3-white w3-text-purple">Change Avatar</button>
-        <button id="logoutBtn" class="w3-button w3-round-large w3-text-white">Logout</button>
-      </div>
+  <nav class="navbar">
+    <div class="nav-left">
+      <h1 class="logo">Trend<span>Time</span></h1>
     </div>
-  </div>
+    <div class="nav-right">
+      <button id="createPostBtn">＋ Post</button>
+      <button id="changeAvatarBtn">Change Avatar</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </nav>
 
-  <!-- 📰 Feed Container -->
-  <div class="feed-container" id="feedContainer">
-    <h3 class="feed-title">✨ Discover What's Trending</h3>
+  <!-- 📸 Avatar Input -->
+  <input type="file" id="avatarInput" accept="image/*" hidden />
+
+  <!-- 📰 Feed -->
+  <main class="feed">
+    <h2>Explore Trends</h2>
     <div id="trendsList" class="trends-list">
-      <p class="loading">Loading the latest trends...</p>
+      <p>Loading trends...</p>
     </div>
-  </div>
-
-  <!-- 📸 Avatar Upload (Hidden) -->
-  <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
+  </main>
 
   <!-- 🔔 Toast -->
   <div id="toast" class="toast"></div>
