@@ -1,54 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TrendVerse — Feed</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendTime Ultra ⚡</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="feed.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-logo">∞</div>
-      <div class="brand-text">
-        <div class="brand-title">TrendVerse</div>
-        <div class="brand-sub">Create · Spark · Repeat</div>
+  <div class="app">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo">⚡ TrendTime</div>
+      <div class="user-tools">
+        <button id="themeToggle" class="theme-btn">🌙</button>
+        <img id="userAvatar" class="user-avatar" src="https://i.pravatar.cc/100?u=default" alt="Profile" />
+        <input type="file" id="avatarInput" accept="image/*" hidden />
       </div>
-    </div>
-    <div class="header-actions">
-      <button id="modeToggle" class="icon-btn ghost" title="Toggle theme">🌙</button>
-      <button id="notifications" class="icon-btn ghost" title="Notifications">🔔</button>
-      <div class="me-wrap">
-        <img id="meAvatar" class="me-avatar" src="https://placehold.co/64x64" alt="my avatar" title="Click to change avatar" />
+    </header>
+
+    <!-- STORIES -->
+    <section class="stories">
+      <div class="story-track" id="storyTrack">
+        <!-- stories injected here -->
       </div>
-    </div>
-  </header>
+    </section>
 
-  <!-- Stories row -->
-  <section id="stories" class="stories" aria-label="Stories">
-    <div class="story add-story" id="addStory" title="Add a story">
-      <div class="story-ring add-ring"><span class="plus">＋</span></div>
-      <div class="story-label">You</div>
-    </div>
-    <!-- dynamic stories injected here -->
-  </section>
+    <!-- FEED -->
+    <main id="feed" class="feed">
+      <div class="loading">
+        <div class="pulse"></div>
+        <p>Fetching your feed...</p>
+      </div>
+    </main>
 
-  <!-- Feed -->
-  <main id="feed" class="feed">
-    <div class="loading" id="initialLoading">
-      <div class="spinner"></div>
-      <div class="loading-text">Fetching the freshest moments...</div>
-    </div>
-  </main>
+    <!-- FLOATING BUTTON -->
+    <button class="fab" id="createBtn">+</button>
 
-  <!-- floating create button -->
-  <button id="fab" class="fab" title="Create a trend">+</button>
-
-  <!-- file input for avatar upload (hidden) -->
-  <input id="avatarInput" type="file" accept="image/*" style="display:none" />
-
-  <!-- toast -->
-  <div id="toast" class="toast" aria-live="polite"></div>
+    <!-- TOAST -->
+    <div id="toast" class="toast"></div>
+  </div>
 
   <script type="module" src="feed.js"></script>
 </body>
