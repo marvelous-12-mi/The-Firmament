@@ -1,162 +1,182 @@
+// feed.js — TrendTime feed with HatGPT link
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const supabaseUrl = "https://kpdgmbjdaynplyjacuxd.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
+const SUPABASE_URL = "https://kpdgmbjdaynplyjacuxd.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Elements
-const feed = document.getElementById("feed");
-const createBtn = document.getElementById("createBtn");
-const avatarInput = document.getElementById("avatarInput");
-const userAvatar = document.getElementById("userAvatar");
-const toast = document.getElementById("toast");
-const themeToggle = document.getElementById("themeToggle");
+// DOM
+const feedEl = document.getElementById("feed");
 const storyTrack = document.getElementById("storyTrack");
+const avatarEl = document.getElementById("avatar");
+const avatarInput = document.getElementById("avatarInput");
+const toastEl = document.getElementById("toast");
+const createBtn = document.getElementById("createBtn");
+const themeToggle = document.getElementById("themeToggle");
 
-let username = localStorage.getItem("username") || "You";
-let avatarUrl = localStorage.getItem("avatar") || "https://i.pravatar.cc/100?u=default";
+// local user
+let currentUser = localStorage.getItem("trendUser") || `guest${Date.now()}`;
+let currentAvatar = localStorage.getItem("trendAvatar") || `https://i.pravatar.cc/150?u=${encodeURIComponent(currentUser)}`;
+localStorage.setItem("trendUser", currentUser);
+localStorage.setItem("trendAvatar", currentAvatar);
 
-/* ------------------ UI Helpers ------------------ */
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2500);
+// UI helpers
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(() => toastEl.classList.remove("show"), 2500);
 }
+function el(tag, cls = "") { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
 
-function randomHeart(x, y) {
-  const heart = document.createElement("div");
-  heart.className = "heart";
-  heart.style.left = x + "px";
-  heart.style.top = y + "px";
-  heart.textContent = "❤️";
-  document.body.appendChild(heart);
-  setTimeout(() => heart.remove(), 2000);
-}
+avatarEl.src = currentAvatar;
 
-/* ------------------ Theme Toggle ------------------ */
-themeToggle.addEventListener("click", () => {
+// THEME
+if (localStorage.getItem("theme") === "dark") document.body.classList.add("dark");
+themeToggle.onclick = () => {
   document.body.classList.toggle("dark");
-  themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
   localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
-});
+  themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+};
 
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark");
-  themeToggle.textContent = "☀️";
-}
-
-/* ------------------ Avatar Upload ------------------ */
-userAvatar.addEventListener("click", () => avatarInput.click());
+// AVATAR UPLOAD -> uploads to bucket 'avatars' (must exist & be public)
+avatarEl.addEventListener("click", () => avatarInput.click());
 avatarInput.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const fileName = `${username}-${Date.now()}`;
-  const { error } = await supabase.storage.from("avatars").upload(fileName, file, {
-    cacheControl: "3600",
-    upsert: true,
-  });
-  if (error) return showToast("Avatar upload failed 😢");
-
-  const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
-  localStorage.setItem("avatar", data.publicUrl);
-  userAvatar.src = data.publicUrl;
-  showToast("Avatar updated 💫");
+  const f = e.target.files?.[0];
+  if (!f) return;
+  showToast("Uploading avatar...");
+  const path = `avatars/${currentUser}-${Date.now()}.${f.name.split(".").pop()}`;
+  const { data, error } = await supabase.storage.from("avatars").upload(path, f, { upsert: true });
+  if (error) { console.error(error); showToast("Upload failed"); return; }
+  const url = supabase.storage.from("avatars").getPublicUrl(data.path).data.publicUrl;
+  currentAvatar = url;
+  localStorage.setItem("trendAvatar", currentAvatar);
+  avatarEl.src = currentAvatar;
+  showToast("Avatar updated ✨");
+  // optionally update profiles table if you use it
 });
 
-/* ------------------ Load Stories ------------------ */
-function loadStories() {
-  const fakeUsers = [
-    { name: "Ava", img: "https://i.pravatar.cc/60?u=ava" },
-    { name: "Leo", img: "https://i.pravatar.cc/60?u=leo" },
-    { name: "Mia", img: "https://i.pravatar.cc/60?u=mia" },
-    { name: "Noah", img: "https://i.pravatar.cc/60?u=noah" },
-    { name: "Ella", img: "https://i.pravatar.cc/60?u=ella" },
-  ];
-
-  storyTrack.innerHTML = fakeUsers
-    .map(
-      (u) => `
-      <div class="story">
-        <img src="${u.img}" alt="${u.name}" />
-        <p>${u.name}</p>
-      </div>
-    `
-    )
-    .join("");
+// STORIES (demo/populated from recent authors)
+async function loadStories() {
+  try {
+    const { data } = await supabase.from("trends").select("username, avatar, user_id").order("created_at", { ascending: false }).limit(20);
+    const seen = new Set();
+    const list = [];
+    for (const r of (data || [])) {
+      if (!r.username) continue;
+      if (!seen.has(r.username)) {
+        seen.add(r.username);
+        list.push({ username: r.username, avatar: r.avatar });
+      }
+      if (list.length >= 12) break;
+    }
+    // fallback demo stories
+    if (list.length === 0) {
+      const demo = ["Nova","Mia","Jean","Ari","Sam"].map((n,i)=>({ username:n, avatar:`https://i.pravatar.cc/100?img=${11+i}` }));
+      renderStories(demo);
+      return;
+    }
+    renderStories(list);
+  } catch (err) { console.error("stories", err); }
+}
+function renderStories(list) {
+  storyTrack.innerHTML = "";
+  // add "You" first
+  const you = el("div","story");
+  you.innerHTML = `<img src="${currentAvatar}" alt="You"><small>You</small>`;
+  you.addEventListener("click", ()=> showToast("That's you ✨"));
+  storyTrack.appendChild(you);
+  list.forEach(u => {
+    const d = el("div","story");
+    d.innerHTML = `<img src="${u.avatar || 'https://i.pravatar.cc/100'}" alt="${u.username}"><small>${u.username}</small>`;
+    d.addEventListener("click", ()=> window.location.href = `profile.html?user=${encodeURIComponent(u.username)}`);
+    storyTrack.appendChild(d);
+  });
 }
 
-/* ------------------ Fetch Posts ------------------ */
+// FEED
 async function loadFeed() {
-  const { data, error } = await supabase
-    .from("trends")
-    .select("*")
-    .order("created_at", { ascending: false });
-
+  feedEl.innerHTML = `<div class="loading"><div class="spinner"></div><p>Fetching your feed...</p></div>`;
+  const { data, error } = await supabase.from("trends").select("*").order("created_at", { ascending: false }).limit(50);
   if (error) {
     console.error(error);
-    feed.innerHTML = "<p>⚠️ Failed to load feed.</p>";
+    feedEl.innerHTML = `<div class="loading"><p>Failed to load feed</p></div>`;
     return;
   }
-
   if (!data || data.length === 0) {
-    feed.innerHTML = "<p>No trends yet. Be the first to post 🚀</p>";
+    feedEl.innerHTML = `<div class="loading"><p>No trends yet — be the first ✨</p></div>`;
     return;
   }
 
-  feed.innerHTML = data
-    .map((post) => {
-      return `
-      <div class="post-card">
-        <div class="post-top">
-          <img class="avatar" src="${post.avatar || "https://i.pravatar.cc/100"}" alt="${post.username}" />
-          <div>
-            <strong>${post.username}</strong><br/>
-            <small>${new Date(post.created_at).toLocaleString()}</small>
-          </div>
-        </div>
-        <div class="post-body">
-          ${post.url ? `<img src="${post.url}" class="post-img" alt="Post image" />` : ""}
-          ${post.video_url ? `<video src="${post.video_url}" class="post-vid" controls></video>` : ""}
-          <p>${post.caption || ""}</p>
-        </div>
-        <div class="post-actions">
-          <button class="like-btn">❤️</button>
-          <button>💬</button>
-          <button>🔁</button>
-        </div>
-      </div>`;
-    })
-    .join("");
+  feedEl.innerHTML = "";
+  data.forEach(post => feedEl.appendChild(renderPost(post)));
+  attachLikeListeners();
+}
+function renderPost(p) {
+  const card = el("article","post-card");
+  const avatar = p.avatar || currentAvatar || `https://i.pravatar.cc/150?u=${encodeURIComponent(p.username||'anon')}`;
+  const media = p.url ? `<img class="post-img" src="${p.url}" alt="media">` : (p.video_url ? `<video class="post-vid" src="${p.video_url}" controls></video>` : "");
+  card.innerHTML = `
+    <div class="post-top">
+      <img class="avatar" src="${avatar}" alt="${p.username}" />
+      <div class="meta"><strong>${p.username || "anon"}</strong><small>${new Date(p.created_at).toLocaleString()}</small></div>
+    </div>
+    <div class="post-body">${media}<p>${(p.caption||"").replace(/</g,"&lt;")}</p></div>
+    <div class="post-actions"><button class="like-btn" data-id="${p.id}">❤️ <span>${p.likes||0}</span></button><button class="comment-btn">💬</button><button class="share-btn">🔗</button></div>
+  `;
+  return card;
+}
 
-  // Like buttons
-  document.querySelectorAll(".like-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const x = e.clientX;
-      const y = e.clientY;
-      randomHeart(x, y);
-      showToast("You liked this 💖");
-    });
+function attachLikeListeners() {
+  feedEl.querySelectorAll(".like-btn").forEach(btn => {
+    btn.onclick = async (e) => {
+      const id = btn.dataset.id;
+      const span = btn.querySelector("span");
+      const current = parseInt(span.textContent || "0",10);
+      span.textContent = current + 1;
+      spawnHeart(e.pageX, e.pageY);
+      // update DB (non-atomic fallback)
+      const { error } = await supabase.from("trends").update({ likes: current + 1 }).eq("id", id);
+      if (error) console.error("like error", error);
+    };
   });
 }
 
-/* ------------------ Real-Time Updates ------------------ */
+function spawnHeart(x,y) {
+  const h = el("div","heart-float");
+  h.textContent = "💜";
+  h.style.left = `${x}px`;
+  h.style.top = `${y}px`;
+  document.body.appendChild(h);
+  setTimeout(()=> h.remove(), 1200);
+}
+
+// Realtime subscription (insert)
 supabase
-  .channel("realtime-trends")
-  .on("postgres_changes", { event: "INSERT", schema: "public", table: "trends" }, (payload) => {
-    loadFeed();
-    showToast("✨ New trend added!");
+  .channel('realtime:trends')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'trends' }, payload => {
+    if (payload.eventType === 'INSERT' || payload.event === 'INSERT') {
+      const row = payload.new || payload.record;
+      if (row) {
+        const node = renderPost(row);
+        feedEl.prepend(node);
+        spawnHeart(window.innerWidth/2, window.innerHeight/2);
+      }
+    }
+    if (payload.eventType === 'UPDATE' || payload.event === 'UPDATE') {
+      const row = payload.new || payload.record;
+      if (row) {
+        const card = feedEl.querySelector(`.post-card [data-id="${row.id}"]`);
+        // reload or update like count — simpler: reload feed
+        loadFeed();
+      }
+    }
   })
-  .subscribe();
+  .subscribe()
+  .catch(e => console.warn("subscribe error", e));
 
-/* ------------------ Floating Create Button ------------------ */
-createBtn.addEventListener("click", () => {
-  window.location.href = "post.html";
-});
+// FAB => post page
+createBtn.onclick = () => window.location.href = "post.html";
 
-/* ------------------ Init ------------------ */
+// run
 loadStories();
 loadFeed();
-userAvatar.src = avatarUrl;
