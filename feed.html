@@ -1,36 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TrendTime • Feed</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendTime Ultra ⚡</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="feed.css" />
 </head>
 <body>
-  <div class="app-container">
-    <header class="top-bar">
-      <div class="logo">TrendTime ⚡</div>
-      <div class="actions">
-        <a id="hatLink" class="hat-btn" href="hatgpt.html">HatGPT 🎩</a>
-        <img id="avatar" class="avatar" src="https://i.pravatar.cc/100" alt="Your Avatar" />
-        <input type="file" id="avatarInput" accept="image/*" hidden>
+  <div class="app">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo">⚡ TrendTime</div>
+      <div class="user-tools">
         <button id="themeToggle" class="theme-btn">🌙</button>
+        <img id="userAvatar" class="user-avatar" src="https://i.pravatar.cc/100?u=default" alt="Profile" />
+        <input type="file" id="avatarInput" accept="image/*" hidden />
       </div>
     </header>
 
+    <!-- STORIES -->
     <section class="stories">
-      <div id="storyTrack" class="story-track"></div>
+      <div class="story-track" id="storyTrack">
+        <!-- stories injected here -->
+      </div>
     </section>
 
+    <!-- FEED -->
     <main id="feed" class="feed">
       <div class="loading">
-        <div class="spinner"></div>
+        <div class="pulse"></div>
         <p>Fetching your feed...</p>
       </div>
     </main>
 
+    <!-- FLOATING BUTTON -->
     <button class="fab" id="createBtn">+</button>
 
+    <!-- TOAST -->
     <div id="toast" class="toast"></div>
   </div>
 
