@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HatGPT — AI Studio</title>
+  <link rel="stylesheet" href="feed.css" />
+  <style>
+    /* small local overrides to reuse feed.css */
+    .studio { max-width:900px; margin:36px auto; padding:18px; }
+    .studio h1{ font-size:1.6rem; margin-bottom:10px; }
+    .controls { display:flex; gap:10px; margin-bottom:12px; }
+    textarea { width:100%; min-height:120px; padding:12px; border-radius:10px; border:1px solid #ddd; }
+    .btn { padding:10px 14px; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(90deg,#7f00ff,#ff3fd8); color:white; font-weight:700;}
+    .result { margin-top:18px; display:grid; gap:12px; }
+    .result img { max-width:100%; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
+    nav.breadcrumb { margin:12px; }
+    a.back { color: #7f00ff; text-decoration:none; font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="studio">
+    <nav class="breadcrumb"><a class="back" href="feed.html">← Back to Feed</a></nav>
+    <h1>HatGPT — AI Studio</h1>
+    <p>Generate images from text prompts or ask for creative copy. Uses your DeepAI key on the server (safe).</p>
+
+    <div class="controls">
+      <select id="mode">
+        <option value="image">Image (text → image)</option>
+        <option value="text">Text (creative assistant)</option>
+      </select>
+      <button id="surprise" class="btn">Surprise Me</button>
+    </div>
+
+    <textarea id="prompt" placeholder="Describe a scene, face, style, or ask a question..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button id="generate" class="btn">Generate</button>
+      <button id="clear" class="btn" style="background:#eee;color:#222">Clear</button>
+    </div>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script type="module" src="hatgpt.js"></script>
+</body>
+</html>
