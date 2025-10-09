@@ -1,46 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>HatGPT — AI Studio</title>
-  <link rel="stylesheet" href="feed.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HatGPT 🤖</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    /* small local overrides to reuse feed.css */
-    .studio { max-width:900px; margin:36px auto; padding:18px; }
-    .studio h1{ font-size:1.6rem; margin-bottom:10px; }
-    .controls { display:flex; gap:10px; margin-bottom:12px; }
-    textarea { width:100%; min-height:120px; padding:12px; border-radius:10px; border:1px solid #ddd; }
-    .btn { padding:10px 14px; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(90deg,#7f00ff,#ff3fd8); color:white; font-weight:700;}
-    .result { margin-top:18px; display:grid; gap:12px; }
-    .result img { max-width:100%; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
-    nav.breadcrumb { margin:12px; }
-    a.back { color: #7f00ff; text-decoration:none; font-weight:700; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(145deg, #110022, #2b004b);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 1.6em;
+      letter-spacing: 1px;
+      text-shadow: 0 0 6px #b400ff;
+    }
+
+    #chatbox {
+      width: 90%;
+      max-width: 700px;
+      height: 70vh;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 0 20px rgba(183,0,255,0.3);
+    }
+
+    .message {
+      margin: 12px 0;
+      line-height: 1.5;
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: 80%;
+    }
+
+    .user {
+      background: linear-gradient(135deg, #6200ea, #a600ff);
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .ai {
+      background: rgba(255,255,255,0.1);
+      border-left: 3px solid #a600ff;
+      margin-right: auto;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform: translateY(0);} }
+
+    #inputBox {
+      display: flex;
+      width: 90%;
+      max-width: 700px;
+      margin: 16px auto;
+    }
+
+    #prompt {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+
+    #sendBtn {
+      background: linear-gradient(135deg, #b400ff, #ff00aa);
+      border: none;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin-left: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #sendBtn:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
-  <div class="studio">
-    <nav class="breadcrumb"><a class="back" href="feed.html">← Back to Feed</a></nav>
-    <h1>HatGPT — AI Studio</h1>
-    <p>Generate images from text prompts or ask for creative copy. Uses your DeepAI key on the server (safe).</p>
+  <h1>HatGPT 💬</h1>
+  <div id="chatbox"></div>
 
-    <div class="controls">
-      <select id="mode">
-        <option value="image">Image (text → image)</option>
-        <option value="text">Text (creative assistant)</option>
-      </select>
-      <button id="surprise" class="btn">Surprise Me</button>
-    </div>
-
-    <textarea id="prompt" placeholder="Describe a scene, face, style, or ask a question..."></textarea>
-    <div style="display:flex;gap:10px;margin-top:10px">
-      <button id="generate" class="btn">Generate</button>
-      <button id="clear" class="btn" style="background:#eee;color:#222">Clear</button>
-    </div>
-
-    <div id="result" class="result"></div>
+  <div id="inputBox">
+    <input type="text" id="prompt" placeholder="Talk to HatGPT..." />
+    <button id="sendBtn">Send</button>
   </div>
 
-  <script type="module" src="hatgpt.js"></script>
+  <script src="hatgpt.js"></script>
 </body>
 </html>
