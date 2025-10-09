@@ -1,38 +1,37 @@
-// api/deepai.js  (Vercel serverless)
+// pages/api/hatgpt.js
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Only POST" });
-  const { prompt, mode } = req.body || {};
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Only POST requests allowed" });
+
+  const { prompt } = req.body || {};
   if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
-  const apiKey = process.env.DEEPAI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "DEEP_API_KEY not configured" });
+  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_KEY)
+    return res.status(500).json({ error: "Missing OPENAI_API_KEY env var" });
 
   try {
-    if (mode === "image") {
-      // DeepAI text2img
-      const form = new FormData();
-      form.append("text", prompt);
-      const resp = await fetch("https://api.deepai.org/api/text2img", {
-        method: "POST",
-        headers: { "api-key": apiKey },
-        body: form,
-      });
-      const json = await resp.json();
-      return res.status(resp.status).json(json);
-    } else {
-      // DeepAI text generator (fallback to "text-generator")
-      const form = new FormData();
-      form.append("text", prompt);
-      const resp = await fetch("https://api.deepai.org/api/text-generator", {
-        method: "POST",
-        headers: { "api-key": apiKey },
-        body: form,
-      });
-      const json = await resp.json();
-      return res.status(resp.status).json(json);
-    }
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are HatGPT, a creative, funny and helpful AI built into a social network. Always reply with personality and emojis when relevant." },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content || "⚠️ No response";
+
+    res.status(200).json({ output: text });
   } catch (err) {
-    console.error("deepai error", err);
-    return res.status(500).json({ error: err.message || "DeepAI error" });
+    console.error(err);
+    res.status(500).json({ error: "ChatGPT request failed" });
   }
 }
