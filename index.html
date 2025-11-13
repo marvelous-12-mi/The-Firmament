@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus - Next Generation Social</title>
+  <title>Nexus - Instagram-Like Social Media</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
@@ -32,7 +31,6 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
-      overflow-x: hidden;
     }
 
     .bg-animation {
@@ -80,6 +78,7 @@
       text-align: center;
       color: var(--text-secondary);
       margin-bottom: 48px;
+      font-size: 16px;
     }
 
     .form-group {
@@ -475,6 +474,7 @@
       width: 100%;
       height: auto;
       object-fit: cover;
+      max-height: 500px;
     }
 
     .post-content {
@@ -685,7 +685,6 @@
       color: var(--text-primary);
     }
 
-    /* Responsive */
     @media (max-width: 1024px) {
       .right-sidebar {
         display: none;
@@ -873,36 +872,36 @@
   </div>
 
   <script>
-    // Supabase Configuration
+    // ============================================
+    // SUPABASE CONFIGURATION
+    // ============================================
+    // UPDATE THESE WITH YOUR SUPABASE CREDENTIALS
     const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
 
     const { createClient } = window.supabase;
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // State
+    // ============================================
+    // STATE
+    // ============================================
     let currentUser = null;
     let currentUserProfile = null;
     let posts = [];
 
-    // DOM Elements
+    // ============================================
+    // DOM ELEMENTS
+    // ============================================
     const authPage = document.getElementById('authPage');
     const appContainer = document.getElementById('appContainer');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const errorMessage = document.getElementById('errorMessage');
 
-    // Auth Elements
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupEmail = document.getElementById('signupEmail');
-    const signupPassword = document.getElementById('signupPassword');
-    const signupName = document.getElementById('signupName');
-    const signupBtn = document.getElementById('signupBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
 
-    // Toggle Forms
     document.getElementById('toSignup').addEventListener('click', () => {
       loginForm.style.display = 'none';
       signupForm.style.display = 'block';
@@ -913,7 +912,6 @@
       loginForm.style.display = 'block';
     });
 
-    // Show Error
     function showError(message) {
       errorMessage.textContent = message;
       errorMessage.style.display = 'block';
@@ -922,16 +920,16 @@
       }, 5000);
     }
 
-    // Login
-    loginBtn.addEventListener('click', async (e) => {
+    document.getElementById('loginBtn').addEventListener('click', async (e) => {
       e.preventDefault();
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Signing in...';
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
 
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: loginEmail.value,
-          password: loginPassword.value,
+          email: document.getElementById('loginEmail').value,
+          password: document.getElementById('loginPassword').value,
         });
 
         if (error) throw error;
@@ -942,35 +940,34 @@
       } catch (error) {
         showError(error.message);
       } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'SIGN IN';
+        btn.disabled = false;
+        btn.textContent = 'SIGN IN';
       }
     });
 
-    // Signup
-    signupBtn.addEventListener('click', async (e) => {
+    document.getElementById('signupBtn').addEventListener('click', async (e) => {
       e.preventDefault();
-      signupBtn.disabled = true;
-      signupBtn.textContent = 'Creating...';
+      const btn = document.getElementById('signupBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
 
       try {
         const { data, error } = await supabase.auth.signUp({
-          email: signupEmail.value,
-          password: signupPassword.value,
+          email: document.getElementById('signupEmail').value,
+          password: document.getElementById('signupPassword').value,
         });
 
         if (error) throw error;
 
-        // Create profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([{
             id: data.user.id,
-            full_name: signupName.value,
-            username: signupEmail.value.split('@')[0],
+            full_name: document.getElementById('signupName').value,
+            username: document.getElementById('signupEmail').value.split('@')[0],
           }]);
 
-        if (profileError) throw profileError;
+        if (profileError && profileError.code !== '23505') throw profileError;
 
         showError('Account created! Check your email to confirm.');
         setTimeout(() => {
@@ -980,13 +977,12 @@
       } catch (error) {
         showError(error.message);
       } finally {
-        signupBtn.disabled = false;
-        signupBtn.textContent = 'CREATE ACCOUNT';
+        btn.disabled = false;
+        btn.textContent = 'CREATE ACCOUNT';
       }
     });
 
-    // Logout
-    logoutBtn.addEventListener('click', async () => {
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       authPage.style.display = 'flex';
       appContainer.classList.remove('active');
@@ -994,7 +990,10 @@
       signupForm.style.display = 'none';
     });
 
-    // Load User Profile
+    // ============================================
+    // USER PROFILE
+    // ============================================
+
     async function loadUserProfile() {
       const { data, error } = await supabase
         .from('profiles')
@@ -1003,7 +1002,6 @@
         .single();
 
       if (error && error.code === 'PGRST116') {
-        // Profile doesn't exist, create it
         const { data: newProfile } = await supabase
           .from('profiles')
           .insert([{
@@ -1020,9 +1018,9 @@
 
       updateUserUI();
       await loadPosts();
+      await loadStats();
     }
 
-    // Update User UI
     function updateUserUI() {
       const initials = (currentUserProfile?.full_name || 'U').substring(0, 1).toUpperCase();
       document.getElementById('userAvatar').textContent = initials;
@@ -1032,7 +1030,31 @@
       document.getElementById('profileUsername').textContent = '@' + (currentUserProfile?.username || 'user');
     }
 
-    // Load Posts
+    async function loadStats() {
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('user_id', currentUser.id);
+
+      const { data: followersData } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('following_id', currentUser.id);
+
+      const { data: followingData } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', currentUser.id);
+
+      document.getElementById('postsCount').textContent = postsData?.length || 0;
+      document.getElementById('followersCount').textContent = followersData?.length || 0;
+      document.getElementById('followingCount').textContent = followingData?.length || 0;
+    }
+
+    // ============================================
+    // POSTS
+    // ============================================
+
     async function loadPosts() {
       const { data, error } = await supabase
         .from('posts')
@@ -1052,7 +1074,6 @@
       renderFeed();
     }
 
-    // Render Feed
     function renderFeed() {
       const feedContainer = document.getElementById('feedContainer');
 
@@ -1090,7 +1111,6 @@
       `).join('');
     }
 
-    // Like Post
     window.likePost = async (postId) => {
       try {
         const { error } = await supabase
@@ -1101,7 +1121,6 @@
           }]);
 
         if (error && error.code === '23505') {
-          // Already liked, unlike
           await supabase
             .from('likes')
             .delete()
@@ -1115,7 +1134,10 @@
       }
     };
 
-    // Create Post Modal
+    // ============================================
+    // CREATE POST MODAL
+    // ============================================
+
     const createPostModal = document.getElementById('createPostModal');
     document.getElementById('createPostInput').addEventListener('click', () => {
       createPostModal.classList.add('active');
@@ -1160,7 +1182,7 @@
           .from('posts')
           .insert([{
             user_id: currentUser.id,
-            caption,
+            caption: caption || null,
             image_url: imageUrl,
           }]);
 
@@ -1171,12 +1193,16 @@
         createPostModal.classList.remove('active');
 
         await loadPosts();
+        await loadStats();
       } catch (error) {
         showError(error.message);
       }
     });
 
-    // Check Auth
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -1192,9 +1218,18 @@
       appContainer.classList.add('active');
     }
 
-    // Initialize
     checkAuth();
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        currentUser = session.user;
+        authPage.style.display = 'none';
+        appContainer.classList.add('active');
+      } else {
+        authPage.style.display = 'flex';
+        appContainer.classList.remove('active');
+      }
+    });
   </script>
 </body>
 </html>
-Make Instagram Website Production-Ready - Manus
