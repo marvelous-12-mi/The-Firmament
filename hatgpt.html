@@ -1,106 +1,778 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HatGPT 🤖</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(145deg, #110022, #2b004b);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100vh;
-      margin: 0;
-    }
-
-    h1 {
-      margin-top: 20px;
-      font-size: 1.6em;
-      letter-spacing: 1px;
-      text-shadow: 0 0 6px #b400ff;
-    }
-
-    #chatbox {
-      width: 90%;
-      max-width: 700px;
-      height: 70vh;
-      overflow-y: auto;
-      background: rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 0 20px rgba(183,0,255,0.3);
-    }
-
-    .message {
-      margin: 12px 0;
-      line-height: 1.5;
-      padding: 10px 14px;
-      border-radius: 12px;
-      max-width: 80%;
-    }
-
-    .user {
-      background: linear-gradient(135deg, #6200ea, #a600ff);
-      align-self: flex-end;
-      margin-left: auto;
-    }
-
-    .ai {
-      background: rgba(255,255,255,0.1);
-      border-left: 3px solid #a600ff;
-      margin-right: auto;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform: translateY(0);} }
-
-    #inputBox {
-      display: flex;
-      width: 90%;
-      max-width: 700px;
-      margin: 16px auto;
-    }
-
-    #prompt {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 16px;
-    }
-
-    #sendBtn {
-      background: linear-gradient(135deg, #b400ff, #ff00aa);
-      border: none;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      margin-left: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    #sendBtn:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WiseGPT.js — Your Local Wise Assistant</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#09131e; --muted:#8fa1b3; --accent:#5cc8ff;
+    --card:#071424; --good:#2e8b57; --bad:#c94b4b; --glass: rgba(255,255,255,0.03);
+    --radius:12px; --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono";
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#d7e6f3;background:linear-gradient(180deg,#071225 0%, #061928 100%);}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px;display:grid;grid-template-columns: 1fr 420px;gap:18px;}
+  header{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  h1{font-size:20px;margin:0}
+  p.lead{margin:0;color:var(--muted);font-size:13px}
+  .panel{background:linear-gradient(180deg, rgba(10,20,30,0.6), rgba(6,12,20,0.55)); border:1px solid rgba(150,200,255,0.03); border-radius:var(--radius); padding:12px}
+  .left{min-height:420px; display:flex; flex-direction:column; gap:12px}
+  .chatbox{background:linear-gradient(180deg,#04121b,#061924);border-radius:10px;padding:10px; height:520px; overflow:auto; box-shadow: 0 6px 18px rgba(2,6,10,0.6);}
+  .controls{display:flex; gap:8px; align-items:center; margin-top:8px}
+  .inputRow{display:flex; gap:8px; margin-top:8px}
+  .prompt{flex:1;padding:10px;border-radius:10px;background:#041722;border:1px solid rgba(120,180,255,0.03); color:#e6f7ff}
+  button{background:var(--accent);color:#042230;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); font-weight:500}
+  .small{font-size:12px;color:var(--muted)}
+  .msg{padding:10px;border-radius:10px;margin-bottom:8px;max-width:85%}
+  .msg.user{background:linear-gradient(90deg,#083744,#064a3f);color:#d9fff3;margin-left:auto}
+  .msg.bot{background:linear-gradient(90deg,#07203a,#0b2946);color:#dff4ff}
+  .meta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+  .right{display:flex; flex-direction:column; gap:12px}
+  .sectionTitle{font-weight:700;font-size:13px;margin-bottom:8px}
+  textarea{width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:#031018;color:#e8f6ff;resize:vertical}
+  input[type="range"]{width:120px}
+  .row{display:flex;gap:8px;align-items:center}
+  .pill{padding:6px 8px;border-radius:999px;background:var(--glass);color:var(--muted);font-size:12px}
+  .memoryItem{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:8px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.02)}
+  .memTitle{font-weight:700;font-size:13px}
+  .muted{color:var(--muted)}
+  .smallBtn{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted);padding:6px 8px;border-radius:8px;cursor:pointer}
+  footer{grid-column:1/-1;text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+  .badge{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-size:12px;color:var(--muted)}
+  .stat{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+  .kpi{font-weight:700;color:#bfeaff}
+  .controlsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .debug{font-family:var(--mono);font-size:12px;color:#9bd}
+  .big{font-size:16px;font-weight:700}
+  .divider{height:1px;background:rgba(255,255,255,0.02);margin:8px 0;border-radius:6px}
+  .tag{font-size:11px;padding:4px 6px;border-radius:6px;background:rgba(255,255,255,0.02);color:var(--muted)}
+  .rowWrap{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .actionGood{background:linear-gradient(90deg,#1c6b3a,#2aa673); color:white}
+  .actionBad{background:linear-gradient(90deg,#8b2a2a,#c94b4b); color:white}
+  .file{display:none}
+  .kbd{font-family:var(--mono);font-size:12px;background:#02121a;padding:4px 6px;border-radius:6px;color:#9ee}
+</style>
 </head>
 <body>
-  <h1>HatGPT 💬</h1>
-  <div id="chatbox"></div>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>WiseGPT.js</h1>
+        <p class="lead">A local, evolving, wise assistant — runs entirely in your browser. Trained by your data + your feedback.</p>
+      </div>
+      <div style="margin-left:auto" class="rowWrap">
+        <div class="badge">Local only</div>
+        <div class="badge">Persistent memory</div>
+        <div class="badge">No APIs</div>
+      </div>
+    </header>
 
-  <div id="inputBox">
-    <input type="text" id="prompt" placeholder="Talk to HatGPT..." />
-    <button id="sendBtn">Send</button>
+    <!-- Left: Chat & interaction -->
+    <div class="left panel">
+      <div class="sectionTitle">Chat (ask anything — be thoughtful)</div>
+      <div id="chat" class="chatbox" aria-live="polite"></div>
+
+      <div class="controls">
+        <div class="small">Temperature <span id="tempLabel" class="kbd">0.9</span></div>
+        <input id="temp" type="range" min="0.1" max="1.6" step="0.05" value="0.9">
+        <div class="small">Hops <span id="hopsLabel" class="kbd">3</span></div>
+        <input id="hops" type="range" min="1" max="6" step="1" value="3">
+        <div style="margin-left:auto" class="meta small muted">Memory: <span id="memCount">0</span></div>
+      </div>
+
+      <div class="inputRow">
+        <input id="prompt" class="prompt" placeholder="Ask WiseGPT — it will think, recall, and answer">
+        <button id="askBtn">Ask</button>
+        <button id="shortBtn" class="secondary">Short</button>
+        <button id="longBtn" class="secondary">Verbose</button>
+      </div>
+
+      <div class="row" style="justify-content:space-between">
+        <div class="small muted">Tip: Press enter to send. Use the memory panel to seed knowledge.</div>
+        <div class="row">
+          <button id="exportBtn" class="smallBtn">Export Memory</button>
+          <button id="importBtn" class="smallBtn">Import Memory</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sectionTitle">Last reasoning trace</div>
+      <pre id="trace" class="debug" style="height:120px;overflow:auto;background:#031018;padding:8px;border-radius:8px"></pre>
+    </div>
+
+    <!-- Right: Memory, trainer, inspector -->
+    <aside class="right">
+      <div class="panel">
+        <div class="sectionTitle">Memory & Knowledge</div>
+        <div class="small muted">Add facts, thoughts, or lessons. WiseGPT will index them and use them in answers.</div>
+        <textarea id="memoryText" placeholder="Write a fact or lesson to teach WiseGPT (e.g., 'Socratic method: ask clarifying questions first')."></textarea>
+        <div class="row" style="margin-top:8px">
+          <button id="teachBtn">Teach / Save</button>
+          <button id="summarizeBtn" class="secondary">Auto-summarize input</button>
+          <button id="forgetBtn" class="secondary actionBad">Forget weak</button>
+        </div>
+        <div style="margin-top:10px" class="meta small muted">Memory is scored by usefulness. Use + / - in chat to reinforce.</div>
+      </div>
+
+      <div class="panel" id="memPanel">
+        <div class="sectionTitle">Memory Inspector</div>
+        <div id="memList" style="max-height:260px;overflow:auto;padding-right:6px"></div>
+        <div class="divider"></div>
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div class="small muted">Quick actions</div>
+          <div>
+            <button id="compactBtn" class="smallBtn">Compact</button>
+            <button id="clearBtn" class="smallBtn actionBad">Clear All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionTitle">Debug & Stats</div>
+        <div class="stat"><div class="small muted">Memory size</div><div id="statMem" class="kpi">0</div></div>
+        <div class="stat"><div class="small muted">Average strength</div><div id="statAvg" class="kpi">—</div></div>
+        <div class="divider"></div>
+        <div class="small muted">Export/Import memory to keep or share knowledge.</div>
+      </div>
+    </aside>
+
+    <footer>
+      Built with ❤️ — persistent, private, and designed to get wiser with your curation and feedback.
+    </footer>
   </div>
 
-  <script src="hatgpt.js"></script>
+<script>
+/*
+  WiseGPT.js
+  - Single-file local "wise assistant"
+  - Memory: stored in localStorage under 'wisegpt_memory_v1'
+  - Methods: tokenize, vectorize (hash-based), similarity, multi-hop recall, synthesis, markov/trigram fallback
+  - Learning: teach(), reinforce(feedback), forgetWeak()
+  - UI wiring included below
+*/
+
+/* ------------------------------
+   Utilities: tokenizer & vectorizer
+   ------------------------------ */
+
+function simpleNormalize(text){
+  return text.replace(/\\s+/g,' ').trim();
+}
+
+function tokenize(text){
+  // Honest, simple tokenizer: words + punctuation tokens, lowercase
+  const normalized = simpleNormalize(String(text)).toLowerCase();
+  // keep punctuation as separate tokens
+  const toks = normalized.split(/([^\\w'-])/).map(s=>s.trim()).filter(Boolean);
+  return toks;
+}
+
+// Hashing-based embedding (fast, no external libs)
+function hashStrToInt(s){
+  // Fowler–Noll–Vo hash (FNV-1a) mod 2^32
+  let h = 2166136261 >>> 0;
+  for(let i=0;i<s.length;i++){
+    h ^= s.charCodeAt(i);
+    h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    h = h >>> 0;
+  }
+  return h >>> 0;
+}
+
+function vectorize(tokens, dim=128){
+  // produce a float vector of length dim using hashed bucket counts and TF-IDF-ish weighting.
+  const vec = new Float32Array(dim);
+  const counts = {};
+  for(const t of tokens) counts[t] = (counts[t]||0) + 1;
+  for(const t in counts){
+    const h = hashStrToInt(t);
+    const idx = h % dim;
+    // weighting: token frequency * log(1 + length of token)
+    vec[idx] += counts[t] * Math.log(1 + t.length);
+  }
+  // normalize
+  let norm = 0;
+  for(let i=0;i<dim;i++) norm += vec[i]*vec[i];
+  norm = Math.sqrt(norm) + 1e-9;
+  for(let i=0;i<dim;i++) vec[i] /= norm;
+  return Array.from(vec);
+}
+
+function cosine(a,b){
+  let dot=0, na=0, nb=0;
+  for(let i=0;i<a.length;i++){ dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
+  return dot / (Math.sqrt(na)*Math.sqrt(nb) + 1e-9);
+}
+
+/* ------------------------------
+   Memory structure & persistence
+   ------------------------------ */
+// Memory entry: { id, text, summary, vec, strength, addedAt, lastUsed, tags }
+const STORAGE_KEY = 'wisegpt_memory_v1';
+
+function loadMemory(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    const parsed = JSON.parse(raw);
+    // ensure vector arrays are numbers (in case)
+    for(const m of parsed){
+      if(m.vec && !Array.isArray(m.vec)) m.vec = Array.from(m.vec);
+    }
+    return parsed;
+  }catch(e){
+    console.error("Failed to load memory:", e);
+    return [];
+  }
+}
+
+function saveMemory(mem){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mem));
+  }catch(e){
+    console.error("Failed to save memory:", e);
+  }
+}
+
+/* ------------------------------
+   Core memory ops
+   ------------------------------ */
+let MEMORY = loadMemory(); // runtime memory
+
+function makeId(prefix='m'){
+  return prefix + '_' + Math.random().toString(36).slice(2,9);
+}
+
+function teach(text, summary=null, tags=[]){
+  const clean = simpleNormalize(text);
+  if(!clean) return null;
+  const toks = tokenize(clean);
+  const vec = vectorize(toks, 192);
+  const entry = {
+    id: makeId(),
+    text: clean,
+    summary: summary || makeSummary(clean),
+    vec,
+    strength: 1.0, // baseline usefulness
+    addedAt: Date.now(),
+    lastUsed: 0,
+    tags
+  };
+  MEMORY.unshift(entry);
+  saveMemory(MEMORY);
+  updateUI();
+  return entry;
+}
+
+function updateMemoryEntry(id, fields){
+  const idx = MEMORY.findIndex(m=>m.id===id);
+  if(idx>=0){
+    MEMORY[idx] = {...MEMORY[idx], ...fields};
+    saveMemory(MEMORY);
+    updateUI();
+    return MEMORY[idx];
+  }
+  return null;
+}
+
+function removeMemory(id){
+  MEMORY = MEMORY.filter(m=>m.id!==id);
+  saveMemory(MEMORY);
+  updateUI();
+}
+
+function clearMemory(){
+  if(!confirm("Clear all memory? This cannot be undone.")) return;
+  MEMORY = [];
+  saveMemory(MEMORY);
+  updateUI();
+}
+
+function forgetWeak(threshold=0.4){
+  MEMORY = MEMORY.filter(m => m.strength >= threshold);
+  saveMemory(MEMORY);
+  updateUI();
+}
+
+function compactMemory(){
+  // merge very similar items to compact knowledge
+  const kept = [];
+  for(const m of MEMORY){
+    let merged=false;
+    for(const k of kept){
+      if(cosine(m.vec, k.vec) > 0.95){
+        // merge: keep longer text and sum strengths
+        k.text = k.text.length >= m.text.length ? k.text : m.text;
+        k.summary = k.summary.length >= m.summary.length ? k.summary : m.summary;
+        k.strength = Math.max(k.strength, m.strength) + 0.1;
+        merged=true; break;
+      }
+    }
+    if(!merged) kept.push({...m});
+  }
+  MEMORY = kept;
+  saveMemory(MEMORY);
+  updateUI();
+}
+
+/* ------------------------------
+   Retrieval & multi-hop reasoning
+   ------------------------------ */
+function retrieve(query, k=5){
+  const qtokens = tokenize(query);
+  const qvec = vectorize(qtokens, 192);
+  const scored = MEMORY.map(m => ({...m, score: cosine(qvec, m.vec)}));
+  scored.sort((a,b)=>b.score - a.score);
+  return scored.slice(0,k).filter(s => s.score > 0.05); // threshold
+}
+
+function multiHopReason(query, hops=3, k=4){
+  // iterative retrieval: at each hop, retrieve and expand query with top summaries
+  let trace = [];
+  let current = query;
+  const seenIds = new Set();
+  for(let h=0; h<hops; h++){
+    const hits = retrieve(current, k);
+    // filter already seen
+    const newHits = hits.filter(hh => !seenIds.has(hh.id));
+    for(const hh of newHits) seenIds.add(hh.id);
+    trace.push({hop:h+1, query:current, hits:newHits.slice(0, Math.min(4, newHits.length))});
+    // expand current query with concise combined summaries of top hits
+    if(newHits.length === 0) break;
+    const expansion = newHits.slice(0,3).map(x => x.summary || summarize(x.text)).join(' ');
+    // append expansion to current prompt to guide next retrieval
+    current = current + " " + expansion;
+  }
+  return trace;
+}
+
+/* ------------------------------
+   Summarizer (naive but pragmatic)
+   ------------------------------ */
+function makeSummary(text, maxWords=22){
+  // simple rule-based summarizer: pick high-frequency nouns / phrases and produce a short sentence.
+  const toks = tokenize(text);
+  if(toks.length <= maxWords) return text;
+  // score tokens by frequency and length
+  const freq = {};
+  for(const t of toks) freq[t] = (freq[t]||0) + 1;
+  // pick top nouns / tokens (naive)
+  const keys = Object.keys(freq).sort((a,b)=> (freq[b]-freq[a]) || (b.length - a.length));
+  const top = keys.slice(0, Math.min(8, keys.length)).join(' ');
+  const short = toks.slice(0, Math.min(14, toks.length)).join(' ');
+  // craft a short summary sentence
+  return (short.length>0 ? short : top).slice(0, 180) + (short.length>180 ? '...' : '');
+}
+
+/* ------------------------------
+   Synthesis: combine retrieved facts + template + Markov fallback
+   ------------------------------ */
+
+// Small trigram builder for local style / fallback generation
+function buildTrigramsFromMemory(){
+  const tri = {};
+  const uni = {};
+  for(const m of MEMORY){
+    const t = tokenize(m.text);
+    for(let i=0;i<t.length;i++){
+      uni[t[i]] = (uni[t[i]]||0) + 1;
+      if(i>=2){
+        const key = t[i-2] + "||" + t[i-1];
+        tri[key] = tri[key] || {};
+        tri[key][t[i]] = (tri[key][t[i]]||0) + 1;
+      }
+    }
+  }
+  return {tri, uni};
+}
+
+function sampleNextFromMap(map, temperature=0.9){
+  const items = Object.keys(map);
+  if(items.length===0) return null;
+  const counts = items.map(it => map[it]);
+  // softmax-like sampling
+  const maxc = Math.max(...counts);
+  const exps = counts.map(c => Math.exp((c - maxc) / Math.max(temperature, 1e-6)));
+  const sum = exps.reduce((a,b)=>a+b, 0);
+  const probs = exps.map(e => e / sum);
+  // sample
+  let r = Math.random();
+  for(let i=0;i<items.length;i++){
+    r -= probs[i];
+    if(r <= 0) return items[i];
+  }
+  return items[items.length-1];
+}
+
+function generateFallback(seedTokens, triMap, uniMap, maxTokens=40, temperature=0.9){
+  const out = [...seedTokens];
+  for(let step=0; step<maxTokens; step++){
+    const n = out.length;
+    let candidateMap = {};
+    if(n>=2){
+      const key = out[n-2] + "||" + out[n-1];
+      candidateMap = triMap[key] || {};
+    }
+    if(Object.keys(candidateMap).length === 0){
+      // fallback to unigram distribution (sample by counts)
+      candidateMap = {...uniMap};
+    }
+    const next = sampleNextFromMap(candidateMap, temperature);
+    if(!next) break;
+    out.push(next);
+    // stop if punctuation and a coin flip
+    if(['.','?','!'].includes(next) && Math.random() < 0.4) break;
+    if(out.length > 220) break;
+  }
+  // detokenize
+  return detokenize(out.slice(seedTokens.length));
+}
+
+function detokenize(tokens){
+  let s = '';
+  for(let i=0;i<tokens.length;i++){
+    const t = tokens[i];
+    if(i>0 && /^[\\w'"]/.test(t)) s += ' ';
+    s += t;
+  }
+  // basic cleanup spaces before punctuation
+  return s.replace(/\\s+([.,!?;:])/g,'$1');
+}
+
+// Main synthesis: build a coherent reply from retrieved traces
+function synthesizeAnswer(query, opts={temperature:0.9,hops:3,verbosity:'normal'}){
+  const trace = multiHopReason(query, opts.hops, 6);
+  // construct context from top items across hops, prefer highest strength & score
+  const collected = [];
+  const seen = new Set();
+  for(const hop of trace){
+    for(const hit of hop.hits){
+      if(!seen.has(hit.id)){
+        collected.push(hit);
+        seen.add(hit.id);
+      }
+    }
+  }
+  // score combined by strength * relevancy
+  collected.sort((a,b)=> (b.strength||1)*b.score - (a.strength||1)*a.score);
+  // build lead: a short summary combining top facts
+  const topFacts = collected.slice(0,5).map(x => x.summary || x.text);
+  let prefix = "";
+  if(topFacts.length>0){
+    prefix = "From my knowledge: " + topFacts.join(' • ') + ". ";
+  }
+  // produce reasoning steps (simulated chain-of-thought)
+  let thoughts = [];
+  for(let i=0;i<Math.min(3, collected.length); i++){
+    const h = collected[i];
+    thoughts.push(`I recall: "${h.summary || h.text.slice(0,120)}" (usefulness ${Number(h.strength||1).toFixed(2)})`);
+  }
+  // now craft an answer: instruction + prefix + direct synthesis
+  // Use template: question -> considerations -> conclusion
+  const considerations = thoughts.join('; ');
+  const conclusionSeed = prefix + "Considering " + (considerations || query) + ", my best response is:";
+  // build fallback trigram model
+  const {tri, uni} = buildTrigramsFromMemory();
+  // seed tokens for generation: tokenized conclusionSeed tail
+  const seedTokens = tokenize(conclusionSeed).slice(-8);
+  const fallback = generateFallback(seedTokens, tri, uni, 120, opts.temperature);
+
+  // make final answer: combine prefix, fallback summary, and optional recommended actions
+  const answerParts = [];
+  answerParts.push(prefix);
+  if(considerations) answerParts.push("Considerations: " + considerations + ".");
+  answerParts.push("Answer: " + fallback);
+  // optionally add suggestions / next steps
+  if(opts.verbosity === 'verbose'){
+    const suggestions = generateSuggestions(query, collected);
+    if(suggestions) answerParts.push("Next steps: " + suggestions);
+  }
+  const final = answerParts.join(' ');
+  return {final: final.trim(), trace, collected};
+}
+
+function generateSuggestions(query, collected){
+  // craft lightweight suggestions by looking at tags or common verbs
+  if(collected.length===0) return "Try giving me more context or teaching me relevant facts using the left panel.";
+  const sugg = [];
+  const top = collected[0];
+  if(top.summary && top.summary.length < 80) sugg.push("Review: " + top.summary);
+  sugg.push("Ask a clarifying question to narrow the intent.");
+  if(collected.length > 1) sugg.push("Compare with: " + collected.slice(1,3).map(x=>x.summary||x.text.slice(0,60)).join(" | "));
+  return sugg.join(' ');
+}
+
+/* ------------------------------
+   Feedback & reinforcement
+   ------------------------------ */
+function reinforceFromDialog(responseData, userFeedback){
+  // userFeedback: +1 or -1
+  // reward memory items that were used in the reasoning (collected)
+  const used = responseData.collected || [];
+  const delta = userFeedback >= 0 ? 0.25 : -0.6;
+  for(const u of used){
+    const idx = MEMORY.findIndex(m => m.id === u.id);
+    if(idx>=0){
+      MEMORY[idx].strength = Math.max(0, (MEMORY[idx].strength||1) + delta);
+      MEMORY[idx].lastUsed = Date.now();
+    }
+  }
+  // if feedback negative, also lower the top memory a bit and suggest correction
+  if(userFeedback < 0 && used.length>0){
+    const top = used[0];
+    const idx = MEMORY.findIndex(m=>m.id===top.id);
+    if(idx>=0) MEMORY[idx].strength = Math.max(0, MEMORY[idx].strength - 0.2);
+  }
+  saveMemory(MEMORY);
+  updateUI();
+}
+
+/* ------------------------------
+   UI wiring
+   ------------------------------ */
+const chatEl = document.getElementById('chat');
+const promptEl = document.getElementById('prompt');
+const askBtn = document.getElementById('askBtn');
+const memCountEl = document.getElementById('memCount');
+const tempSlider = document.getElementById('temp');
+const tempLabel = document.getElementById('tempLabel');
+const hopsSlider = document.getElementById('hops');
+const hopsLabel = document.getElementById('hopsLabel');
+const teachBtn = document.getElementById('teachBtn');
+const memoryText = document.getElementById('memoryText');
+const memList = document.getElementById('memList');
+const traceEl = document.getElementById('trace');
+const statMem = document.getElementById('statMem');
+const statAvg = document.getElementById('statAvg');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const clearBtn = document.getElementById('clearBtn');
+const compactBtn = document.getElementById('compactBtn');
+const summarizeBtn = document.getElementById('summarizeBtn');
+const forgetBtn = document.getElementById('forgetBtn');
+const shortBtn = document.getElementById('shortBtn');
+const longBtn = document.getElementById('longBtn');
+
+function formatTime(ts){
+  if(!ts) return 'never';
+  const d = new Date(ts);
+  return d.toLocaleString();
+}
+
+function renderMemoryList(){
+  memList.innerHTML = '';
+  if(MEMORY.length===0){
+    memList.innerHTML = '<div class="muted small">No memory yet — teach me something!</div>';
+    return;
+  }
+  for(const m of MEMORY){
+    const div = document.createElement('div');
+    div.className = 'memoryItem';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div class="memTitle">${escapeHtml(m.summary || m.text.slice(0,80))}</div>
+          <div class="muted small" style="margin-top:6px">${escapeHtml(m.text.slice(0,220))}${m.text.length>220 ? '…' : ''}</div>
+        </div>
+        <div style="margin-left:8px;text-align:right">
+          <div class="tag">s:${Number(m.strength||1).toFixed(2)}</div>
+          <div class="muted small" style="margin-top:8px">${formatTime(m.addedAt)}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="smallBtn" data-act="inspect" data-id="${m.id}">Inspect</button>
+        <button class="smallBtn" data-act="edit" data-id="${m.id}">Edit</button>
+        <button class="smallBtn actionGood" data-act="boost" data-id="${m.id}">+</button>
+        <button class="smallBtn actionBad" data-act="weaken" data-id="${m.id}">-</button>
+        <button class="smallBtn" data-act="remove" data-id="${m.id}">Delete</button>
+      </div>
+    `;
+    memList.appendChild(div);
+  }
+}
+
+memList.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  if(act === 'inspect'){
+    const m = MEMORY.find(x=>x.id===id);
+    if(m) alert(`SUMMARY: ${m.summary}\\n\\nTEXT:\\n${m.text}\\n\\nStrength: ${m.strength}\\nAdded: ${formatTime(m.addedAt)}`);
+  } else if(act === 'edit'){
+    const m = MEMORY.find(x=>x.id===id);
+    const newText = prompt("Edit memory text:", m.text);
+    if(newText!==null) updateMemoryEntry(id, {text: simpleNormalize(newText), summary: makeSummary(newText), vec: vectorize(tokenize(newText),192)});
+  } else if(act === 'boost'){
+    updateMemoryEntry(id, {strength: (MEMORY.find(x=>x.id===id).strength||1)+0.5});
+  } else if(act === 'weaken'){
+    updateMemoryEntry(id, {strength: Math.max(0, (MEMORY.find(x=>x.id===id).strength||1)-0.5)});
+  } else if(act === 'remove'){
+    if(confirm("Delete this memory?")) removeMemory(id);
+  }
+});
+
+/* Chat / ask logic */
+function appendMessage(text, who='bot', metaHtml=''){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (who==='user' ? 'user' : 'bot');
+  div.innerHTML = `<div>${escapeHtml(text)}</div><div class="small muted" style="margin-top:6px">${metaHtml}</div>`;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let lastResponseData = null;
+
+async function askWise(verbosity='normal'){
+  const q = promptEl.value.trim();
+  if(!q) return;
+  appendMessage(q, 'user', new Date().toLocaleTimeString());
+  promptEl.value = '';
+  const opts = {temperature: parseFloat(tempSlider.value), hops: parseInt(hopsSlider.value), verbosity};
+  tempLabel.textContent = opts.temperature.toFixed(2);
+  hopsLabel.textContent = opts.hops;
+  traceEl.textContent = 'Thinking…';
+  // "Think" asynchronously to keep UI responsive
+  await new Promise(res => setTimeout(res, 60));
+  const {final, trace, collected} = synthesizeAnswer(q, opts);
+  // show thinking trace in debug panel
+  traceEl.textContent = renderTrace(trace);
+  // display answer
+  appendMessage(final, 'bot', `thoughts: ${collected.length} facts`);
+  // store lastResponseData for reinforcement
+  lastResponseData = {query: q, final, trace, collected};
+}
+
+askBtn.addEventListener('click', ()=> askWise('normal'));
+promptEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askWise('normal'); }});
+shortBtn.addEventListener('click', ()=> askWise('concise'));
+longBtn.addEventListener('click', ()=> askWise('verbose'));
+
+/* Feedback hotkeys: + and - to reinforce last answer */
+document.addEventListener('keydown', (e)=>{
+  if(e.key=== '+' || e.key === '='){
+    if(lastResponseData) { reinforceFromDialog(lastResponseData, +1); flashMemoryUpdate("Thanks — I'll remember that."); }
+  } else if(e.key === '-' ){
+    if(lastResponseData) { reinforceFromDialog(lastResponseData, -1); flashMemoryUpdate("Noted — I'll adjust my memory."); }
+  }
+});
+
+function flashMemoryUpdate(msg){
+  const prev = traceEl.textContent;
+  traceEl.textContent = msg;
+  setTimeout(()=>{ traceEl.textContent = prev; }, 1400);
+}
+
+/* Teach button */
+teachBtn.addEventListener('click', ()=>{
+  const txt = memoryText.value.trim();
+  if(!txt){ alert("Write something to teach WiseGPT."); return; }
+  const s = makeSummary(txt);
+  teach(txt, s, []);
+  memoryText.value = '';
+  flashMemoryUpdate("Taught!");
+});
+
+/* summarize button: auto-create a short summary and put it into the textarea */
+summarizeBtn.addEventListener('click', ()=>{
+  const t = memoryText.value.trim();
+  if(!t){alert("Paste text to summarize");return;}
+  memoryText.value = makeSummary(t, 28);
+});
+
+/* forget weak */
+forgetBtn.addEventListener('click', ()=>{
+  if(confirm("Remove weaker memories (strength < 0.5)?")){ forgetWeak(0.5); flashMemoryUpdate("Forgot weak memories."); }
+});
+
+/* Export / Import */
+exportBtn.addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(MEMORY,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'wisegpt_memory.json'; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+importBtn.addEventListener('click', ()=>{
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = (ev)=>{
+    const f = ev.target.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+      try{
+        const parsed = JSON.parse(e.target.result);
+        if(Array.isArray(parsed)){
+          // append and deduplicate by text
+          for(const p of parsed){
+            if(!MEMORY.find(m=>m.text===p.text)){
+              // re-vectorize to ensure vec present
+              const vec = p.vec && Array.isArray(p.vec) ? p.vec : vectorize(tokenize(p.text),192);
+              MEMORY.push({...p, vec});
+            }
+          }
+          saveMemory(MEMORY);
+          updateUI();
+          alert("Imported memory entries: " + parsed.length);
+        } else alert("Invalid file format.");
+      }catch(err){ alert("Failed to import: " + err); }
+    };
+    r.readAsText(f);
+  };
+  input.click();
+});
+
+/* Compact & Clear */
+compactBtn.addEventListener('click', ()=>{ compactMemory(); flashMemoryUpdate("Compacted memory.");});
+clearBtn.addEventListener('click', ()=>{ if(confirm("Clear all memory?")){ clearMemory(); flashMemoryUpdate("Memory cleared."); }});
+
+/* UI updates */
+function updateUI(){
+  memCountEl.textContent = MEMORY.length;
+  statMem.textContent = MEMORY.length;
+  const avg = MEMORY.length ? (MEMORY.reduce((a,b)=>a + (b.strength||1),0) / MEMORY.length) : 0;
+  statAvg.textContent = MEMORY.length ? avg.toFixed(2) : '—';
+  renderMemoryList();
+}
+
+function renderTrace(trace){
+  if(!trace || trace.length===0) return "No trace (no memory used).";
+  let s = "";
+  for(const hop of trace){
+    s += `HOP ${hop.hop}: query fragment -> "${hop.query.slice(0,120)}"\\n`;
+    if(hop.hits.length===0) s += "  (no hits)\\n";
+    for(const h of hop.hits){
+      s += `  • [${h.id}] (score ${Number(h.score).toFixed(3)} | str ${Number(h.strength||1).toFixed(2)}) ${h.summary || h.text.slice(0,120)}\\n`;
+    }
+    s += "\\n";
+  }
+  return s;
+}
+
+/* small helpers */
+function escapeHtmlInline(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* initialize */
+updateUI();
+tempSlider.addEventListener('input', ()=> tempLabel.textContent = Number(tempSlider.value).toFixed(2));
+hopsSlider.addEventListener('input', ()=> hopsLabel.textContent = hopsSlider.value);
+
+/* Seed with a few wise facts to jumpstart behavior if memory empty */
+if(MEMORY.length === 0){
+  teach("Socratic method: ask clarifying, open-ended questions before offering solutions.", "Socratic method: prefer clarifying questions before answering.", ["method","socratic"]);
+  teach("When uncertain, ask for more context and list assumptions before concluding.", "Ask for context and state assumptions when uncertain.", ["advice"]);
+  teach("Prefer concise answers with optional deeper explanation when requested.", "Concise answers first, deeper explanation optional.", ["style"]);
+  teach("Humility: I might be wrong. State confidence and cite which memory informed the answer.", "State confidence and source memory.", ["ethic"]);
+}
+
+/* End of script */
+</script>
 </body>
 </html>
