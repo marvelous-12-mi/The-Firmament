@@ -1,28 +1,1306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendTime - Dashboard</title>
-  <link rel="stylesheet" href="index.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sinq - Social Media Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+    }
+
+    /* Auth Pages */
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 48px;
+      width: 100%;
+      max-width: 440px;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .auth-logo h1 {
+      font-size: 56px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+
+    .auth-logo p {
+      color: #65676b;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: #1c1e21;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 16px 18px;
+      border: 2px solid #e4e6eb;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: #f5f6f7;
+      color: #1c1e21;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .auth-divider {
+      text-align: center;
+      margin: 32px 0;
+      position: relative;
+    }
+
+    .auth-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #e4e6eb, transparent);
+    }
+
+    .auth-divider span {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0 20px;
+      position: relative;
+      color: #65676b;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .auth-link {
+      text-align: center;
+      margin-top: 28px;
+      color: #65676b;
+      font-size: 15px;
+    }
+
+    .auth-link a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .auth-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message, .success-message {
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      animation: shake 0.3s;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      border: 2px solid #fcc;
+    }
+
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      border: 2px solid #cfc;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Main App */
+    .app-container {
+      display: none;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: #1a1a1a;
+      border-right: 1px solid #2a2a2a;
+      padding: 24px;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 40px;
+      letter-spacing: -1px;
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-item {
+      padding: 16px 20px;
+      border-radius: 12px;
+      color: #b0b0b0;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 18px;
+    }
+
+    .sidebar-item:hover {
+      background: #2a2a2a;
+      color: #ffffff;
+    }
+
+    .sidebar-item.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .sidebar-user {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      padding: 16px;
+      background: #2a2a2a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .sidebar-user-info {
+      flex: 1;
+    }
+
+    .sidebar-username {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 15px;
+    }
+
+    .sidebar-email {
+      font-size: 13px;
+      color: #808080;
+    }
+
+    .btn-logout-sidebar {
+      padding: 8px 12px;
+      background: #ff4444;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-logout-sidebar:hover {
+      background: #cc0000;
+      transform: scale(1.05);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 280px;
+      padding: 24px;
+      max-width: 680px;
+      margin-right: auto;
+    }
+
+    /* Create Post Card */
+    .create-post-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .create-post-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .create-post-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .create-post-textarea {
+      width: 100%;
+      border: none;
+      resize: none;
+      font-size: 17px;
+      font-family: inherit;
+      padding: 16px;
+      background: #0a0a0a;
+      border-radius: 12px;
+      min-height: 120px;
+      margin-bottom: 16px;
+      color: #ffffff;
+      border: 2px solid #2a2a2a;
+      transition: all 0.3s;
+    }
+
+    .create-post-textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #1a1a1a;
+    }
+
+    .create-post-textarea::placeholder {
+      color: #808080;
+    }
+
+    .create-post-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .post-privacy {
+      color: #808080;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-post {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-post:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-post:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Post Card */
+    .post-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      animation: fadeIn 0.4s ease-out;
+      transition: all 0.3s;
+    }
+
+    .post-card:hover {
+      border-color: #3a3a3a;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .post-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .post-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .post-info {
+      flex: 1;
+    }
+
+    .post-username {
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+      font-size: 17px;
+    }
+
+    .post-timestamp {
+      font-size: 14px;
+      color: #808080;
+    }
+
+    .post-content {
+      padding: 0 24px 24px 24px;
+      line-height: 1.6;
+      color: #e0e0e0;
+      font-size: 16px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .post-stats {
+      padding: 0 24px 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      color: #808080;
+      font-size: 14px;
+    }
+
+    .post-actions {
+      border-top: 1px solid #2a2a2a;
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-button {
+      flex: 1;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #808080;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .action-button:hover {
+      background: #2a2a2a;
+      color: #ffffff;
+    }
+
+    .action-button.liked {
+      color: #ff4444;
+    }
+
+    .action-button.liked:hover {
+      background: rgba(255, 68, 68, 0.1);
+    }
+
+    /* Comments Section */
+    .comments-section {
+      border-top: 1px solid #2a2a2a;
+      padding: 20px 24px;
+      background: #0a0a0a;
+      display: none;
+    }
+
+    .comments-section.active {
+      display: block;
+    }
+
+    .comment {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .comment-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .comment-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .comment-username {
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffffff;
+    }
+
+    .comment-text {
+      padding-left: 48px;
+      font-size: 15px;
+      color: #e0e0e0;
+      line-height: 1.5;
+    }
+
+    .comment-input-container {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .comment-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #2a2a2a;
+      border-radius: 24px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+
+    .comment-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .comment-input::placeholder {
+      color: #808080;
+    }
+
+    .btn-comment {
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-comment:hover {
+      background: #5568d3;
+      transform: scale(1.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #808080;
+      font-size: 16px;
+    }
+
+    .no-posts {
+      text-align: center;
+      padding: 80px 20px;
+      color: #808080;
+    }
+
+    .no-posts-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .no-posts h3 {
+      color: #ffffff;
+      margin-bottom: 12px;
+      font-size: 24px;
+    }
+
+    /* Trending Section */
+    .trending-section {
+      position: fixed;
+      right: 40px;
+      top: 24px;
+      width: 340px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .trending-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    .trending-item {
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .trending-item:hover {
+      background: #2a2a2a;
+    }
+
+    .trending-category {
+      font-size: 13px;
+      color: #808080;
+      margin-bottom: 4px;
+    }
+
+    .trending-hashtag {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .trending-count {
+      font-size: 13px;
+      color: #808080;
+    }
+
+    @media (max-width: 1400px) {
+      .trending-section {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 80px;
+        padding: 16px;
+      }
+
+      .sidebar-logo {
+        font-size: 24px;
+        text-align: center;
+      }
+
+      .sidebar-item span {
+        display: none;
+      }
+
+      .sidebar-item {
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .sidebar-user {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .sidebar-user-info {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 80px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>TrendTime</h1>
-    <p class="subtitle">Log in or create your account</p>
+  <!-- Login Page -->
+  <div id="loginPage" class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>Sinq</h1>
+        <p>Connect, Share, Inspire</p>
+      </div>
 
-    <input id="email" type="email" placeholder="Email" required />
-    <input id="password" type="password" placeholder="Password" required />
+      <div id="loginError" class="error-message"></div>
+      <div id="loginSuccess" class="success-message"></div>
 
-    <button id="signInBtn">Sign In</button>
-    <button id="signUpBtn" class="outline">Sign Up</button>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" name="email" required placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" name="password" required placeholder="Enter your password" minlength="6" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
 
-    <div id="loader" class="loader"></div>
-    <p id="status" class="status"></p>
+      <div class="auth-divider">
+        <span>OR</span>
+      </div>
 
-    <button id="logoutBtn" class="logout-btn">Log Out</button>
+      <div class="auth-link">
+        New to Sinq? <a id="showSignupLink">Create an account</a>
+      </div>
+    </div>
   </div>
 
-  <script type="module" src="index.js"></script>
+  <!-- Signup Page -->
+  <div id="signupPage" class="auth-page hidden">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>Sinq</h1>
+        <p>Join the community</p>
+      </div>
+
+      <div id="signupError" class="error-message"></div>
+      <div id="signupSuccess" class="success-message"></div>
+
+      <form id="signupForm">
+        <div class="form-group">
+          <label for="signupUsername">Username</label>
+          <input type="text" id="signupUsername" name="username" required placeholder="Choose a unique username" minlength="3" maxlength="20" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" name="email" required placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" name="password" required placeholder="Minimum 6 characters" minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-primary">Create Account</button>
+      </form>
+
+      <div class="auth-divider">
+        <span>OR</span>
+      </div>
+
+      <div class="auth-link">
+        Already have an account? <a id="showLoginLink">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="appContainer" class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">Sinq</div>
+      <nav class="sidebar-menu">
+        <div class="sidebar-item active" data-page="feed">
+          <span>🏠</span>
+          <span>Home</span>
+        </div>
+        <div class="sidebar-item" data-page="explore">
+          <span>🔍</span>
+          <span>Explore</span>
+        </div>
+        <div class="sidebar-item" data-page="notifications">
+          <span>🔔</span>
+          <span>Notifications</span>
+        </div>
+        <div class="sidebar-item" data-page="profile">
+          <span>👤</span>
+          <span>Profile</span>
+        </div>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-username" id="sidebarUsername">User</div>
+          <div class="sidebar-email" id="sidebarEmail">user@email.com</div>
+        </div>
+        <button class="btn-logout-sidebar" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Create Post Card -->
+      <div class="create-post-card">
+        <div class="create-post-header">
+          <div class="create-post-avatar" id="createPostAvatar">U</div>
+          <span style="font-weight: 700; color: #ffffff; font-size: 18px;">What's happening?</span>
+        </div>
+        <textarea 
+          id="postContent" 
+          class="create-post-textarea" 
+          placeholder="Share your thoughts with the world..."
+          maxlength="5000"
+        ></textarea>
+        <div class="create-post-actions">
+          <div class="post-privacy">
+            <span>🌍</span>
+            <span>Everyone can see</span>
+          </div>
+          <button id="createPostBtn" class="btn-post" disabled>Post</button>
+        </div>
+      </div>
+
+      <!-- Feed -->
+      <div id="feed">
+        <div class="loading">Loading your feed...</div>
+      </div>
+    </main>
+
+    <!-- Trending Section -->
+    <aside class="trending-section">
+      <h2 class="trending-title">Trending Now</h2>
+      <div class="trending-item">
+        <div class="trending-category">Technology</div>
+        <div class="trending-hashtag">#WebDevelopment</div>
+        <div class="trending-count">15.2K posts</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-category">Design</div>
+        <div class="trending-hashtag">#UIDesign</div>
+        <div class="trending-count">8.7K posts</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-category">Business</div>
+        <div class="trending-hashtag">#Startup</div>
+        <div class="trending-count">12.4K posts</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-category">Lifestyle</div>
+        <div class="trending-hashtag">#Productivity</div>
+        <div class="trending-count">6.9K posts</div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // Initialize Supabase - REPLACE WITH YOUR CREDENTIALS
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let currentUsername = '';
+    let profiles = {};
+    let userLikes = new Set();
+
+    // Page Elements
+    const loginPage = document.getElementById('loginPage');
+    const signupPage = document.getElementById('signupPage');
+    const appContainer = document.getElementById('appContainer');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const showSignupLink = document.getElementById('showSignupLink');
+    const showLoginLink = document.getElementById('showLoginLink');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const createPostBtn = document.getElementById('createPostBtn');
+    const postContent = document.getElementById('postContent');
+    const feed = document.getElementById('feed');
+
+    // Auth State Management
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        currentUser = session.user;
+        loadUserProfile();
+      }
+    });
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        currentUser = session.user;
+        loadUserProfile();
+      } else {
+        currentUser = null;
+        showPage('login');
+      }
+    });
+
+    // Form Submissions
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        showMessage('loginError', error.message);
+      }
+    });
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('signupUsername').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      // Check if username is already taken
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .single();
+
+      if (existingUser) {
+        showMessage('signupError', 'Username already taken. Please choose another.');
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { username }
+        }
+      });
+
+      if (error) {
+        showMessage('signupError', error.message);
+      } else {
+        showMessage('signupSuccess', '✓ Account created successfully! Please check your email to verify.');
+        setTimeout(() => {
+          showPage('login');
+          showMessage('loginSuccess', 'Please log in with your credentials.');
+        }, 2500);
+      }
+    });
+
+    // Navigation
+    showSignupLink.addEventListener('click', () => showPage('signup'));
+    showLoginLink.addEventListener('click', () => showPage('login'));
+    logoutBtn.addEventListener('click', () => supabase.auth.signOut());
+
+    // Sidebar navigation
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Create Post
+    createPostBtn.addEventListener('click', createPost);
+    postContent.addEventListener('input', (e) => {
+      createPostBtn.disabled = !e.target.value.trim();
+    });
+    postContent.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        createPost();
+      }
+    });
+
+    async function loadUserProfile() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('username, bio, avatar_url')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (data) {
+        currentUsername = data.username;
+      } else {
+        currentUsername = currentUser.user_metadata.username || 'User';
+        await supabase.from('profiles').upsert({
+          id: currentUser.id,
+          username: currentUsername,
+          email: currentUser.email
+        });
+      }
+
+      // Update UI with user info
+      const avatar = currentUsername[0].toUpperCase();
+      document.getElementById('sidebarUsername').textContent = currentUsername;
+      document.getElementById('sidebarEmail').textContent = currentUser.email;
+      document.getElementById('sidebarAvatar').textContent = avatar;
+      document.getElementById('createPostAvatar').textContent = avatar;
+
+      showPage('app');
+      loadFeed();
+      loadUserLikes();
+      subscribeToChanges();
+    }
+
+    async function loadUserLikes() {
+      const { data } = await supabase
+        .from('likes')
+        .select('post_id')
+        .eq('user_id', currentUser.id);
+
+      if (data) {
+        userLikes = new Set(data.map(like => like.post_id));
+      }
+    }
+
+    async function createPost() {
+      const content = postContent.value.trim();
+      if (!content) return;
+
+      createPostBtn.disabled = true;
+      createPostBtn.textContent = 'Posting...';
+
+      const { error } = await supabase
+        .from('posts')
+        .insert([{ 
+          content, 
+          user_id: currentUser.id
+        }]);
+
+      if (!error) {
+        postContent.value = '';
+        createPostBtn.textContent = 'Post';
+        createPostBtn.disabled = true;
+      } else {
+        createPostBtn.disabled = false;
+        createPostBtn.textContent = 'Post';
+        alert('Error creating post');
+      }
+    }
+
+    async function loadFeed() {
+      feed.innerHTML = '<div class="loading">Loading your feed...</div>';
+
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          likes(count),
+          comments(id, content, created_at, user_id)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        const userIds = [...new Set([
+          ...data.map(p => p.user_id),
+          ...data.flatMap(p => p.comments?.map(c => c.user_id) || [])
+        ])];
+        await loadProfiles(userIds);
+        renderFeed(data);
+      } else {
+        feed.innerHTML = '<div class="loading">Error loading posts</div>';
+      }
+    }
+
+    async function loadProfiles(userIds) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, bio, avatar_url')
+        .in('id', userIds);
+
+      if (data) {
+        data.forEach(p => {
+          profiles[p.id] = p;
+        });
+      }
+    }
+
+    function renderFeed(posts) {
+      if (posts.length === 0) {
+        feed.innerHTML = `
+          <div class="no-posts">
+            <div class="no-posts-icon">✨</div>
+            <h3>Welcome to Sinq!</h3>
+            <p>Start sharing your thoughts with the world</p>
+          </div>
+        `;
+        return;
+      }
+
+      feed.innerHTML = posts.map(post => {
+        const profile = profiles[post.user_id] || {};
+        const username = profile.username || 'User';
+        const avatar = username[0].toUpperCase();
+        const likesCount = post.likes?.[0]?.count || 0;
+        const commentsCount = post.comments?.length || 0;
+        const isLiked = userLikes.has(post.id);
+        const timeAgo = getTimeAgo(post.created_at);
+
+        return `
+          <div class="post-card">
+            <div class="post-header">
+              <div class="post-avatar">${avatar}</div>
+              <div class="post-info">
+                <div class="post-username">${escapeHtml(username)}</div>
+                <div class="post-timestamp">${timeAgo}</div>
+              </div>
+            </div>
+            <div class="post-content">${escapeHtml(post.content)}</div>
+            <div class="post-stats">
+              <span>${likesCount} ${likesCount === 1 ? 'like' : 'likes'}</span>
+              <span>${commentsCount} ${commentsCount === 1 ? 'comment' : 'comments'}</span>
+            </div>
+            <div class="post-actions">
+              <button class="action-button ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post.id}')">
+                ${isLiked ? '❤️' : '🤍'} Like
+              </button>
+              <button class="action-button" onclick="toggleComments('${post.id}')">
+                💬 Comment
+              </button>
+              <button class="action-button">
+                🔗 Share
+              </button>
+            </div>
+            <div class="comments-section" id="comments-${post.id}">
+              <div id="comments-list-${post.id}">
+                ${renderComments(post.comments || [])}
+              </div>
+              <div class="comment-input-container">
+                <input 
+                  type="text" 
+                  class="comment-input" 
+                  id="comment-input-${post.id}" 
+                  placeholder="Write a comment..."
+                  onkeypress="if(event.key==='Enter') addComment('${post.id}')"
+                >
+                <button class="btn-comment" onclick="addComment('${post.id}')">Send</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderComments(comments) {
+      if (!comments || comments.length === 0) {
+        return '<p style="text-align:center;color:#808080;padding:24px;font-size:15px;">No comments yet. Be the first to comment!</p>';
+      }
+
+      return comments
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+        .map(comment => {
+          const profile = profiles[comment.user_id] || {};
+          const username = profile.username || 'User';
+          const avatar = username[0].toUpperCase();
+
+          return `
+            <div class="comment">
+              <div class="comment-header">
+                <div class="comment-avatar">${avatar}</div>
+                <span class="comment-username">${escapeHtml(username)}</span>
+              </div>
+              <div class="comment-text">${escapeHtml(comment.content)}</div>
+            </div>
+          `;
+        }).join('');
+    }
+
+    async function toggleLike(postId) {
+      if (userLikes.has(postId)) {
+        await supabase
+          .from('likes')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', currentUser.id);
+        userLikes.delete(postId);
+      } else {
+        await supabase
+          .from('likes')
+          .insert([{ post_id: postId, user_id: currentUser.id }]);
+        userLikes.add(postId);
+      }
+    }
+
+    function toggleComments(postId) {
+      const commentsSection = document.getElementById(`comments-${postId}`);
+      commentsSection.classList.toggle('active');
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`comment-input-${postId}`);
+      const content = input.value.trim();
+      
+      if (!content) return;
+
+      await supabase
+        .from('comments')
+        .insert([{ 
+          post_id: postId, 
+          user_id: currentUser.id, 
+          content 
+        }]);
+
+      input.value = '';
+    }
+
+    function subscribeToChanges() {
+      supabase
+        .channel('db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, loadFeed)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, loadFeed)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, loadFeed)
+        .subscribe();
+    }
+
+    // Utility Functions
+    function showPage(page) {
+      loginPage.classList.add('hidden');
+      signupPage.classList.add('hidden');
+      appContainer.style.display = 'none';
+
+      if (page === 'login') {
+        loginPage.classList.remove('hidden');
+      } else if (page === 'signup') {
+        signupPage.classList.remove('hidden');
+      } else if (page === 'app') {
+        appContainer.style.display = 'block';
+      }
+    }
+
+    function showMessage(elementId, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.style.display = 'block';
+      setTimeout(() => {
+        element.style.display = 'none';
+      }, 5000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function getTimeAgo(timestamp) {
+      const now = new Date();
+      const past = new Date(timestamp);
+      const seconds = Math.floor((now - past) / 1000);
+
+      if (seconds < 60) return 'Just now';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+      if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+      
+      return past.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  </script>
 </body>
 </html>
