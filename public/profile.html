@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Synq — Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/styles.css" rel="stylesheet">
+  <script type="module" src="/supabase.js"></script>
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/profile-page.js"></script>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <strong>Synq</strong>
+      <nav class="row">
+        <a href="/index.html">Feed</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/notifications.html">Notifications</a>
+      </nav>
+    </div>
+    <button id="logout" class="btn secondary">Sign out</button>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row">
+        <img id="avatar" class="avatar" alt="avatar">
+        <div>
+          <h2 id="display_name"></h2>
+          <div class="meta">@<span id="username"></span></div>
+        </div>
+      </div>
+      <p id="bio"></p>
+      <div class="row">
+        <input type="file" id="avatar-file" accept="image/*">
+        <button id="save-avatar" class="btn">Save avatar</button>
+      </div>
+      <hr style="border: none; border-top: 1px solid #222; margin:16px 0;">
+      <input id="dn-input" class="input" placeholder="Display name">
+      <textarea id="bio-input" class="input" rows="3" placeholder="Bio"></textarea>
+      <button id="save-profile" class="btn">Save profile</button>
+      <p id="status" class="meta"></p>
+    </section>
+
+    <section class="card">
+      <h3>Follow someone</h3>
+      <input id="search" class="input" placeholder="Search username">
+      <div id="results"></div>
+    </section>
+  </main>
+</body>
+</html>
