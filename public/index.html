@@ -1,1 +1,802 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Synq - Social Media App</title> <script src="https://cdn.tailwindcss.com"></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <script> tailwind.config = { theme: { extend: { colors: { primary: '#6366f1', secondary: '#8b5cf6' } } } } </script> <style> @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'); body { font-family: 'Inter', sans-serif; background-color: #f8fafc; } .post-card { transition: all 0.3s ease; } .post-card:hover { transform: translateY(-2px); } .nav-link.active { color: #6366f1; font-weight: 600; } .btn-primary { background: linear-gradient(to right, #6366f1, #8b5cf6); } .btn-primary:hover { opacity: 0.9; } .like-button.liked { color: #ef4444; } .comment-form { transition: max-height 0.3s ease; max-height: 0; overflow: hidden; } .comment-form.active { max-height: 200px; } </style> </head> <body class="min-h-screen flex flex-col"> <!-- Navigation Bar --> <nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10"> <div class="flex items-center space-x-2"> <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center"> <span class="text-white font-bold text-xl">S</span> </div> <h1 class="text-2xl font-bold text-slate-800">Synq</h1> </div> <div class="hidden md:flex space-x-6"> <button id="nav-feed" class="flex items-center text-indigo-600 font-semibold nav-link"> <i class="fas fa-home mr-2"></i> Home </button> <button id="nav-create" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link"> <i class="fas fa-plus mr-2"></i> Create </button> <button id="nav-profile" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link"> <i class="fas fa-user mr-2"></i> Profile </button> </div> <div class="flex items-center space-x-4"> <div class="flex items-center space-x-2"> <div class="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8"></div> <span class="hidden md:inline text-slate-800" id="user-email">Not logged in</span> <button id="logout-btn" class="text-slate-600 hover:text-slate-900 hidden"> <i class="fas fa-sign-out-alt"></i> </button> </div> </div> </nav> <!-- Mobile Navigation --> <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-around z-10"> <button id="mobile-feed" class="flex flex-col items-center text-indigo-600"> <i class="fas fa-home"></i> <span class="text-xs mt-1">Home</span> </button> <button id="mobile-create" class="flex flex-col items-center text-slate-600"> <i class="fas fa-plus"></i> <span class="text-xs mt-1">Create</span> </button> <button id="mobile-profile" class="flex flex-col items-center text-slate-600"> <i class="fas fa-user"></i> <span class="text-xs mt-1">Profile</span> </button> </div> <!-- Main Content --> <main class="flex-grow container mx-auto px-4 py-8 pb-20 md:pb-8"> <!-- Auth View --> <div id="auth-view" class="max-w-md mx-auto"> <div class="bg-white rounded-xl shadow-md p-8"> <h2 class="text-2xl font-bold text-center text-slate-800 mb-6" id="auth-title"> Join Synq </h2> <div id="error-message" class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 hidden"> </div> <form id="auth-form" class="space-y-4"> <div> <label class="block text-gray-700 mb-2">Email</label> <div class="relative"> <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"> <i class="fas fa-envelope"></i> </div> <input type="email" id="email-input" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="your@email.com" required /> </div> </div> <div> <label class="block text-gray-700 mb-2">Password</label> <div class="relative"> <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"> <i class="fas fa-lock"></i> </div> <input type="password" id="password-input" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="••••••••" required /> </div> </div> <button type="submit" id="auth-submit" class="w-full btn-primary text-white py-3 rounded-lg font-semibold hover:opacity-90 transition" > Sign Up </button> </form> <div class="text-center mt-4"> <p class="text-gray-600"> Already have an account? <button id="toggle-auth" class="text-indigo-600 font-semibold" > Sign In </button> </p> </div> </div> </div> <!-- Feed View --> <div id="feed-view" class="max-w-2xl mx-auto hidden"> <div class="mb-8"> <h2 class="text-2xl font-bold text-slate-800 mb-6">Latest Posts</h2> <!-- Create Post Form --> <div class="bg-white rounded-xl shadow-sm p-6 mb-6"> <div class="flex space-x-4"> <div class="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex-shrink-0"></div> <div class="flex-grow"> <textarea id="post-content" placeholder="What's on your mind?" class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="3" ></textarea> <div class="flex justify-between items-center mt-4"> <div class="flex space-x-2"> <button class="text-gray-500 hover:text-indigo-600"> <i class="fas fa-camera"></i> </button> <button class="text-gray-500 hover:text-indigo-600"> <i class="fas fa-image"></i> </button> </div> <button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition" > Post </button> </div> </div> </div> </div> <!-- Posts Feed --> <div id="posts-container"> <div class="flex justify-center py-12"> <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div> </div> </div> </div> </div> <!-- Create Post View --> <div id="create-view" class="max-w-2xl mx-auto hidden"> <div class="bg-white rounded-xl shadow-sm p-6"> <h2 class="text-2xl font-bold text-slate-800 mb-6">Create New Post</h2> <div class="space-y-6"> <div> <label class="block text-gray-700 mb-2">Post Content</label> <textarea id="create-post-content" placeholder="Share your thoughts..." class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="5" ></textarea> </div> <div> <label class="block text-gray-700 mb-2">Add Image</label> <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"> <i class="fas fa-camera text-gray-400 text-2xl mb-2"></i> <p class="text-gray-500">Drag & drop your image here</p> <p class="text-gray-400 text-sm mt-1">or</p> <button class="mt-2 text-indigo-600 font-semibold">Browse Files</button> </div> </div> <div class="flex justify-end space-x-3"> <button id="cancel-create" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition" > Cancel </button> <button id="publish-post" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition" > Publish Post </button> </div> </div> </div> </div> <!-- Profile View --> <div id="profile-view" class="max-w-2xl mx-auto hidden"> <div class="bg-white rounded-xl shadow-sm overflow-hidden"> <!-- Profile Header --> <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-32"></div> <div class="px-6 pb-6"> <div class="flex items-end -mt-16 mb-6"> <div class="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 border-4 border-white"></div> <div class="ml-6 pb-2"> <h2 class="text-2xl font-bold text-slate-800" id="profile-username">Loading...</h2> <p class="text-gray-600" id="profile-bio">Loading profile...</p> </div> <div class="ml-auto"> <button id="edit-profile-btn" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition"> Edit Profile </button> </div> </div> <div class="flex border-b border-gray-200 pb-4 mb-6"> <div class="text-center px-6"> <p class="text-2xl font-bold text-slate-800" id="post-count">0</p> <p class="text-gray-600">Posts</p> </div> <div class="text-center px-6"> <p class="text-2xl font-bold text-slate-800">0</p> <p class="text-gray-600">Followers</p> </div> <div class="text-center px-6"> <p class="text-2xl font-bold text-slate-800">0</p> <p class="text-gray-600">Following</p> </div> </div> <h3 class="text-xl font-bold text-slate-800 mb-4">Your Posts</h3> <div id="user-posts"> <div class="flex justify-center py-8"> <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div> </div> </div> </div> </div> </div> <!-- Edit Profile Modal --> <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"> <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md"> <h3 class="text-xl font-bold text-slate-800 mb-4">Edit Profile</h3> <div class="space-y-4"> <div> <label class="block text-gray-700 mb-2">Username</label> <input type="text" id="edit-username" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Your username" /> </div> <div> <label class="block text-gray-700 mb-2">Bio</label> <textarea id="edit-bio" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Tell us about yourself" rows="3" ></textarea> </div> </div> <div class="flex justify-end space-x-3 mt-6"> <button id="cancel-edit" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition" > Cancel </button> <button id="save-profile" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition" > Save Changes </button> </div> </div> </div> </main> <script> // Supabase Configuration const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co'; const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU'; // Initialize Supabase const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // State let currentUser = null; let currentView = 'auth'; let posts = []; let profile = null; let userLikes = new Set(); let userComments = {}; // DOM Elements const views = { auth: document.getElementById('auth-view'), feed: document.getElementById('feed-view'), create: document.getElementById('create-view'), profile: document.getElementById('profile-view') }; const navLinks = { feed: document.querySelectorAll('#nav-feed, #mobile-feed'), create: document.querySelectorAll('#nav-create, #mobile-create'), profile: document.querySelectorAll('#nav-profile, #mobile-profile') }; // Initialize app document.addEventListener('DOMContentLoaded', async function() { console.log('Initializing app...'); // Check for existing session const { data: { session } } = await supabase.auth.getSession(); console.log('Session check:', session); if (session) { currentUser = session.user; document.getElementById('user-email').textContent = currentUser.email; document.getElementById('logout-btn').classList.remove('hidden'); showView('feed'); await fetchPosts(); await fetchProfile(); await fetchUserLikes(); } else { showView('auth'); } // Listen for auth changes supabase.auth.onAuthStateChange((_event, session) => { console.log('Auth state changed:', _event, session); if (session) { currentUser = session.user; document.getElementById('user-email').textContent = currentUser.email; document.getElementById('logout-btn').classList.remove('hidden'); showView('feed'); fetchPosts(); fetchProfile(); fetchUserLikes(); } else { currentUser = null; document.getElementById('user-email').textContent = 'Not logged in'; document.getElementById('logout-btn').classList.add('hidden'); showView('auth'); } }); // Event Listeners setupEventListeners(); }); function setupEventListeners() { console.log('Setting up event listeners...'); // Navigation navLinks.feed.forEach(link => { link.addEventListener('click', () => { console.log('Feed nav clicked'); showView('feed'); }); }); navLinks.create.forEach(link => { link.addEventListener('click', () => { console.log('Create nav clicked'); showView('create'); }); }); navLinks.profile.forEach(link => { link.addEventListener('click', () => { console.log('Profile nav clicked'); showView('profile'); }); }); // Auth const authForm = document.getElementById('auth-form'); authForm.addEventListener('submit', handleAuth); document.getElementById('toggle-auth').addEventListener('click', toggleAuthMode); document.getElementById('logout-btn').addEventListener('click', logoutUser); // Posts document.getElementById('submit-post').addEventListener('click', createPost); document.getElementById('publish-post').addEventListener('click', createPost); document.getElementById('cancel-create').addEventListener('click', () => showView('feed')); // Profile document.getElementById('edit-profile-btn').addEventListener('click', () => { document.getElementById('edit-profile-modal').classList.remove('hidden'); }); document.getElementById('cancel-edit').addEventListener('click', () => { document.getElementById('edit-profile-modal').classList.add('hidden'); }); document.getElementById('save-profile').addEventListener('click', saveProfile); } function showView(view) { currentView = view; Object.keys(views).forEach(v => { views[v].classList.toggle('hidden', v !== view); }); } async function handleAuth(e) { e.preventDefault(); const email = document.getElementById('email-input').value; const password = document.getElementById('password-input').value; try { const { data, error } = await supabase.auth.signUp({ email, password }); if (error) throw error; console.log('Signed up:', data); } catch (err) { console.error('Auth error:', err.message); document.getElementById('error-message').textContent = err.message; document.getElementById('error-message').classList.remove('hidden'); } } async function logoutUser() { await supabase.auth.signOut(); showView('auth'); } async function fetchPosts() { const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false }); if (error) return console.error(error); posts = data; renderPosts(); } async function fetchProfile() { const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single(); if (error) return console.error(error); profile = data; document.getElementById('profile-username').textContent = profile.username || 'Unknown'; document.getElementById('profile-bio').textContent = profile.bio || ''; } async function fetchUserLikes() { const { data, error } = await supabase.from('likes').select('*').eq('user_id', currentUser.id); if (error) return console.error(error); userLikes = new Set(data.map(l => l.post_id)); } function renderPosts() { const container = document.getElementById('posts-container'); container.innerHTML = ''; if (!posts.length) { container.innerHTML = '<p class="text-center text-gray-500">No posts yet.</p>'; return; } posts.forEach(post => { const liked = userLikes.has(post.id) ? 'liked' : ''; const postEl = document.createElement('div'); postEl.className = 'bg-white rounded-xl shadow-sm p-6 mb-6 post-card'; postEl.innerHTML = <p class="text-gray-800 mb-4">${post.content}</p> <div class="flex items-center justify-between text-gray-500"> <span>${new Date(post.created_at).toLocaleString()}</span> <button class="like-button ${liked}" data-post-id="${post.id}"> <i class="fas fa-heart mr-1"></i> Like </button> </div> ; container.appendChild(postEl); }); document.querySelectorAll('.like-button').forEach(btn => { btn.addEventListener('click', toggleLike); }); } async function toggleLike(e) { const postId = e.currentTarget.dataset.postId; if (userLikes.has(postId)) { await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUser.id); userLikes.delete(postId); } else { await supabase.from('likes').insert({ post_id: postId, user_id: currentUser.id }); userLikes.add(postId); } renderPosts(); } async function createPost() { const content = document.getElementById('post-content')?.value || document.getElementById('create-post-content')?.value; if (!content) return; await supabase.from('posts').insert({ content, user_id: currentUser.id }); document.getElementById('post-content')?.value && (document.getElementById('post-content').value = ''); document.getElementById('create-post-content')?.value && (document.getElementById('create-post-content').value = ''); showView('feed'); fetchPosts(); } async function saveProfile() { const username = document.getElementById('edit-username').value; const bio = document.getElementById('edit-bio').value; await supabase.from('profiles').upsert({ id: currentUser.id, username, bio }); document.getElementById('edit-profile-modal').classList.add('hidden'); fetchProfile(); } function toggleAuthMode() { const authTitle = document.getElementById('auth-title'); const authSubmit = document.getElementById('auth-submit'); if (authTitle.textContent.includes('Join')) { authTitle.textContent = 'Sign In'; authSubmit.textContent = 'Sign In'; } else { authTitle.textContent = 'Join Synq'; authSubmit.textContent = 'Sign Up'; } } </script> </body> </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synq - Social Media</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        dark: '#0f172a',
+                        light: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .post-card {
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .nav-link.active {
+            border-bottom: 3px solid #6366f1;
+            color: #6366f1;
+        }
+        .avatar-placeholder {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+        }
+        .loading-spinner {
+            border-top-color: #6366f1;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Supabase Client Initialization -->
+    <script>
+        const supabaseUrl = 'https://qpfjchiucjhfvyohqhih.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center">
+                            <span class="text-white font-bold">S</span>
+                        </div>
+                        <span class="ml-2 text-xl font-bold text-gray-900">Synq</span>
+                    </div>
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <a href="#" class="nav-link active inline-flex items-center px-1 pt-1 text-sm font-medium">Home</a>
+                        <a href="#" class="nav-link inline-flex items-center px-1 pt-1 text-sm font-medium">Explore</a>
+                        <a href="#" class="nav-link inline-flex items-center px-1 pt-1 text-sm font-medium">Notifications</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <button id="createPostBtn" class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 shadow-sm hover:bg-indigo-700 focus:outline-none">
+                            <i class="fas fa-plus mr-2"></i>
+                            <span>Create</span>
+                        </button>
+                    </div>
+                    <div class="ml-4 flex items-center md:ml-6">
+                        <div class="ml-3 relative">
+                            <div>
+                                <button id="userMenuBtn" class="max-w-xs flex items-center text-sm rounded-full focus:outline-none">
+                                    <div id="userAvatar" class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
+                                        <span class="text-white text-sm font-medium">U</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Left Sidebar -->
+            <div class="w-full md:w-1/4">
+                <div id="profileCard" class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <div class="flex items-center">
+                        <div id="profileAvatar" class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">U</span>
+                        </div>
+                        <div class="ml-4">
+                            <h2 id="profileName" class="text-lg font-bold text-gray-900">User Name</h2>
+                            <p id="profileUsername" class="text-gray-500 text-sm">@username</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between text-center">
+                        <div>
+                            <p id="postsCount" class="text-lg font-bold text-gray-900">0</p>
+                            <p class="text-gray-500 text-sm">Posts</p>
+                        </div>
+                        <div>
+                            <p id="followersCount" class="text-lg font-bold text-gray-900">0</p>
+                            <p class="text-gray-500 text-sm">Followers</p>
+                        </div>
+                        <div>
+                            <p id="followingCount" class="text-lg font-bold text-gray-900">0</p>
+                            <p class="text-gray-500 text-sm">Following</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Suggested Connections</h3>
+                    <div id="suggestedUsers" class="space-y-4">
+                        <!-- Suggested users will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Feed -->
+            <div class="w-full md:w-2/4">
+                <!-- Create Post -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0 mr-3">
+                            <div id="postCreatorAvatar" class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
+                                <span class="text-white font-bold">U</span>
+                            </div>
+                        </div>
+                        <div class="w-full">
+                            <textarea id="postContent" class="w-full border border-gray-200 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent" placeholder="What's happening?" rows="3"></textarea>
+                            <div class="flex justify-between items-center mt-3">
+                                <div class="flex space-x-2">
+                                    <button class="text-gray-500 hover:text-indigo-600">
+                                        <i class="fas fa-image"></i>
+                                    </button>
+                                    <button class="text-gray-500 hover:text-indigo-600">
+                                        <i class="fas fa-smile"></i>
+                                    </button>
+                                </div>
+                                <button id="submitPost" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posts Feed -->
+                <div id="postsContainer">
+                    <!-- Posts will be loaded here -->
+                    <div id="loadingPosts" class="text-center py-10">
+                        <div class="loading-spinner w-10 h-10 border-4 border-gray-200 rounded-full mx-auto"></div>
+                        <p class="mt-4 text-gray-500">Loading posts...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="w-full md:w-1/4">
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Trending Topics</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="font-medium text-gray-900">#TravelTuesday</p>
+                            <p class="text-xs text-gray-500">12.5K posts</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">#TechNews</p>
+                            <p class="text-xs text-gray-500">8.3K posts</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">#FoodieLife</p>
+                            <p class="text-xs text-gray-500">6.7K posts</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">#Wellness</p>
+                            <p class="text-xs text-gray-500">5.2K posts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Recent Activity</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-xs font-bold">A</span>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm"><span class="font-medium">Alex</span> liked your post</p>
+                                <p class="text-xs text-gray-500">10 min ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-xs font-bold">M</span>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm"><span class="font-medium">Maria</span> commented on your post</p>
+                                <p class="text-xs text-gray-500">1 hour ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-xs font-bold">D</span>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm"><span class="font-medium">David</span> started following you</p>
+                                <p class="text-xs text-gray-500">3 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Welcome to Synq</h3>
+                <button id="closeAuthModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="authEmail" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="your@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="authPassword" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="••••••••">
+                </div>
+                <button id="authSubmit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700">Sign In</button>
+                <div class="text-center text-sm text-gray-500">or</div>
+                <button id="googleAuth" class="w-full border border-gray-300 py-2 rounded-lg font-medium flex items-center justify-center hover:bg-gray-50">
+                    <i class="fab fa-google mr-2 text-red-500"></i>
+                    Continue with Google
+                </button>
+            </div>
+            
+            <div class="mt-6 text-center text-sm">
+                <p>Don't have an account? <a href="#" id="showSignup" class="text-indigo-600 font-medium">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Create Account</h3>
+                <button id="closeSignupModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="signupName" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Your full name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="signupUsername" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Choose a username">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="signupEmail" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="your@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="signupPassword" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="••••••••">
+                </div>
+                <button id="signupSubmit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700">Sign Up</button>
+            </div>
+            
+            <div class="mt-6 text-center text-sm">
+                <p>Already have an account? <a href="#" id="showLogin" class="text-indigo-600 font-medium">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Create Post</h3>
+                <button id="closePostModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="flex mb-4">
+                <div id="modalUserAvatar" class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-bold">U</span>
+                </div>
+                <div class="ml-3">
+                    <p id="modalUserName" class="font-medium text-gray-900">User Name</p>
+                    <p id="modalUserUsername" class="text-xs text-gray-500">@username</p>
+                </div>
+            </div>
+            
+            <textarea id="postModalContent" class="w-full border border-gray-200 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent" placeholder="What's happening?" rows="4"></textarea>
+            
+            <div class="flex justify-between items-center mt-4">
+                <div class="flex space-x-2">
+                    <button class="text-gray-500 hover:text-indigo-600">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-indigo-600">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                </div>
+                <button id="submitPostModal" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const authModal = document.getElementById('authModal');
+        const signupModal = document.getElementById('signupModal');
+        const createPostModal = document.getElementById('createPostModal');
+        const createPostBtn = document.getElementById('createPostBtn');
+        const closeAuthModal = document.getElementById('closeAuthModal');
+        const closeSignupModal = document.getElementById('closeSignupModal');
+        const closePostModal = document.getElementById('closePostModal');
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const submitPost = document.getElementById('submitPost');
+        const submitPostModal = document.getElementById('submitPostModal');
+        const authSubmit = document.getElementById('authSubmit');
+        const signupSubmit = document.getElementById('signupSubmit');
+        const googleAuth = document.getElementById('googleAuth');
+        const showSignup = document.getElementById('showSignup');
+        const showLogin = document.getElementById('showLogin');
+        const postsContainer = document.getElementById('postsContainer');
+        const loadingPosts = document.getElementById('loadingPosts');
+        const suggestedUsers = document.getElementById('suggestedUsers');
+
+        // State
+        let currentUser = null;
+
+        // Event Listeners
+        createPostBtn.addEventListener('click', () => {
+            if (currentUser) {
+                createPostModal.classList.remove('hidden');
+            } else {
+                authModal.classList.remove('hidden');
+            }
+        });
+
+        closeAuthModal.addEventListener('click', () => {
+            authModal.classList.add('hidden');
+        });
+
+        closeSignupModal.addEventListener('click', () => {
+            signupModal.classList.add('hidden');
+        });
+
+        closePostModal.addEventListener('click', () => {
+            createPostModal.classList.add('hidden');
+        });
+
+        submitPost.addEventListener('click', createPost);
+        submitPostModal.addEventListener('click', createPostFromModal);
+
+        authSubmit.addEventListener('click', signIn);
+        signupSubmit.addEventListener('click', signUp);
+        googleAuth.addEventListener('click', signInWithGoogle);
+
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            authModal.classList.add('hidden');
+            signupModal.classList.remove('hidden');
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupModal.classList.add('hidden');
+            authModal.classList.remove('hidden');
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) {
+                authModal.classList.add('hidden');
+            }
+            if (e.target === signupModal) {
+                signupModal.classList.add('hidden');
+            }
+            if (e.target === createPostModal) {
+                createPostModal.classList.add('hidden');
+            }
+        });
+
+        // Supabase Functions
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                await loadUserProfile();
+                await loadPosts();
+                await loadSuggestedUsers();
+                authModal.classList.add('hidden');
+            } else {
+                authModal.classList.remove('hidden');
+            }
+        }
+
+        async function signIn() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                currentUser = data.user;
+                await loadUserProfile();
+                await loadPosts();
+                await loadSuggestedUsers();
+                authModal.classList.add('hidden');
+            }
+        }
+
+        async function signUp() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const name = document.getElementById('signupName').value;
+            const username = document.getElementById('signupUsername').value;
+            
+            if (!email || !password || !name || !username) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: name,
+                        username: username
+                    }
+                }
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Account created! Please check your email for confirmation.');
+                signupModal.classList.add('hidden');
+            }
+        }
+
+        async function signInWithGoogle() {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function signOut() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                currentUser = null;
+                window.location.reload();
+            }
+        }
+
+        async function loadUserProfile() {
+            if (!currentUser) return;
+            
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (error) {
+                console.error('Error loading profile:', error);
+                return;
+            }
+            
+            // Update UI with profile data
+            document.getElementById('profileName').textContent = data.full_name || 'User';
+            document.getElementById('profileUsername').textContent = '@' + (data.username || 'username');
+            document.getElementById('postsCount').textContent = data.posts_count || 0;
+            document.getElementById('followersCount').textContent = data.followers_count || 0;
+            document.getElementById('followingCount').textContent = data.following_count || 0;
+            
+            // Update all avatar placeholders
+            const avatars = document.querySelectorAll('.avatar-placeholder span');
+            avatars.forEach(avatar => {
+                avatar.textContent = (data.full_name || data.username || 'U')[0].toUpperCase();
+            });
+        }
+
+        async function loadPosts() {
+            loadingPosts.classList.remove('hidden');
+            
+            const { data, error } = await supabase
+                .from('posts')
+                .select(`
+                    id, 
+                    content, 
+                    created_at,
+                    likes_count,
+                    comments_count,
+                    profiles (full_name, username)
+                `)
+                .order('created_at', { ascending: false })
+                .limit(10);
+            
+            loadingPosts.classList.add('hidden');
+            
+            if (error) {
+                console.error('Error loading posts:', error);
+                postsContainer.innerHTML = '<p class="text-center text-red-500 py-10">Error loading posts</p>';
+                return;
+            }
+            
+            if (!data || data.length === 0) {
+                postsContainer.innerHTML = '<p class="text-center text-gray-500 py-10">No posts yet. Be the first to post!</p>';
+                return;
+            }
+            
+            // Render posts
+            postsContainer.innerHTML = data.map(post => `
+                <div class="post-card bg-white rounded-xl shadow-sm mb-6">
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
+                                <span class="text-white font-bold">${(post.profiles?.full_name || post.profiles?.username || 'U')[0].toUpperCase()}</span>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-bold text-gray-900">${post.profiles?.full_name || 'User'}</h4>
+                                <p class="text-xs text-gray-500">@${post.profiles?.username || 'username'} · ${timeAgo(new Date(post.created_at))}</p>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-gray-700">${post.content || ''}</p>
+                        <div class="mt-4 flex justify-between text-gray-500">
+                            <button class="flex items-center hover:text-indigo-600 like-btn" data-post-id="${post.id}">
+                                <i class="far fa-heart mr-1"></i>
+                                <span>${post.likes_count || 0}</span>
+                            </button>
+                            <button class="flex items-center hover:text-indigo-600">
+                                <i class="far fa-comment mr-1"></i>
+                                <span>${post.comments_count || 0}</span>
+                            </button>
+                            <button class="flex items-center hover:text-indigo-600">
+                                <i class="far fa-share-square mr-1"></i>
+                                <span>Share</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to like buttons
+            document.querySelectorAll('.like-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    likePost(this.dataset.postId, this);
+                });
+            });
+        }
+
+        async function loadSuggestedUsers() {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, full_name, username')
+                .limit(5);
+            
+            if (error) {
+                console.error('Error loading suggested users:', error);
+                return;
+            }
+            
+            suggestedUsers.innerHTML = data.map(user => `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                            <span class="text-white font-bold">${(user.full_name || user.username || 'U')[0].toUpperCase()}</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">${user.full_name || 'User'}</p>
+                            <p class="text-xs text-gray-500">@${user.username || 'username'}</p>
+                        </div>
+                    </div>
+                    <button class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full hover:bg-indigo-200 follow-btn" data-user-id="${user.id}">
+                        Follow
+                    </button>
+                </div>
+            `).join('');
+            
+            // Add event listeners to follow buttons
+            document.querySelectorAll('.follow-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    followUser(this.dataset.userId, this);
+                });
+            });
+        }
+
+        async function createPost() {
+            const content = document.getElementById('postContent').value;
+            if (!content.trim()) return;
+            
+            const { error } = await supabase
+                .from('posts')
+                .insert({
+                    user_id: currentUser.id,
+                    content: content
+                });
+            
+            if (error) {
+                alert('Error creating post: ' + error.message);
+            } else {
+                document.getElementById('postContent').value = '';
+                await loadPosts();
+                await loadUserProfile();
+            }
+        }
+
+        async function createPostFromModal() {
+            const content = document.getElementById('postModalContent').value;
+            if (!content.trim()) return;
+            
+            const { error } = await supabase
+                .from('posts')
+                .insert({
+                    user_id: currentUser.id,
+                    content: content
+                });
+            
+            if (error) {
+                alert('Error creating post: ' + error.message);
+            } else {
+                document.getElementById('postModalContent').value = '';
+                createPostModal.classList.add('hidden');
+                await loadPosts();
+                await loadUserProfile();
+            }
+        }
+
+        async function likePost(postId, button) {
+            // Check if already liked
+            const { data: existingLike } = await supabase
+                .from('likes')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .eq('post_id', postId)
+                .maybeSingle();
+            
+            if (existingLike) {
+                // Unlike
+                const { error } = await supabase
+                    .from('likes')
+                    .delete()
+                    .eq('id', existingLike.id);
+                
+                if (!error) {
+                    const countEl = button.querySelector('span');
+                    countEl.textContent = parseInt(countEl.textContent) - 1;
+                    button.querySelector('i').className = 'far fa-heart mr-1';
+                }
+            } else {
+                // Like
+                const { error } = await supabase
+                    .from('likes')
+                    .insert({
+                        user_id: currentUser.id,
+                        post_id: postId
+                    });
+                
+                if (!error) {
+                    const countEl = button.querySelector('span');
+                    countEl.textContent = parseInt(countEl.textContent) + 1;
+                    button.querySelector('i').className = 'fas fa-heart mr-1 text-red-500';
+                }
+            }
+        }
+
+        async function followUser(userId, button) {
+            // Check if already following
+            const { data: existingFollow } = await supabase
+                .from('follows')
+                .select('id')
+                .eq('follower_id', currentUser.id)
+                .eq('following_id', userId)
+                .maybeSingle();
+            
+            if (existingFollow) {
+                // Unfollow
+                const { error } = await supabase
+                    .from('follows')
+                    .delete()
+                    .eq('id', existingFollow.id);
+                
+                if (!error) {
+                    button.textContent = 'Follow';
+                    button.className = 'text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full hover:bg-indigo-200 follow-btn';
+                }
+            } else {
+                // Follow
+                const { error } = await supabase
+                    .from('follows')
+                    .insert({
+                        follower_id: currentUser.id,
+                        following_id: userId
+                    });
+                
+                if (!error) {
+                    button.textContent = 'Following';
+                    button.className = 'text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 follow-btn';
+                }
+            }
+        }
+
+        // Utility function
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y";
+            
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo";
+            
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d";
+            
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h";
+            
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m";
+            
+            return Math.floor(seconds) + "s";
+        }
+
+        // Auth state change listener
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN') {
+                currentUser = session.user;
+                loadUserProfile();
+                loadPosts();
+                loadSuggestedUsers();
+                authModal.classList.add('hidden');
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                window.location.reload();
+            }
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUser();
+        });
+    </script>
+</body>
+</html>
