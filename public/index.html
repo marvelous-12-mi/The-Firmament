@@ -349,7 +349,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
         
         // Initialize Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // State
         let currentUser = null;
@@ -374,8 +374,12 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Initializing app...');
+            
             // Check for existing session
             const { data: { session } } = await supabase.auth.getSession();
+            console.log('Session check:', session);
+            
             if (session) {
                 currentUser = session.user;
                 document.getElementById('user-email').textContent = currentUser.email;
@@ -390,10 +394,12 @@
             
             // Listen for auth changes
             supabase.auth.onAuthStateChange((_event, session) => {
+                console.log('Auth state changed:', _event, session);
                 if (session) {
                     currentUser = session.user;
                     document.getElementById('user-email').textContent = currentUser.email;
                     document.getElementById('logout-btn').classList.remove('hidden');
+                    showView('feed');
                     fetchPosts();
                     fetchProfile();
                     fetchUserLikes();
@@ -410,10 +416,39 @@
         });
 
         function setupEventListeners() {
+            console.log('Setting up event listeners...');
+            
             // Navigation
-            navLinks.feed.forEach(link => link.addEventListener('click', () => showView('feed')));
-            navLinks.create.forEach(link => link.addEventListener('click', () => showView('create')));
-            navLinks.profile.forEach(link => link.addEventListener('click', () => showView('profile')));
+            navLinks.feed.forEach(link => {
+                link.addEventListener('click', () => {
+                    console.log('Feed nav clicked');
+                    showView('feed');
+                });
+            });
+            
+            navLinks.create.forEach(link => {
+                link.addEventListener('click', () => {
+                    console.log('Create nav clicked');
+                    if (currentUser) {
+                        showView('create');
+                    } else {
+                        showError('Please log in to create posts');
+                        showView('auth');
+                    }
+                });
+            });
+            
+            navLinks.profile.forEach(link => {
+                link.addEventListener('click', () => {
+                    console.log('Profile nav clicked');
+                    if (currentUser) {
+                        showView('profile');
+                    } else {
+                        showError('Please log in to view your profile');
+                        showView('auth');
+                    }
+                });
+            });
             
             // Auth form
             document.getElementById('auth-form').addEventListener('submit', handleAuth);
@@ -440,6 +475,8 @@
         }
 
         function showView(view) {
+            console.log('Showing view:', view);
+            
             // Hide all views
             Object.values(views).forEach(v => v.classList.add('hidden'));
             
@@ -473,6 +510,8 @@
 
         async function handleAuth(e) {
             e.preventDefault();
+            console.log('Handling auth...');
+            
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
             const errorMessage = document.getElementById('error-message');
@@ -496,27 +535,37 @@
             try {
                 let result;
                 if (isSignUp) {
+                    console.log('Signing up...');
                     result = await supabase.auth.signUp({ email, password });
                 } else {
+                    console.log('Signing in...');
                     result = await supabase.auth.signInWithPassword({ email, password });
                 }
+                
+                console.log('Auth result:', result);
                 
                 if (result.error) throw result.error;
                 
                 if (isSignUp) {
+                    console.log('Creating profile...');
                     // Create profile for new user
-                    await supabase
+                    const { error: profileError } = await supabase
                         .from('profiles')
                         .upsert({ 
                             id: result.data.user.id,
                             username: email.split('@')[0],
                             bio: 'New to Synq!'
                         });
+                    
+                    if (profileError) {
+                        console.error('Profile creation error:', profileError);
+                    }
                 }
                 
                 // Reset form
                 document.getElementById('auth-form').reset();
             } catch (error) {
+                console.error('Auth error:', error);
                 showError(error.message);
             } finally {
                 document.getElementById('auth-submit').innerHTML = isSignUp ? 'Sign Up' : 'Sign In';
@@ -539,15 +588,27 @@
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
-            posts = [];
-            profile = null;
-            userLikes = new Set();
+            console.log('Logging out...');
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout error:', error);
+                showError('Logout failed: ' + error.message);
+            } else {
+                posts = [];
+                profile = null;
+                userLikes = new Set();
+            }
         }
 
         async function createPost() {
             const content = document.getElementById('post-content').value;
             if (!content.trim()) return;
+            
+            if (!currentUser) {
+                showError('Please log in to create posts');
+                showView('auth');
+                return;
+            }
             
             // Show loading state
             document.getElementById('submit-post').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
@@ -576,6 +637,12 @@
         async function createPostFromCreateView() {
             const content = document.getElementById('create-post-content').value;
             if (!content.trim()) return;
+            
+            if (!currentUser) {
+                showError('Please log in to create posts');
+                showView('auth');
+                return;
+            }
             
             // Show loading state
             document.getElementById('publish-post').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
@@ -625,6 +692,8 @@
         }
 
         async function fetchProfile() {
+            if (!currentUser) return;
+            
             try {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -643,6 +712,8 @@
         }
 
         async function fetchUserPosts() {
+            if (!currentUser) return;
+            
             try {
                 const { data, error } = await supabase
                     .from('posts')
@@ -676,6 +747,8 @@
         }
 
         async function fetchUserLikes() {
+            if (!currentUser) return;
+            
             try {
                 const { data, error } = await supabase
                     .from('likes')
@@ -727,9 +800,9 @@
                 const likeButton = document.querySelector(`.like-button[data-post-id="${postId}"]`);
                 if (likeButton) {
                     likeButton.classList.toggle('liked', !isLiked);
-                    likeButton.innerHTML = isLiked ? 
-                        '<i class="far fa-heart mr-2"></i> Like' : 
-                        '<i class="fas fa-heart mr-2"></i> Unlike';
+                    likeButton.innerHTML = !isLiked ? 
+                        '<i class="fas fa-heart mr-2"></i> Unlike' : 
+                        '<i class="far fa-heart mr-2"></i> Like';
                 }
             } catch (error) {
                 showError('Failed to update like: ' + error.message);
@@ -737,6 +810,8 @@
         }
 
         async function updateProfile() {
+            if (!currentUser) return;
+            
             const username = document.getElementById('edit-username').value;
             const bio = document.getElementById('edit-bio').value;
             
