@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Synq — Sign in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/styles.css" rel="stylesheet">
+  <script type="module" src="/supabase.js"></script>
+  <script type="module" src="/auth-page.js"></script>
+</head>
+<body>
+  <header>
+    <strong>Synq</strong>
+  </header>
+  <main class="container">
+    <section class="card">
+      <h2>Welcome back</h2>
+      <div class="row">
+        <button id="toggle" class="btn secondary">Switch to Sign up</button>
+      </div>
+
+      <div id="signin">
+        <input id="email" class="input" type="email" placeholder="Email">
+        <input id="password" class="input" type="password" placeholder="Password">
+        <div class="row">
+          <button id="login" class="btn">Sign in</button>
+          <button id="magic" class="btn secondary">Send magic link</button>
+        </div>
+        <p id="status" class="meta"></p>
+      </div>
+
+      <div id="signup" class="hidden">
+        <input id="su-email" class="input" type="email" placeholder="Email">
+        <input id="su-password" class="input" type="password" placeholder="Password (min 6)">
+        <input id="su-username" class="input" type="text" placeholder="Username">
+        <button id="register" class="btn">Create account</button>
+        <p id="su-status" class="meta"></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
