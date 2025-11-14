@@ -5,143 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Synq - Social Media App</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                primary: '#6366f1',
-                secondary: '#8b5cf6'
-            }
-        }
-    }
-}
-</script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
 .post-card { transition: all 0.3s ease; }
 .post-card:hover { transform: translateY(-2px); }
 .nav-link.active { color: #6366f1; font-weight: 600; }
 .btn-primary { background: linear-gradient(to right, #6366f1, #8b5cf6); }
 .btn-primary:hover { opacity: 0.9; }
-.like-button.liked { color: #ef4444; }
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-<!-- Navigation -->
-<nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
-    <div class="flex items-center space-x-2">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-            <span class="text-white font-bold text-xl">S</span>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-800">Synq</h1>
-    </div>
-    <div class="hidden md:flex space-x-6">
-        <button id="nav-feed" class="flex items-center text-indigo-600 font-semibold nav-link"><i class="fas fa-home mr-2"></i> Home</button>
-        <button id="nav-create" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link"><i class="fas fa-plus mr-2"></i> Create</button>
-        <button id="nav-profile" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link"><i class="fas fa-user mr-2"></i> Profile</button>
-    </div>
-    <div class="flex items-center space-x-4">
-        <span class="hidden md:inline text-slate-800" id="user-email">Not logged in</span>
-        <button id="logout-btn" class="text-slate-600 hover:text-slate-900 hidden"><i class="fas fa-sign-out-alt"></i></button>
+<nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0">
+    <h1 class="text-2xl font-bold">Synq</h1>
+    <div>
+        <span id="user-email">Not logged in</span>
+        <button id="logout-btn" class="hidden">Logout</button>
     </div>
 </nav>
 
-<!-- Main Content -->
-<main class="flex-grow container mx-auto px-4 py-8 pb-20 md:pb-8">
+<main class="flex-grow container mx-auto px-4 py-8">
 
-<!-- Auth View -->
-<div id="auth-view" class="max-w-md mx-auto">
-    <h2 id="auth-title" class="text-2xl font-bold mb-4">Join Synq</h2>
-    <div id="error-message" class="hidden bg-red-50 text-red-700 p-3 rounded mb-4"></div>
-    <form id="auth-form" class="space-y-4">
-        <input type="email" id="email-input" placeholder="Email" class="w-full border p-2 rounded" required/>
-        <input type="password" id="password-input" placeholder="Password" class="w-full border p-2 rounded" required/>
-        <button type="submit" id="auth-submit" class="btn-primary w-full p-2 rounded">Sign Up</button>
-    </form>
-    <p class="mt-2">
-        <span id="auth-toggle-text">Already have an account?</span>
-        <button id="toggle-auth" class="text-indigo-600 font-semibold">Sign In</button>
-    </p>
+<!-- Auth -->
+<div id="auth-view">
+    <h2>Sign Up / Sign In</h2>
+    <input type="email" id="email-input" placeholder="Email">
+    <input type="password" id="password-input" placeholder="Password">
+    <button id="auth-submit">Sign Up / Sign In</button>
 </div>
 
-<!-- Feed View -->
-<div id="feed-view" class="max-w-2xl mx-auto hidden">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6">Latest Posts</h2>
-    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <textarea id="post-content" placeholder="What's on your mind?" class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="3"></textarea>
-        <div class="flex justify-between items-center mt-4">
-            <div class="flex space-x-2">
-                <button class="text-gray-500 hover:text-indigo-600"><i class="fas fa-camera"></i></button>
-                <button class="text-gray-500 hover:text-indigo-600"><i class="fas fa-image"></i></button>
-            </div>
-            <button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Post</button>
-        </div>
+<!-- Feed -->
+<div id="feed-view" class="hidden">
+    <h2>Feed</h2>
+    <div>
+        <textarea id="create-post-content" placeholder="What's on your mind?"></textarea>
+        <input type="file" id="post-image">
+        <button id="publish-post" class="btn-primary">Post</button>
     </div>
-    <div id="posts-container">
-        <div class="flex justify-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
-    </div>
+    <div id="posts-container"></div>
 </div>
 
-<!-- Create Post View -->
-<div id="create-view" class="max-w-2xl mx-auto hidden">
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-2xl font-bold text-slate-800 mb-6">Create New Post</h2>
-        <div class="space-y-6">
-            <textarea id="create-post-content" placeholder="Share your thoughts..." class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="5"></textarea>
-            <input type="file" id="post-image" class="w-full" />
-            <div class="flex justify-end space-x-3">
-                <button id="cancel-create" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">Cancel</button>
-                <button id="publish-post" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">Publish Post</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Profile View -->
-<div id="profile-view" class="max-w-2xl mx-auto hidden">
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-32"></div>
-        <div class="px-6 pb-6">
-            <div class="flex items-end -mt-16 mb-6">
-                <div id="profile-avatar" class="bg-gray-200 w-32 h-32 rounded-full border-4 border-white"></div>
-                <div class="ml-6 pb-2">
-                    <h2 class="text-2xl font-bold text-slate-800" id="profile-username">Loading...</h2>
-                    <p class="text-gray-600" id="profile-bio">Loading profile...</p>
-                </div>
-                <div class="ml-auto">
-                    <button id="edit-profile-btn" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Edit Profile</button>
-                </div>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-4">Your Posts</h3>
-            <div id="user-posts">
-                <div class="flex justify-center py-8">
-                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Profile Modal -->
-<div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-        <h3 class="text-xl font-bold text-slate-800 mb-4">Edit Profile</h3>
-        <div class="space-y-4">
-            <input type="text" id="edit-username" placeholder="Username" class="w-full border p-2 rounded"/>
-            <textarea id="edit-bio" placeholder="Bio" class="w-full border p-2 rounded"></textarea>
-            <input type="file" id="profile-image" class="w-full" />
-        </div>
-        <div class="flex justify-end space-x-3 mt-6">
-            <button id="cancel-edit" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Cancel</button>
-            <button id="save-profile" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save Changes</button>
-        </div>
+<!-- Profile -->
+<div id="profile-view" class="hidden">
+    <div>
+        <img id="profile-avatar" class="w-24 h-24 rounded-full bg-gray-200">
+        <h2 id="profile-username"></h2>
+        <p id="profile-bio"></p>
+        <input type="file" id="profile-image">
+        <button id="save-profile" class="btn-primary">Save Profile</button>
     </div>
 </div>
 
@@ -153,59 +65,39 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
-let isSignUp = true;
 
 // Show/hide views
 function showView(view) {
-    ['auth', 'feed', 'create', 'profile'].forEach(v => {
+    ['auth', 'feed', 'profile'].forEach(v => {
         document.getElementById(v + '-view').classList.toggle('hidden', v !== view);
     });
 }
 
-// Auth toggle
-document.getElementById('toggle-auth').addEventListener('click', () => {
-    isSignUp = !isSignUp;
-    const title = document.getElementById('auth-title');
-    const submitBtn = document.getElementById('auth-submit');
-    const toggleText = document.getElementById('auth-toggle-text');
-    const toggleBtn = document.getElementById('toggle-auth');
-    if (isSignUp) {
-        title.textContent = 'Join Synq';
-        submitBtn.textContent = 'Sign Up';
-        toggleText.textContent = 'Already have an account?';
-        toggleBtn.textContent = 'Sign In';
-    } else {
-        title.textContent = 'Sign In';
-        submitBtn.textContent = 'Sign In';
-        toggleText.textContent = "Don't have an account?";
-        toggleBtn.textContent = 'Sign Up';
-    }
-});
+// Upload files to Supabase
+async function uploadFile(file, bucket) {
+    if (!file) return null;
+    const path = `${currentUser.id}/${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+    if (error) { console.error(error); return null; }
+    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+}
 
-// Handle auth submit
-document.getElementById('auth-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+// Auth
+document.getElementById('auth-submit').addEventListener('click', async () => {
     const email = document.getElementById('email-input').value;
     const password = document.getElementById('password-input').value;
-    const errorMsg = document.getElementById('error-message');
-    errorMsg.classList.add('hidden');
-
-    try {
-        let data, error;
-        if (isSignUp) {
-            ({ data, error } = await supabase.auth.signUp({ email, password }));
-        } else {
-            ({ data, error } = await supabase.auth.signInWithPassword({ email, password }));
-        }
-        if (error) throw error;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+        if (signUpError) return alert(signUpError.message);
+        currentUser = signUpData.user;
+    } else {
         currentUser = data.user;
-        document.getElementById('user-email').textContent = currentUser.email;
-        document.getElementById('logout-btn').classList.remove('hidden');
-        showView('feed');
-    } catch (err) {
-        errorMsg.textContent = err.message;
-        errorMsg.classList.remove('hidden');
     }
+    document.getElementById('user-email').textContent = currentUser.email;
+    showView('feed');
+    fetchProfile();
+    fetchPosts();
 });
 
 // Logout
@@ -213,54 +105,58 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
     await supabase.auth.signOut();
     currentUser = null;
     document.getElementById('user-email').textContent = 'Not logged in';
-    document.getElementById('logout-btn').classList.add('hidden');
     showView('auth');
 });
 
-// Post creation with optional image
-async function uploadFile(file, bucket, path) {
-    if (!file) return null;
-    const { data, error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
-    if (error) { console.error(error); return null; }
-    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-}
-
-async function createPost() {
+// Create post
+document.getElementById('publish-post').addEventListener('click', async () => {
     const content = document.getElementById('create-post-content').value;
     const fileInput = document.getElementById('post-image');
     let image_url = null;
     if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const path = `${currentUser.id}/${Date.now()}_${file.name}`;
-        image_url = await uploadFile(file, 'synq-media', path);
+        image_url = await uploadFile(fileInput.files[0], 'synq-media');
     }
     if (!content && !image_url) return;
     await supabase.from('posts').insert({ content, image_url, user_id: currentUser.id });
     document.getElementById('create-post-content').value = '';
     fileInput.value = '';
-    showView('feed');
-}
+    fetchPosts();
+});
 
-// Profile update
+// Save profile
 document.getElementById('save-profile').addEventListener('click', async () => {
-    const username = document.getElementById('edit-username').value;
-    const bio = document.getElementById('edit-bio').value;
     const fileInput = document.getElementById('profile-image');
     let avatar_url = null;
     if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const path = `${currentUser.id}/${Date.now()}_${file.name}`;
-        avatar_url = await uploadFile(file, 'synq-profile', path);
+        avatar_url = await uploadFile(fileInput.files[0], 'synq-profile');
     }
-    await supabase.from('profiles').upsert({ id: currentUser.id, username, bio, avatar_url });
-    document.getElementById('edit-profile-modal').classList.add('hidden');
+    await supabase.from('profiles').upsert({ id: currentUser.id, avatar_url });
+    fetchProfile();
 });
-document.getElementById('cancel-edit').addEventListener('click', () => document.getElementById('edit-profile-modal').classList.add('hidden'));
 
-// Navigation buttons
-document.getElementById('nav-feed').addEventListener('click', () => showView('feed'));
-document.getElementById('nav-create').addEventListener('click', () => showView('create'));
-document.getElementById('nav-profile').addEventListener('click', () => showView('profile'));
+// Fetch profile
+async function fetchProfile() {
+    const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (!data) return;
+    document.getElementById('profile-username').textContent = data.username || 'User';
+    document.getElementById('profile-bio').textContent = data.bio || '';
+    if (data.avatar_url) document.getElementById('profile-avatar').src = data.avatar_url;
+}
+
+// Fetch posts
+async function fetchPosts() {
+    const { data } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '';
+    data.forEach(post => {
+        const div = document.createElement('div');
+        div.className = 'post-card bg-white p-4 mb-4 rounded shadow';
+        div.innerHTML = `<p>${post.content || ''}</p>
+                         ${post.image_url ? `<img src="${post.image_url}" class="mt-2 max-w-full rounded">` : ''}`;
+        container.appendChild(div);
+    });
+}
 </script>
+
 </body>
 </html>
