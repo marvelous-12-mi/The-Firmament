@@ -5,209 +5,244 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Synq - Social Media App</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    primary: '#6366f1',
-                    secondary: '#8b5cf6'
-                }
-            }
-        }
-    }
-</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+.btn-primary { background: linear-gradient(to right, #6366f1, #8b5cf6); color:white; }
+.btn-primary:hover { opacity:0.9; }
 .post-card { transition: all 0.3s ease; }
 .post-card:hover { transform: translateY(-2px); }
-.nav-link.active { color: #6366f1; font-weight: 600; }
-.btn-primary { background: linear-gradient(to right, #6366f1, #8b5cf6); }
-.btn-primary:hover { opacity: 0.9; }
 .like-button.liked { color: #ef4444; }
-.comment-form { transition: max-height 0.3s ease; max-height: 0; overflow: hidden; }
-.comment-form.active { max-height: 200px; }
+.comment-form { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+.comment-form.active { max-height:200px; }
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-<!-- Navigation omitted for brevity; same as your original code -->
+<!-- Navigation -->
+<nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+    <h1 class="text-2xl font-bold text-slate-800">Synq</h1>
+    <div class="flex items-center space-x-2">
+        <span id="user-email">Not logged in</span>
+        <button id="logout-btn" class="hidden ml-4 btn-primary px-3 py-1 rounded">Logout</button>
+    </div>
+</nav>
 
-<main class="flex-grow container mx-auto px-4 py-8 pb-20 md:pb-8">
-    <!-- Auth View omitted (same) -->
+<!-- Navigation Tabs -->
+<div class="flex justify-center gap-6 bg-white shadow-sm py-3 sticky top-16 z-10">
+    <button id="nav-feed" class="nav-link text-indigo-600 font-semibold"><i class="fas fa-home mr-1"></i>Feed</button>
+    <button id="nav-create" class="nav-link text-gray-600 hover:text-indigo-600"><i class="fas fa-plus mr-1"></i>Create</button>
+    <button id="nav-profile" class="nav-link text-gray-600 hover:text-indigo-600"><i class="fas fa-user mr-1"></i>Profile</button>
+</div>
 
-    <!-- Feed View omitted (same) -->
+<main class="flex-grow container mx-auto px-4 py-6">
 
-    <!-- Create Post View -->
-    <div id="create-view" class="max-w-2xl mx-auto hidden">
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-slate-800 mb-6">Create New Post</h2>
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-gray-700 mb-2">Post Content</label>
-                    <textarea id="create-post-content" placeholder="Share your thoughts..." class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="5"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 mb-2">Add Image</label>
-                    <input type="file" id="post-image" class="w-full" />
-                </div>
-                
-                <div class="flex justify-end space-x-3">
-                    <button id="cancel-create" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">Cancel</button>
-                    <button id="publish-post" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">Publish Post</button>
-                </div>
-            </div>
-        </div>
+    <!-- Auth View -->
+    <div id="auth-view" class="max-w-md mx-auto">
+        <h2 id="auth-title" class="text-2xl font-bold mb-4">Join Synq</h2>
+        <div id="error-message" class="hidden bg-red-50 text-red-700 p-3 rounded mb-4"></div>
+        <form id="auth-form" class="space-y-4">
+            <input type="email" id="email-input" placeholder="Email" class="w-full border p-2 rounded" required/>
+            <input type="password" id="password-input" placeholder="Password" class="w-full border p-2 rounded" required/>
+            <button type="submit" id="auth-submit" class="btn-primary w-full p-2 rounded">Sign Up</button>
+        </form>
+        <p class="mt-2">Already have an account? <button id="toggle-auth" class="text-indigo-600">Sign In</button></p>
     </div>
 
-    <!-- Profile View omitted (same) -->
-
-    <!-- Edit Profile Modal -->
-    <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-slate-800 mb-4">Edit Profile</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 mb-2">Username</label>
-                    <input type="text" id="edit-username" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Your username" />
-                </div>
-                <div>
-                    <label class="block text-gray-700 mb-2">Bio</label>
-                    <textarea id="edit-bio" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Tell us about yourself" rows="3"></textarea>
-                </div>
-                <div>
-                    <label class="block text-gray-700 mb-2">Profile Picture</label>
-                    <input type="file" id="profile-image" class="w-full" />
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button id="cancel-edit" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Cancel</button>
-                <button id="save-profile" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save Changes</button>
-            </div>
+    <!-- Feed View -->
+    <div id="feed-view" class="hidden max-w-2xl mx-auto">
+        <!-- Create Post -->
+        <div class="mb-6">
+            <textarea id="create-post-content" placeholder="What's on your mind?" class="w-full border p-2 rounded mb-2"></textarea>
+            <input type="file" id="post-image" class="w-full mb-2"/>
+            <button id="publish-post" class="btn-primary px-4 py-2 rounded">Post</button>
         </div>
+        <!-- Posts Feed -->
+        <div id="posts-container"></div>
     </div>
+
+    <!-- Create View -->
+    <div id="create-view" class="hidden max-w-2xl mx-auto">
+        <h2 class="text-xl font-bold mb-2">Create Post</h2>
+        <textarea id="create-post-content-2" placeholder="Your thoughts..." class="w-full border p-2 rounded mb-2"></textarea>
+        <input type="file" id="post-image-2" class="w-full mb-2"/>
+        <button id="publish-post-2" class="btn-primary px-4 py-2 rounded">Publish</button>
+        <button id="cancel-create" class="border px-4 py-2 rounded mt-2">Cancel</button>
+    </div>
+
+    <!-- Profile View -->
+    <div id="profile-view" class="hidden max-w-2xl mx-auto">
+        <h2 class="text-xl font-bold mb-2">Profile</h2>
+        <img id="profile-avatar" class="w-24 h-24 rounded-full mb-2 border" src="" alt="avatar"/>
+        <p id="profile-username" class="font-bold"></p>
+        <p id="profile-bio" class="text-gray-600"></p>
+        <input type="file" id="profile-image" class="w-full my-2"/>
+        <input type="text" id="edit-username" placeholder="Username" class="w-full border p-2 rounded mb-1"/>
+        <textarea id="edit-bio" placeholder="Bio" class="w-full border p-2 rounded mb-2"></textarea>
+        <button id="save-profile" class="btn-primary px-4 py-2 rounded">Save Profile</button>
+    </div>
+
 </main>
 
 <script>
 const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkUE'; // replace with your anon key
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let currentUser = null;
-let currentView = 'auth';
-let posts = [];
-let profile = null;
-let userLikes = new Set();
+let currentUser=null, posts=[], userLikes=new Set(), userComments={};
 
-// DOM elements omitted for brevity; same as before
-
-document.addEventListener('DOMContentLoaded', async function() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        currentUser = session.user;
-        document.getElementById('user-email').textContent = currentUser.email;
-        document.getElementById('logout-btn').classList.remove('hidden');
-        showView('feed');
-        await fetchPosts();
-        await fetchProfile();
-        await fetchUserLikes();
-    } else {
-        showView('auth');
-    }
-    supabase.auth.onAuthStateChange((_event, session) => {
-        if (session) {
-            currentUser = session.user;
-            document.getElementById('user-email').textContent = currentUser.email;
-            document.getElementById('logout-btn').classList.remove('hidden');
-            showView('feed');
-            fetchPosts();
-            fetchProfile();
-            fetchUserLikes();
-        } else {
-            currentUser = null;
-            document.getElementById('user-email').textContent = 'Not logged in';
-            document.getElementById('logout-btn').classList.add('hidden');
-            showView('auth');
-        }
-    });
-    setupEventListeners();
-});
-
-function setupEventListeners() {
-    document.getElementById('publish-post').addEventListener('click', createPost);
-    document.getElementById('cancel-create').addEventListener('click', () => showView('feed'));
-    document.getElementById('save-profile').addEventListener('click', saveProfile);
-    document.getElementById('cancel-edit').addEventListener('click', () => document.getElementById('edit-profile-modal').classList.add('hidden'));
-}
-
-// Show/hide views
-function showView(view) {
-    currentView = view;
-    ['auth', 'feed', 'create', 'profile'].forEach(v => {
-        document.getElementById(v + '-view').classList.toggle('hidden', v !== view);
+// --- Show/hide views ---
+function showView(view){
+    ['auth','feed','create','profile'].forEach(v=>{
+        document.getElementById(v+'-view').classList.toggle('hidden', v!==view);
     });
 }
 
-// Upload to Supabase Storage
-async function uploadFile(file, bucket, path) {
-    if (!file) return null;
-    const { data, error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
-    if (error) { console.error(error); return null; }
+// --- Upload file ---
+async function uploadFile(file,bucket,path){
+    const { data, error } = await supabase.storage.from(bucket).upload(path,file,{upsert:true});
+    if(error){ console.error(error); return null; }
     const { publicUrl } = supabase.storage.from(bucket).getPublicUrl(path);
     return publicUrl;
 }
 
-// Create post with optional image
-async function createPost() {
-    const content = document.getElementById('create-post-content').value;
-    const fileInput = document.getElementById('post-image');
-    let image_url = null;
-
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const path = `${currentUser.id}/${Date.now()}_${file.name}`;
-        image_url = await uploadFile(file, 'synq-media', path);
-    }
-
-    if (!content && !image_url) return;
-
-    await supabase.from('posts').insert({ content, image_url, user_id: currentUser.id });
-    document.getElementById('create-post-content').value = '';
-    fileInput.value = '';
+// --- Auth ---
+document.getElementById('auth-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const email=document.getElementById('email-input').value;
+    const password=document.getElementById('password-input').value;
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if(error){ document.getElementById('error-message').textContent=error.message; document.getElementById('error-message').classList.remove('hidden'); return; }
+    currentUser=data.user;
+    document.getElementById('user-email').textContent=currentUser.email;
+    document.getElementById('logout-btn').classList.remove('hidden');
     showView('feed');
     fetchPosts();
-}
-
-// Save profile with optional image
-async function saveProfile() {
-    const username = document.getElementById('edit-username').value;
-    const bio = document.getElementById('edit-bio').value;
-    const fileInput = document.getElementById('profile-image');
-    let avatar_url = null;
-
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const path = `${currentUser.id}/${Date.now()}_${file.name}`;
-        avatar_url = await uploadFile(file, 'synq-profile', path);
-    }
-
-    await supabase.from('profiles').upsert({ id: currentUser.id, username, bio, avatar_url });
-    document.getElementById('edit-profile-modal').classList.add('hidden');
     fetchProfile();
+});
+document.getElementById('toggle-auth').addEventListener('click', ()=>alert("Sign In not implemented yet"));
+
+// --- Logout ---
+document.getElementById('logout-btn').addEventListener('click', async ()=>{
+    await supabase.auth.signOut();
+    currentUser=null;
+    document.getElementById('user-email').textContent='Not logged in';
+    document.getElementById('logout-btn').classList.add('hidden');
+    showView('auth');
+});
+
+// --- Create Post ---
+async function createPost(contentEl,imgEl){
+    const content=contentEl.value;
+    const fileInput=imgEl;
+    let image_url=null;
+    if(fileInput.files.length>0){
+        const file=fileInput.files[0];
+        image_url=await uploadFile(file,'synq-media',`${currentUser.id}/${Date.now()}_${file.name}`);
+    }
+    if(!content&&!image_url)return;
+    await supabase.from('posts').insert({content,image_url,user_id:currentUser.id});
+    contentEl.value=''; fileInput.value='';
+    fetchPosts();
+}
+document.getElementById('publish-post').addEventListener('click',()=>createPost(document.getElementById('create-post-content'),document.getElementById('post-image')));
+document.getElementById('publish-post-2').addEventListener('click',()=>createPost(document.getElementById('create-post-content-2'),document.getElementById('post-image-2')));
+document.getElementById('cancel-create').addEventListener('click',()=>showView('feed'));
+
+// --- Fetch Posts ---
+async function fetchPosts(){
+    const { data,error } = await supabase.from('posts').select('*').order('created_at',{ascending:false});
+    if(error)return console.error(error);
+    posts=data;
+    const container=document.getElementById('posts-container'); container.innerHTML='';
+    posts.forEach(p=>{
+        const div=document.createElement('div');
+        div.className='post-card border p-2 rounded mb-2';
+        div.innerHTML=`<p>${p.content||''}</p>${p.image_url?'<img src="'+p.image_url+'" class="w-full mb-1"/>':''}
+        <div class="flex justify-between items-center text-gray-500">
+            <span>${new Date(p.created_at).toLocaleString()}</span>
+            <button class="like-button ${userLikes.has(p.id)?'liked':''}" data-id="${p.id}"><i class="fas fa-heart mr-1"></i>Like</button>
+            <button class="comment-toggle" data-id="${p.id}"><i class="fas fa-comment mr-1"></i>Comment</button>
+        </div>
+        <div class="comment-form mt-2 border p-2 rounded" id="comment-form-${p.id}">
+            <input type="text" class="w-full border p-1 rounded mb-1" placeholder="Write a comment" id="comment-input-${p.id}"/>
+            <button class="btn-primary px-2 py-1" data-id="${p.id}">Submit</button>
+            <div id="comment-list-${p.id}" class="mt-1"></div>
+        </div>
+        `;
+        container.appendChild(div);
+    });
+    // Attach like & comment events
+    document.querySelectorAll('.like-button').forEach(btn=>{
+        btn.addEventListener('click', async e=>{
+            const postId=e.currentTarget.dataset.id;
+            if(userLikes.has(postId)){
+                await supabase.from('likes').delete().eq('user_id',currentUser.id).eq('post_id',postId);
+                userLikes.delete(postId);
+            }else{
+                await supabase.from('likes').insert({user_id:currentUser.id,post_id:postId});
+                userLikes.add(postId);
+            }
+            fetchPosts();
+        });
+    });
+    document.querySelectorAll('.comment-toggle').forEach(btn=>{
+        btn.addEventListener('click', e=>{
+            const form=document.getElementById('comment-form-'+e.currentTarget.dataset.id);
+            form.classList.toggle('active');
+        });
+    });
+    document.querySelectorAll('.comment-form button').forEach(btn=>{
+        btn.addEventListener('click', async e=>{
+            const postId=btn.dataset.id;
+            const input=document.getElementById('comment-input-'+postId);
+            if(!input.value) return;
+            await supabase.from('comments').insert({post_id:postId,user_id:currentUser.id,content:input.value});
+            input.value='';
+            fetchPosts();
+        });
+    });
 }
 
-// Fetch profile
-async function fetchProfile() {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
-    if (error) return console.error(error);
-    profile = data;
-    document.getElementById('profile-username').textContent = profile.username || 'Unknown';
-    document.getElementById('profile-bio').textContent = profile.bio || '';
+// --- Profile ---
+document.getElementById('save-profile').addEventListener('click', async ()=>{
+    const username=document.getElementById('edit-username').value;
+    const bio=document.getElementById('edit-bio').value;
+    const fileInput=document.getElementById('profile-image');
+    let avatar_url=null;
+    if(fileInput.files.length>0){
+        const file=fileInput.files[0];
+        avatar_url=await uploadFile(file,'synq-profile',`${currentUser.id}/${Date.now()}_${file.name}`);
+    }
+    await supabase.from('profiles').upsert({id:currentUser.id,username,bio,avatar_url});
+    fetchProfile();
+});
+async function fetchProfile(){
+    const { data,error } = await supabase.from('profiles').select('*').eq('id',currentUser.id).single();
+    if(error)return console.error(error);
+    document.getElementById('profile-username').textContent=data.username||'Unknown';
+    document.getElementById('profile-bio').textContent=data.bio||'';
+    document.getElementById('profile-avatar').src=data.avatar_url||'';
 }
+
+// --- Nav ---
+document.getElementById('nav-feed').addEventListener('click',()=>showView('feed'));
+document.getElementById('nav-create').addEventListener('click',()=>showView('create'));
+document.getElementById('nav-profile').addEventListener('click',()=>showView('profile'));
+
+// --- Init ---
+document.addEventListener('DOMContentLoaded', async ()=>{
+    const { data:{session} } = await supabase.auth.getSession();
+    if(session){
+        currentUser=session.user;
+        document.getElementById('user-email').textContent=currentUser.email;
+        document.getElementById('logout-btn').classList.remove('hidden');
+        showView('feed');
+        fetchPosts();
+        fetchProfile();
+    }else showView('auth');
+});
 </script>
 </body>
 </html>
