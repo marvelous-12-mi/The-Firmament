@@ -1,658 +1,608 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Synq - Modern Social Media App</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          primary: '#6366f1',
-          secondary: '#8b5cf6',
-          accent: '#7c3aed',
-          danger: '#ef4444',
-          graylight: '#f1f5f9',
-          graydark: '#1e293b',
-        },
-        fontFamily: {
-          sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-        },
-      },
-    },
-  };
-</script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f9fafb;
-    color: #1e293b;
-  }
-  .post-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .post-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgb(99 102 241 / 0.25);
-  }
-  .nav-link.active {
-    color: #6366f1;
-    font-weight: 600;
-    border-bottom: 2px solid #6366f1;
-  }
-  .btn-primary {
-    background: linear-gradient(to right, #6366f1, #8b5cf6);
-    box-shadow: 0 4px 15px rgb(99 102 241 / 0.4);
-  }
-  .btn-primary:hover {
-    opacity: 0.9;
-  }
-  .like-button.liked {
-    color: #ef4444;
-  }
-  .comment-form {
-    transition: max-height 0.3s ease;
-    max-height: 0;
-    overflow: hidden;
-  }
-  .comment-form.active {
-    max-height: 240px;
-  }
-  /* Scrollbar */
-  #posts-container::-webkit-scrollbar {
-    width: 8px;
-  }
-  #posts-container::-webkit-scrollbar-thumb {
-    background-color: #6366f1;
-    border-radius: 4px;
-  }
-  #posts-container::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  /* Responsive nav highlight */
-  @media (max-width: 767px) {
-    nav .nav-link, .md\\:hidden button {
-      font-weight: 600;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Synq - Social Media Demo (Local Only)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-  }
-</style>
+    .post-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .post-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgb(99 102 241 / 0.25);
+    }
+    .nav-link.active {
+      color: #6366f1;
+      font-weight: 600;
+      border-bottom: 2px solid #6366f1;
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #6366f1, #8b5cf6);
+      box-shadow: 0 4px 15px rgb(99 102 241 / 0.4);
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    .like-button.liked {
+      color: #ef4444;
+    }
+    #posts-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    #posts-container::-webkit-scrollbar-thumb {
+      background-color: #6366f1;
+      border-radius: 4px;
+    }
+    #posts-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col bg-graylight">
-<!-- Navigation Bar -->
-<nav class="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
-  <div class="flex items-center space-x-3">
-    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-700 flex items-center justify-center shadow-lg">
-      <span class="text-white font-extrabold text-2xl select-none">S</span>
-    </div>
-    <h1 class="text-3xl font-extrabold text-gray-900 select-none">Synq</h1>
-  </div>
-
-  <div class="hidden md:flex space-x-10 text-lg font-semibold">
-    <button id="nav-feed" class="nav-link active flex items-center space-x-2 text-primary hover:text-secondary transition">
-      <i class="fas fa-home"></i><span>Home</span>
-    </button>
-    <button id="nav-create" class="nav-link flex items-center space-x-2 text-gray-700 hover:text-secondary transition">
-      <i class="fas fa-plus"></i><span>Create</span>
-    </button>
-    <button id="nav-profile" class="nav-link flex items-center space-x-2 text-gray-700 hover:text-secondary transition">
-      <i class="fas fa-user"></i><span>Profile</span>
-    </button>
-  </div>
-
-  <div class="flex items-center space-x-4">
+<body>
+  <!-- Navigation Bar -->
+  <nav class="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
     <div class="flex items-center space-x-3">
-      <div class="bg-gray-300 border-2 border-dashed rounded-xl w-10 h-10"></div>
-      <span class="hidden md:inline text-gray-800 font-medium" id="user-email">Not logged in</span>
-      <button id="logout-btn" class="text-gray-700 hover:text-gray-900 hidden" aria-label="Logout">
-        <i class="fas fa-sign-out-alt text-xl"></i>
+      <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-700 flex items-center justify-center shadow-lg cursor-default select-none">
+        <span class="text-white font-extrabold text-2xl">S</span>
+      </div>
+      <h1 class="text-3xl font-extrabold text-gray-900 select-none">Synq</h1>
+    </div>
+
+    <div class="hidden md:flex space-x-10 text-lg font-semibold">
+      <button id="nav-feed" class="nav-link active flex items-center space-x-2 text-primary hover:text-secondary transition">
+        <i class="fas fa-home"></i><span>Home</span>
+      </button>
+      <button id="nav-create" class="nav-link flex items-center space-x-2 text-gray-700 hover:text-secondary transition">
+        <i class="fas fa-plus"></i><span>Create</span>
+      </button>
+      <button id="nav-profile" class="nav-link flex items-center space-x-2 text-gray-700 hover:text-secondary transition">
+        <i class="fas fa-user"></i><span>Profile</span>
       </button>
     </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-3">
+        <div id="user-avatar" class="bg-gray-300 border-2 border-dashed rounded-xl w-10 h-10 flex items-center justify-center text-2xl font-bold text-gray-500 select-none cursor-default" title="User Avatar">U</div>
+        <span id="user-email" class="hidden md:inline text-gray-800 font-medium select-none"></span>
+        <button id="logout-btn" class="text-gray-700 hover:text-gray-900 hidden focus:outline-none" aria-label="Logout" title="Logout">
+          <i class="fas fa-sign-out-alt text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-around z-50 shadow-inner">
+    <button id="mobile-feed" class="flex flex-col items-center text-primary">
+      <i class="fas fa-home text-xl"></i>
+      <span class="text-xs mt-1 font-semibold">Home</span>
+    </button>
+    <button id="mobile-create" class="flex flex-col items-center text-gray-600 hover:text-secondary transition">
+      <i class="fas fa-plus text-xl"></i>
+      <span class="text-xs mt-1 font-semibold">Create</span>
+    </button>
+    <button id="mobile-profile" class="flex flex-col items-center text-gray-600 hover:text-secondary transition">
+      <i class="fas fa-user text-xl"></i>
+      <span class="text-xs mt-1 font-semibold">Profile</span>
+    </button>
   </div>
-</nav>
 
-<!-- Mobile Navigation -->
-<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-around z-50 shadow-inner">
-  <button id="mobile-feed" class="flex flex-col items-center text-primary">
-    <i class="fas fa-home text-xl"></i>
-    <span class="text-xs mt-1 font-semibold">Home</span>
-  </button>
-  <button id="mobile-create" class="flex flex-col items-center text-gray-600 hover:text-secondary transition">
-    <i class="fas fa-plus text-xl"></i>
-    <span class="text-xs mt-1 font-semibold">Create</span>
-  </button>
-  <button id="mobile-profile" class="flex flex-col items-center text-gray-600 hover:text-secondary transition">
-    <i class="fas fa-user text-xl"></i>
-    <span class="text-xs mt-1 font-semibold">Profile</span>
-  </button>
-</div>
-
-<!-- Main Content -->
-<main class="flex-grow container mx-auto px-4 py-8 pb-28 md:pb-8">
-  <!-- Auth View -->
-  <section id="auth-view" class="max-w-md mx-auto">
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-      <h2 id="auth-title" class="text-3xl font-extrabold text-center text-gray-900 mb-6 select-none">Join Synq</h2>
-      <div id="error-message" class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 hidden"></div>
-      <form id="auth-form" class="space-y-5">
-        <div>
-          <label for="email-input" class="block text-gray-700 mb-2 font-semibold">Email</label>
-          <div class="relative">
-            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <i class="fas fa-envelope"></i>
-            </div>
+  <main class="flex-grow container mx-auto px-4 py-8 pb-28 md:pb-8 max-w-4xl">
+    <!-- Auth View -->
+    <section id="auth-view" class="max-w-md mx-auto">
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <h2 id="auth-title" class="text-3xl font-extrabold text-center text-gray-900 mb-6 select-none">Sign In to Synq</h2>
+        <div id="error-message" class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 hidden"></div>
+        <form id="auth-form" class="space-y-5">
+          <div>
+            <label for="username-input" class="block text-gray-700 mb-2 font-semibold">Username</label>
             <input
-              type="email"
-              id="email-input"
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="your@email.com"
+              type="text"
+              id="username-input"
+              class="w-full pl-4 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="Choose a username"
               required
-              autocomplete="email"
+              autocomplete="username"
               spellcheck="false"
             />
           </div>
-        </div>
-        <div>
-          <label for="password-input" class="block text-gray-700 mb-2 font-semibold">Password</label>
-          <div class="relative">
-            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <i class="fas fa-lock"></i>
+          <button
+            type="submit"
+            id="auth-submit"
+            class="w-full btn-primary text-white py-3 rounded-xl font-extrabold hover:opacity-90 transition"
+          >
+            Sign In / Sign Up
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Feed View -->
+    <section id="feed-view" class="max-w-3xl mx-auto hidden">
+      <div class="mb-8">
+        <h2 class="text-3xl font-extrabold text-gray-900 mb-8 select-none">Latest Posts</h2>
+
+        <!-- Create Post Form -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+          <div class="flex space-x-5">
+            <div id="avatar-create" class="bg-gray-300 border-2 border-dashed rounded-2xl w-14 h-14 flex items-center justify-center font-bold text-xl text-gray-600 select-none cursor-default">U</div>
+            <div class="flex-grow">
+              <textarea
+                id="post-content"
+                placeholder="What's on your mind?"
+                class="w-full border border-gray-300 rounded-xl p-4 resize-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                rows="3"
+              ></textarea>
+              <div class="flex justify-between items-center mt-5">
+                <div class="flex space-x-3 text-gray-500">
+                  <button aria-label="Add Photo" class="hover:text-primary transition"><i class="fas fa-camera text-lg"></i></button>
+                  <button aria-label="Add Image" class="hover:text-primary transition"><i class="fas fa-image text-lg"></i></button>
+                </div>
+                <button
+                  id="submit-post"
+                  class="btn-primary text-white px-8 py-3 rounded-xl font-extrabold hover:opacity-90 transition"
+                >
+                  Post
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Posts Feed -->
+        <div id="posts-container" class="space-y-6 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+          <p class="text-center text-gray-500 select-none">No posts yet. Be the first to post!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile View -->
+    <section id="profile-view" class="max-w-3xl mx-auto hidden">
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-700 h-36"></div>
+        <div class="px-8 pb-8">
+          <div class="flex items-end -mt-20 mb-6">
+            <div id="avatar-profile" class="bg-gray-300 border-4 border-white rounded-2xl w-36 h-36 select-none flex items-center justify-center text-5xl font-extrabold text-gray-600 cursor-default">U</div>
+            <div class="ml-8 pb-2">
+              <h2 id="profile-username" class="text-4xl font-extrabold text-gray-900 select-text">Username</h2>
+              <p id="profile-bio" class="text-gray-600 text-lg select-text">This is your bio.</p>
+            </div>
+            <button id="edit-profile-btn" class="ml-auto border border-gray-300 text-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-50 transition select-none">
+              Edit Profile
+            </button>
+          </div>
+
+          <h3 class="text-2xl font-extrabold text-gray-900 mb-6 select-none">Your Posts</h3>
+          <div id="user-posts" class="space-y-6 max-h-[48vh] overflow-y-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+            <p class="text-center text-gray-500 select-none">You haven't posted yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-6 select-none">Edit Profile</h3>
+
+        <form id="edit-profile-form" class="space-y-6">
+          <div>
+            <label for="edit-username" class="block text-gray-700 mb-2 font-semibold">Username</label>
             <input
-              type="password"
-              id="password-input"
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="••••••••"
+              type="text"
+              id="edit-username"
+              class="w-full border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="Your username"
               required
-              autocomplete="current-password"
             />
           </div>
-        </div>
-        <button
-          type="submit"
-          id="auth-submit"
-          class="w-full btn-primary text-white py-3 rounded-xl font-extrabold hover:opacity-90 transition"
-        >
-          Sign Up
-        </button>
-      </form>
-      <p class="text-center mt-5 text-gray-600 select-none">
-        Already have an account? 
-        <button id="toggle-auth" class="text-primary font-extrabold hover:underline focus:outline-none">Sign In</button>
-      </p>
-    </div>
-  </section>
-
-  <!-- Feed View -->
-  <section id="feed-view" class="max-w-3xl mx-auto hidden">
-    <div class="mb-8">
-      <h2 class="text-3xl font-extrabold text-gray-900 mb-8 select-none">Latest Posts</h2>
-
-      <!-- Create Post Form -->
-      <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
-        <div class="flex space-x-5">
-          <div class="bg-gray-300 border-2 border-dashed rounded-2xl w-14 h-14 flex items-center justify-center text-2xl font-bold text-gray-500 select-none">U</div>
-          <div class="flex-grow">
+          <div>
+            <label for="edit-bio" class="block text-gray-700 mb-2 font-semibold">Bio</label>
             <textarea
-              id="post-content"
-              placeholder="What's on your mind?"
-              class="w-full border border-gray-300 rounded-xl p-4 resize-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              rows="3"
+              id="edit-bio"
+              class="w-full border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none"
+              placeholder="Tell us about yourself"
+              rows="4"
             ></textarea>
-            <div class="flex justify-between items-center mt-5">
-              <div class="flex space-x-3 text-gray-500">
-                <button aria-label="Add Photo" class="hover:text-primary transition"><i class="fas fa-camera text-lg"></i></button>
-                <button aria-label="Add Image" class="hover:text-primary transition"><i class="fas fa-image text-lg"></i></button>
-              </div>
-              <button
-                id="submit-post"
-                class="btn-primary text-white px-8 py-3 rounded-xl font-extrabold hover:opacity-90 transition"
-              >
-                Post
-              </button>
-            </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Posts Feed -->
-      <div id="posts-container" class="space-y-6 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
-        <div class="flex justify-center py-20">
-          <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-primary"></div>
-        </div>
+          <div class="flex justify-end space-x-4">
+            <button type="button" id="cancel-edit" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition select-none">
+              Cancel
+            </button>
+            <button type="submit" id="save-profile" class="btn-primary text-white px-6 py-3 rounded-xl font-extrabold hover:opacity-90 transition select-none">
+              Save Changes
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  </section>
+  </main>
 
-  <!-- Create Post View (hidden, for future use) -->
-  <section id="create-view" class="max-w-3xl mx-auto hidden">
-    <!-- Reserved for expansion if needed -->
-  </section>
+  <script>
+    // LocalStorage keys
+    const STORAGE_USER_KEY = 'synq_user';
+    const STORAGE_POSTS_KEY = 'synq_posts';
+    const STORAGE_PROFILE_KEY = 'synq_profile';
+    const STORAGE_LIKES_KEY = 'synq_likes';
 
-  <!-- Profile View -->
-  <section id="profile-view" class="max-w-3xl mx-auto hidden">
-    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-      <div class="bg-gradient-to-r from-indigo-600 to-purple-700 h-36"></div>
-      <div class="px-8 pb-8">
-        <div class="flex items-end -mt-20 mb-6">
-          <div class="bg-gray-300 border-4 border-white rounded-2xl w-36 h-36 select-none flex items-center justify-center text-5xl font-extrabold text-gray-600">
-            U
-          </div>
-          <div class="ml-8 pb-2">
-            <h2 id="profile-username" class="text-4xl font-extrabold text-gray-900 select-text">Loading...</h2>
-            <p id="profile-bio" class="text-gray-600 text-lg select-text">Loading profile...</p>
-          </div>
-          <button id="edit-profile-btn" class="ml-auto border border-gray-300 text-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-50 transition select-none">
-            Edit Profile
-          </button>
-        </div>
+    // Elements
+    const views = {
+      auth: document.getElementById('auth-view'),
+      feed: document.getElementById('feed-view'),
+      profile: document.getElementById('profile-view'),
+      editProfileModal: document.getElementById('edit-profile-modal'),
+    };
 
-        <div class="flex border-b border-gray-200 pb-6 mb-8 text-center">
-          <div class="flex-1">
-            <p id="post-count" class="text-3xl font-extrabold text-gray-900 select-text">0</p>
-            <p class="text-gray-600 select-none">Posts</p>
-          </div>
-          <div class="flex-1">
-            <p class="text-3xl font-extrabold text-gray-900 select-text">0</p>
-            <p class="text-gray-600 select-none">Followers</p>
-          </div>
-          <div class="flex-1">
-            <p class="text-3xl font-extrabold text-gray-900 select-text">0</p>
-            <p class="text-gray-600 select-none">Following</p>
-          </div>
-        </div>
+    const navLinks = {
+      feed: [...document.querySelectorAll('#nav-feed, #mobile-feed')],
+      create: [...document.querySelectorAll('#nav-create, #mobile-create')],
+      profile: [...document.querySelectorAll('#nav-profile, #mobile-profile')],
+    };
 
-        <h3 class="text-2xl font-extrabold text-gray-900 mb-6 select-none">Your Posts</h3>
-        <div id="user-posts" class="space-y-6 max-h-[48vh] overflow-y-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
-          <div class="flex justify-center py-20">
-            <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    const userEmailEl = document.getElementById('user-email');
+    const logoutBtn = document.getElementById('logout-btn');
+    const postsContainer = document.getElementById('posts-container');
+    const userPostsContainer = document.getElementById('user-posts');
+    const postCountEl = document.getElementById('post-count');
+    const userAvatar = document.getElementById('user-avatar');
+    const avatarCreate = document.getElementById('avatar-create');
+    const avatarProfile = document.getElementById('avatar-profile');
+    const profileUsernameEl = document.getElementById('profile-username');
+    const profileBioEl = document.getElementById('profile-bio');
 
-  <!-- Edit Profile Modal -->
-  <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-      <h3 class="text-2xl font-extrabold text-gray-900 mb-6 select-none">Edit Profile</h3>
+    // Current user state
+    let currentUser = null;
+    let posts = [];
+    let likes = new Set();
+    let profile = { username: '', bio: '' };
 
-      <form id="edit-profile-form" class="space-y-6">
-        <div>
-          <label for="edit-username" class="block text-gray-700 mb-2 font-semibold">Username</label>
-          <input
-            type="text"
-            id="edit-username"
-            class="w-full border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-transparent transition"
-            placeholder="Your username"
-            required
-          />
-        </div>
-        <div>
-          <label for="edit-bio" class="block text-gray-700 mb-2 font-semibold">Bio</label>
-          <textarea
-            id="edit-bio"
-            class="w-full border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none"
-            placeholder="Tell us about yourself"
-            rows="4"
-          ></textarea>
-        </div>
-        <div class="flex justify-end space-x-4">
-          <button type="button" id="cancel-edit" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition select-none">
-            Cancel
-          </button>
-          <button type="submit" id="save-profile" class="btn-primary text-white px-6 py-3 rounded-xl font-extrabold hover:opacity-90 transition select-none">
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</main>
-
-<script>
-  // Supabase config
-  const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
-
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  let currentUser = null;
-  let posts = [];
-  let profile = null;
-  let userLikes = new Set();
-
-  // Elements
-  const views = {
-    auth: document.getElementById('auth-view'),
-    feed: document.getElementById('feed-view'),
-    profile: document.getElementById('profile-view'),
-    editProfileModal: document.getElementById('edit-profile-modal'),
-  };
-  const navLinks = {
-    feed: [...document.querySelectorAll('#nav-feed, #mobile-feed')],
-    create: [...document.querySelectorAll('#nav-create, #mobile-create')],
-    profile: [...document.querySelectorAll('#nav-profile, #mobile-profile')],
-  };
-
-  const userEmailEl = document.getElementById('user-email');
-  const logoutBtn = document.getElementById('logout-btn');
-  const postsContainer = document.getElementById('posts-container');
-  const userPostsContainer = document.getElementById('user-posts');
-  const postCountEl = document.getElementById('post-count');
-
-  // Navigation highlight helper
-  function setActiveNav(selected) {
-    Object.entries(navLinks).forEach(([key, buttons]) => {
-      buttons.forEach(btn => {
-        if(key === selected) btn.classList.add('active', 'text-primary');
-        else {
-          btn.classList.remove('active', 'text-primary');
-          btn.classList.add('text-gray-700');
-        }
+    // Navigation highlight helper
+    function setActiveNav(selected) {
+      Object.entries(navLinks).forEach(([key, buttons]) => {
+        buttons.forEach(btn => {
+          if(key === selected) btn.classList.add('active', 'text-primary');
+          else {
+            btn.classList.remove('active', 'text-primary');
+            btn.classList.add('text-gray-700');
+          }
+        });
       });
-    });
-  }
+    }
 
-  // Show/hide views
-  function showView(view) {
-    Object.keys(views).forEach(v => {
-      if(v === view) views[v].classList.remove('hidden');
-      else views[v].classList.add('hidden');
-    });
-    setActiveNav(view);
-  }
+    // Show/hide views
+    function showView(view) {
+      Object.keys(views).forEach(v => {
+        if(v === view) views[v].classList.remove('hidden');
+        else views[v].classList.add('hidden');
+      });
+      setActiveNav(view);
+    }
 
-  // Init app
-  async function init() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    // Escape html helper to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
 
-    if(session) {
-      currentUser = session.user;
-      userEmailEl.textContent = currentUser.email;
+    // Update avatars with first letter of username
+    function updateAvatars(username) {
+      const letter = username.charAt(0).toUpperCase() || 'U';
+      [userAvatar, avatarCreate, avatarProfile].forEach(el => {
+        el.textContent = letter;
+        el.title = username;
+      });
+    }
+
+    // Load user from localStorage
+    function loadUser() {
+      const stored = localStorage.getItem(STORAGE_USER_KEY);
+      if(stored) {
+        currentUser = JSON.parse(stored);
+        userEmailEl.textContent = currentUser.username;
+        userEmailEl.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+        updateAvatars(currentUser.username);
+        return true;
+      }
+      logoutBtn.classList.add('hidden');
+      userEmailEl.textContent = '';
+      userEmailEl.classList.add('hidden');
+      updateAvatars('U');
+      return false;
+    }
+
+    // Save user to localStorage
+    function saveUser(user) {
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
+      currentUser = user;
+      userEmailEl.textContent = currentUser.username;
+      userEmailEl.classList.remove('hidden');
       logoutBtn.classList.remove('hidden');
-      showView('feed');
-      await loadPosts();
-      await loadProfile();
-      await loadUserLikes();
-    } else {
-      userEmailEl.textContent = 'Not logged in';
+      updateAvatars(currentUser.username);
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem(STORAGE_USER_KEY);
+      currentUser = null;
+      userEmailEl.textContent = '';
+      userEmailEl.classList.add('hidden');
       logoutBtn.classList.add('hidden');
       showView('auth');
+      renderFeed();
     }
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      if(session) {
-        currentUser = session.user;
-        userEmailEl.textContent = currentUser.email;
-        logoutBtn.classList.remove('hidden');
+    // Load posts from localStorage
+    function loadPosts() {
+      const stored = localStorage.getItem(STORAGE_POSTS_KEY);
+      posts = stored ? JSON.parse(stored) : [];
+    }
+
+    // Save posts to localStorage
+    function savePosts() {
+      localStorage.setItem(STORAGE_POSTS_KEY, JSON.stringify(posts));
+    }
+
+    // Load likes from localStorage
+    function loadLikes() {
+      const stored = localStorage.getItem(STORAGE_LIKES_KEY);
+      likes = stored ? new Set(JSON.parse(stored)) : new Set();
+    }
+
+    // Save likes to localStorage
+    function saveLikes() {
+      localStorage.setItem(STORAGE_LIKES_KEY, JSON.stringify([...likes]));
+    }
+
+    // Load profile from localStorage
+    function loadProfile() {
+      const stored = localStorage.getItem(STORAGE_PROFILE_KEY);
+      profile = stored ? JSON.parse(stored) : { username: '', bio: '' };
+    }
+
+    // Save profile to localStorage
+    function saveProfile() {
+      localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profile));
+    }
+
+    // Render posts feed
+    function renderFeed() {
+      if(posts.length === 0) {
+        postsContainer.innerHTML = `<p class="text-center text-gray-500 select-none">No posts yet. Be the first to post!</p>`;
+        return;
+      }
+      postsContainer.innerHTML = '';
+      posts.slice().reverse().forEach(post => {
+        const liked = likes.has(post.id) ? 'liked text-danger' : 'text-gray-500 hover:text-danger';
+        const postDate = new Date(post.createdAt).toLocaleString();
+
+        const postEl = document.createElement('div');
+        postEl.className = 'bg-white rounded-2xl shadow-sm p-6 post-card select-text';
+
+        postEl.innerHTML = `
+          <div class="flex items-center space-x-4 mb-4">
+            <div class="bg-gray-300 rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl text-gray-600 select-none cursor-default">${escapeHtml(post.username.charAt(0).toUpperCase())}</div>
+            <div>
+              <p class="font-semibold text-gray-900">${escapeHtml(post.username)}</p>
+              <p class="text-xs text-gray-400">${postDate}</p>
+            </div>
+          </div>
+          <p class="text-gray-800 mb-5 whitespace-pre-wrap">${escapeHtml(post.content)}</p>
+          <button data-post-id="${post.id}" class="like-button ${liked} flex items-center space-x-2 font-semibold focus:outline-none transition">
+            <i class="fas fa-heart"></i><span>Like</span>
+          </button>
+        `;
+        postsContainer.appendChild(postEl);
+      });
+
+      postsContainer.querySelectorAll('.like-button').forEach(btn => {
+        btn.addEventListener('click', toggleLike);
+      });
+    }
+
+    // Render user's posts in profile
+    function renderUserPosts() {
+      userPostsContainer.innerHTML = '';
+      const userPosts = posts.filter(p => p.username === currentUser.username);
+      if(userPosts.length === 0) {
+        userPostsContainer.innerHTML = `<p class="text-center text-gray-500 select-none">You haven't posted yet.</p>`;
+        return;
+      }
+      userPosts.slice().reverse().forEach(post => {
+        const postDate = new Date(post.createdAt).toLocaleString();
+        const postEl = document.createElement('div');
+        postEl.className = 'bg-gray-100 rounded-xl p-4 select-text';
+        postEl.innerHTML = `
+          <p class="text-gray-800 mb-2 whitespace-pre-wrap">${escapeHtml(post.content)}</p>
+          <p class="text-xs text-gray-500">${postDate}</p>
+        `;
+        userPostsContainer.appendChild(postEl);
+      });
+    }
+
+    // Render profile info
+    function renderProfile() {
+      if(!currentUser) return;
+      profileUsernameEl.textContent = profile.username || currentUser.username;
+      profileBioEl.textContent = profile.bio || 'This is your bio.';
+      updateAvatars(profile.username || currentUser.username);
+      const userPostsCount = posts.filter(p => p.username === (profile.username || currentUser.username)).length;
+      postCountEl.textContent = userPostsCount;
+      renderUserPosts();
+    }
+
+    // Toggle like/unlike posts
+    function toggleLike(e) {
+      if(!currentUser) {
+        alert('Please sign in to like posts.');
+        return;
+      }
+      const postId = e.currentTarget.dataset.postId;
+      if(likes.has(postId)) likes.delete(postId);
+      else likes.add(postId);
+      saveLikes();
+      renderFeed();
+    }
+
+    // Create new post
+    function createPost() {
+      if(!currentUser) {
+        alert('Please sign in to post.');
+        return;
+      }
+      const textarea = document.getElementById('post-content');
+      const content = textarea.value.trim();
+      if(!content) return alert('Post content cannot be empty.');
+      const newPost = {
+        id: crypto.randomUUID(),
+        username: profile.username || currentUser.username,
+        content,
+        createdAt: new Date().toISOString(),
+      };
+      posts.push(newPost);
+      savePosts();
+      textarea.value = '';
+      showView('feed');
+      renderFeed();
+      renderProfile();
+    }
+
+    // Sign in/up handler (local only)
+    const authForm = document.getElementById('auth-form');
+    const errorMessage = document.getElementById('error-message');
+    authForm.addEventListener('submit', e => {
+      e.preventDefault();
+      errorMessage.classList.add('hidden');
+      const usernameInput = document.getElementById('username-input');
+      const username = usernameInput.value.trim().toLowerCase();
+      if(!username) {
+        errorMessage.textContent = 'Username cannot be empty.';
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+      // Save user locally
+      saveUser({ username });
+      // Load or create profile
+      loadProfile();
+      if(!profile.username) {
+        profile.username = username;
+        profile.bio = '';
+        saveProfile();
+      }
+      showView('feed');
+      renderFeed();
+      renderProfile();
+    });
+
+    // Navigation buttons
+    navLinks.feed.forEach(btn => btn.addEventListener('click', () => {
+      showView('feed');
+      setActiveNav('feed');
+    }));
+    navLinks.create.forEach(btn => btn.addEventListener('click', () => {
+      showView('feed');
+      setActiveNav('create');
+      document.getElementById('post-content').focus();
+    }));
+    navLinks.profile.forEach(btn => btn.addEventListener('click', () => {
+      if(!currentUser) {
+        alert('Please sign in to view profile.');
+        showView('auth');
+        return;
+      }
+      showView('profile');
+      setActiveNav('profile');
+      renderProfile();
+    }));
+
+    // Mobile nav buttons
+    document.getElementById('mobile-feed').addEventListener('click', () => {
+      showView('feed');
+      setActiveNav('feed');
+    });
+    document.getElementById('mobile-create').addEventListener('click', () => {
+      showView('feed');
+      setActiveNav('create');
+      document.getElementById('post-content').focus();
+    });
+    document.getElementById('mobile-profile').addEventListener('click', () => {
+      if(!currentUser) {
+        alert('Please sign in to view profile.');
+        showView('auth');
+        return;
+      }
+      showView('profile');
+      setActiveNav('profile');
+      renderProfile();
+    });
+
+    // Post submit button
+    document.getElementById('submit-post').addEventListener('click', createPost);
+
+    // Logout button
+    logoutBtn.addEventListener('click', () => {
+      logout();
+    });
+
+    // Edit profile modal controls
+    document.getElementById('edit-profile-btn').addEventListener('click', () => {
+      document.getElementById('edit-username').value = profile.username || currentUser.username;
+      document.getElementById('edit-bio').value = profile.bio || '';
+      views.editProfileModal.classList.remove('hidden');
+    });
+    document.getElementById('cancel-edit').addEventListener('click', () => {
+      views.editProfileModal.classList.add('hidden');
+    });
+
+    // Save profile form
+    document.getElementById('edit-profile-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const newUsername = document.getElementById('edit-username').value.trim();
+      const newBio = document.getElementById('edit-bio').value.trim();
+      if(!newUsername) {
+        alert('Username cannot be empty.');
+        return;
+      }
+      profile.username = newUsername;
+      profile.bio = newBio;
+      saveProfile();
+      // Also update currentUser username locally for session
+      currentUser.username = newUsername;
+      saveUser(currentUser);
+      renderProfile();
+      views.editProfileModal.classList.add('hidden');
+      userEmailEl.textContent = newUsername;
+      updateAvatars(newUsername);
+    });
+
+    // Initialization
+    function init() {
+      loadUser();
+      loadPosts();
+      loadLikes();
+      loadProfile();
+      if(currentUser) {
         showView('feed');
-        await loadPosts();
-        await loadProfile();
-        await loadUserLikes();
+        renderFeed();
+        renderProfile();
       } else {
-        currentUser = null;
-        userEmailEl.textContent = 'Not logged in';
-        logoutBtn.classList.add('hidden');
         showView('auth');
       }
-    });
-  }
-
-  // Load posts from Supabase
-  async function loadPosts() {
-    postsContainer.innerHTML = `<div class="flex justify-center py-16"><div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary"></div></div>`;
-    const { data, error } = await supabase.from('posts').select('*, profiles(username)').order('created_at', { ascending: false });
-    if(error) {
-      postsContainer.innerHTML = `<p class="text-center text-red-500">Failed to load posts.</p>`;
-      return;
-    }
-    posts = data;
-    renderPosts();
-  }
-
-  // Render posts feed
-  function renderPosts() {
-    if(posts.length === 0) {
-      postsContainer.innerHTML = `<p class="text-center text-gray-500 py-10 select-none">No posts yet. Be the first!</p>`;
-      return;
     }
 
-    postsContainer.innerHTML = '';
-    posts.forEach(post => {
-      const liked = userLikes.has(post.id) ? 'liked text-danger' : 'text-gray-500 hover:text-danger';
-      const username = post.profiles?.username || 'Anonymous';
-      const postDate = new Date(post.created_at).toLocaleString();
-
-      const postEl = document.createElement('div');
-      postEl.className = 'bg-white rounded-2xl shadow-sm p-6 post-card select-text';
-
-      postEl.innerHTML = `
-        <div class="flex items-center space-x-4 mb-4">
-          <div class="bg-gray-300 rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl text-gray-600 select-none">${username.charAt(0).toUpperCase()}</div>
-          <div>
-            <p class="font-semibold text-gray-900">${username}</p>
-            <p class="text-xs text-gray-400">${postDate}</p>
-          </div>
-        </div>
-        <p class="text-gray-800 mb-5 whitespace-pre-wrap">${escapeHtml(post.content)}</p>
-        <button data-post-id="${post.id}" class="like-button ${liked} flex items-center space-x-2 font-semibold focus:outline-none transition">
-          <i class="fas fa-heart"></i><span>Like</span>
-        </button>
-      `;
-      postsContainer.appendChild(postEl);
-    });
-
-    postsContainer.querySelectorAll('.like-button').forEach(btn => {
-      btn.addEventListener('click', toggleLike);
-    });
-  }
-
-  // Escape HTML to prevent XSS
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Load user profile info
-  async function loadProfile() {
-    if(!currentUser) return;
-    const { data, error } = await supabase.from('profiles').select().eq('id', currentUser.id).single();
-    if(error) {
-      document.getElementById('profile-username').textContent = 'Unknown';
-      document.getElementById('profile-bio').textContent = 'Failed to load profile.';
-      return;
-    }
-    profile = data;
-    document.getElementById('profile-username').textContent = profile?.username || 'Anonymous';
-    document.getElementById('profile-bio').textContent = profile?.bio || '';
-    const userPostsCount = posts.filter(p => p.user_id === currentUser.id).length;
-    document.getElementById('post-count').textContent = userPostsCount;
-    renderUserPosts();
-  }
-
-  // Render user's posts in profile
-  function renderUserPosts() {
-    userPostsContainer.innerHTML = '';
-    const userPosts = posts.filter(p => p.user_id === currentUser.id);
-    if(userPosts.length === 0) {
-      userPostsContainer.innerHTML = `<p class="text-center text-gray-500 py-10 select-none">You haven't posted yet.</p>`;
-      return;
-    }
-    userPosts.forEach(post => {
-      const postDate = new Date(post.created_at).toLocaleString();
-      const postEl = document.createElement('div');
-      postEl.className = 'bg-gray-100 rounded-xl p-4 select-text';
-      postEl.innerHTML = `
-        <p class="text-gray-800 mb-2 whitespace-pre-wrap">${escapeHtml(post.content)}</p>
-        <p class="text-xs text-gray-500">${postDate}</p>
-      `;
-      userPostsContainer.appendChild(postEl);
-    });
-  }
-
-  // Load user likes
-  async function loadUserLikes() {
-    if(!currentUser) return;
-    const { data, error } = await supabase.from('likes').select('post_id').eq('user_id', currentUser.id);
-    if(error) {
-      userLikes = new Set();
-      return;
-    }
-    userLikes = new Set(data.map(l => l.post_id));
-    renderPosts();
-  }
-
-  // Toggle like/unlike
-  async function toggleLike(e) {
-    if(!currentUser) {
-      alert('Please sign in to like posts.');
-      return;
-    }
-    const postId = e.currentTarget.dataset.postId;
-    if(userLikes.has(postId)) {
-      await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUser.id);
-      userLikes.delete(postId);
-    } else {
-      await supabase.from('likes').insert({ post_id: postId, user_id: currentUser.id });
-      userLikes.add(postId);
-    }
-    renderPosts();
-  }
-
-  // Create new post
-  async function createPost() {
-    if(!currentUser) {
-      alert('Please sign in to post.');
-      return;
-    }
-    const textarea = document.getElementById('post-content');
-    const content = textarea.value.trim();
-    if(!content) return;
-    const { error } = await supabase.from('posts').insert({ content, user_id: currentUser.id });
-    if(error) {
-      alert('Failed to create post.');
-      return;
-    }
-    textarea.value = '';
-    await loadPosts();
-    await loadProfile();
-    showView('feed');
-  }
-
-  // Authentication form handler
-  const authForm = document.getElementById('auth-form');
-  const errorMessage = document.getElementById('error-message');
-  let isSignUp = true;
-  authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    errorMessage.classList.add('hidden');
-    const email = document.getElementById('email-input').value.trim();
-    const password = document.getElementById('password-input').value.trim();
-    if(!email || !password) return;
-
-    try {
-      if(isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if(error) throw error;
-        alert('Check your email to confirm signup.');
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if(error) throw error;
-      }
-    } catch (err) {
-      errorMessage.textContent = err.message;
-      errorMessage.classList.remove('hidden');
-    }
-  });
-
-  // Toggle sign in/sign up mode
-  document.getElementById('toggle-auth').addEventListener('click', () => {
-    const authTitle = document.getElementById('auth-title');
-    const authSubmit = document.getElementById('auth-submit');
-    if(isSignUp) {
-      authTitle.textContent = 'Sign In';
-      authSubmit.textContent = 'Sign In';
-      isSignUp = false;
-    } else {
-      authTitle.textContent = 'Join Synq';
-      authSubmit.textContent = 'Sign Up';
-      isSignUp = true;
-    }
-    errorMessage.classList.add('hidden');
-  });
-
-  // Logout handler
-  logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-  });
-
-  // Navigation buttons
-  navLinks.feed.forEach(btn => btn.addEventListener('click', () => showView('feed')));
-  navLinks.create.forEach(btn => btn.addEventListener('click', () => showView('create')));
-  navLinks.profile.forEach(btn => showProfileView());
-
-  // Submit post button
-  document.getElementById('submit-post').addEventListener('click', createPost);
-
-  // Profile view and edit
-  function showProfileView() {
-    if(!currentUser) {
-      alert('Please sign in to view profile.');
-      return;
-    }
-    showView('profile');
-    loadProfile();
-  }
-
-  // Edit profile modal controls
-  const editProfileModal = document.getElementById('edit-profile-modal');
-  document.getElementById('edit-profile-btn').addEventListener('click', () => {
-    if(profile) {
-      document.getElementById('edit-username').value = profile.username || '';
-      document.getElementById('edit-bio').value = profile.bio || '';
-    }
-    editProfileModal.classList.remove('hidden');
-  });
-  document.getElementById('cancel-edit').addEventListener('click', () => {
-    editProfileModal.classList.add('hidden');
-  });
-
-  // Save profile form
-  document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('edit-username').value.trim();
-    const bio = document.getElementById('edit-bio').value.trim();
-    if(!username) {
-      alert('Username cannot be empty');
-      return;
-    }
-    const { error } = await supabase.from('profiles').upsert({ id: currentUser.id, username, bio });
-    if(error) {
-      alert('Failed to update profile');
-      return;
-    }
-    editProfileModal.classList.add('hidden');
-    await loadProfile();
-  });
-
-  // Escape html helper (reused)
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Initialization
-  init();
-</script>
+    init();
+  </script>
 </body>
 </html>
