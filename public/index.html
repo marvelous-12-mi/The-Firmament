@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Synq — Feed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/styles.css" rel="stylesheet">
+  <script type="module" src="/supabase.js"></script>
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/feed.js"></script>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <strong>Synq</strong>
+      <nav class="row">
+        <a href="/index.html">Feed</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/notifications.html">Notifications</a>
+      </nav>
+    </div>
+    <button id="logout" class="btn secondary">Sign out</button>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Create a post</h2>
+      <textarea id="post-content" rows="3" placeholder="What's on your mind?"></textarea>
+      <div class="row">
+        <input type="file" id="post-image" accept="image/*">
+        <button id="publish" class="btn">Publish</button>
+      </div>
+      <p id="compose-status" class="meta"></p>
+    </section>
+
+    <section id="feed"></section>
+  </main>
+</body>
+</html>
