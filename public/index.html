@@ -42,6 +42,9 @@
         .btn-primary:hover {
             opacity: 0.9;
         }
+        .like-button.liked {
+            color: #ef4444;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -161,28 +164,6 @@
                         </button>
                     </p>
                 </div>
-                
-                <div class="relative my-6">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">Or continue with</span>
-                    </div>
-                </div>
-                
-                <button
-                    id="google-login"
-                    class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
-                >
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
-                    </svg>
-                    <span>Sign in with Google</span>
-                </button>
             </div>
         </div>
 
@@ -286,7 +267,7 @@
                             <p class="text-gray-600" id="profile-bio">Loading profile...</p>
                         </div>
                         <div class="ml-auto">
-                            <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">
+                            <button id="edit-profile-btn" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">
                                 Edit Profile
                             </button>
                         </div>
@@ -316,10 +297,54 @@
                 </div>
             </div>
         </div>
+
+        <!-- Edit Profile Modal -->
+        <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Edit Profile</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Username</label>
+                        <input
+                            type="text"
+                            id="edit-username"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            placeholder="Your username"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Bio</label>
+                        <textarea
+                            id="edit-bio"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            placeholder="Tell us about yourself"
+                            rows="3"
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button
+                        id="cancel-edit"
+                        class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        id="save-profile"
+                        class="btn-primary text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
-        // Supabase Configuration (REPLACE WITH YOUR VALUES)
+        // Supabase Configuration
         const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
         
@@ -331,6 +356,7 @@
         let currentView = 'auth';
         let posts = [];
         let profile = null;
+        let userLikes = new Set();
 
         // DOM Elements
         const views = {
@@ -357,6 +383,7 @@
                 showView('feed');
                 await fetchPosts();
                 await fetchProfile();
+                await fetchUserLikes();
             } else {
                 showView('auth');
             }
@@ -367,6 +394,9 @@
                     currentUser = session.user;
                     document.getElementById('user-email').textContent = currentUser.email;
                     document.getElementById('logout-btn').classList.remove('hidden');
+                    fetchPosts();
+                    fetchProfile();
+                    fetchUserLikes();
                 } else {
                     currentUser = null;
                     document.getElementById('user-email').textContent = 'Not logged in';
@@ -388,13 +418,25 @@
             // Auth form
             document.getElementById('auth-form').addEventListener('submit', handleAuth);
             document.getElementById('toggle-auth').addEventListener('click', toggleAuthMode);
-            document.getElementById('google-login').addEventListener('click', handleGoogleLogin);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
             
             // Post creation
             document.getElementById('submit-post').addEventListener('click', createPost);
             document.getElementById('publish-post').addEventListener('click', createPostFromCreateView);
             document.getElementById('cancel-create').addEventListener('click', () => showView('feed'));
+            
+            // Profile editing
+            document.getElementById('edit-profile-btn').addEventListener('click', () => {
+                document.getElementById('edit-username').value = profile?.username || '';
+                document.getElementById('edit-bio').value = profile?.bio || '';
+                document.getElementById('edit-profile-modal').classList.remove('hidden');
+            });
+            
+            document.getElementById('cancel-edit').addEventListener('click', () => {
+                document.getElementById('edit-profile-modal').classList.add('hidden');
+            });
+            
+            document.getElementById('save-profile').addEventListener('click', updateProfile);
         }
 
         function showView(view) {
@@ -496,35 +538,11 @@
             }
         }
 
-        async function handleGoogleLogin() {
-            try {
-                document.getElementById('google-login').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
-                document.getElementById('google-login').disabled = true;
-                
-                const { error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                });
-                
-                if (error) throw error;
-            } catch (error) {
-                showError(error.message);
-                document.getElementById('google-login').innerHTML = `
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
-                    </svg>
-                    <span>Sign in with Google</span>
-                `;
-                document.getElementById('google-login').disabled = false;
-            }
-        }
-
         async function handleLogout() {
             await supabase.auth.signOut();
             posts = [];
             profile = null;
+            userLikes = new Set();
         }
 
         async function createPost() {
@@ -657,6 +675,95 @@
             }
         }
 
+        async function fetchUserLikes() {
+            try {
+                const { data, error } = await supabase
+                    .from('likes')
+                    .select('post_id')
+                    .eq('user_id', currentUser.id);
+                
+                if (error) throw error;
+                
+                userLikes = new Set(data.map(like => like.post_id));
+                renderPosts(); // Re-render to update like buttons
+            } catch (error) {
+                console.error('Failed to fetch likes:', error.message);
+            }
+        }
+
+        async function toggleLike(postId) {
+            if (!currentUser) {
+                showError('Please log in to like posts');
+                return;
+            }
+            
+            const isLiked = userLikes.has(postId);
+            
+            try {
+                if (isLiked) {
+                    // Unlike
+                    const { error } = await supabase
+                        .from('likes')
+                        .delete()
+                        .eq('user_id', currentUser.id)
+                        .eq('post_id', postId);
+                    
+                    if (error) throw error;
+                    userLikes.delete(postId);
+                } else {
+                    // Like
+                    const { error } = await supabase
+                        .from('likes')
+                        .insert({
+                            user_id: currentUser.id,
+                            post_id: postId
+                        });
+                    
+                    if (error) throw error;
+                    userLikes.add(postId);
+                }
+                
+                // Update UI
+                const likeButton = document.querySelector(`.like-button[data-post-id="${postId}"]`);
+                if (likeButton) {
+                    likeButton.classList.toggle('liked', !isLiked);
+                    likeButton.innerHTML = isLiked ? 
+                        '<i class="far fa-heart mr-2"></i> Like' : 
+                        '<i class="fas fa-heart mr-2"></i> Unlike';
+                }
+            } catch (error) {
+                showError('Failed to update like: ' + error.message);
+            }
+        }
+
+        async function updateProfile() {
+            const username = document.getElementById('edit-username').value;
+            const bio = document.getElementById('edit-bio').value;
+            
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: currentUser.id,
+                        username,
+                        bio,
+                        updated_at: new Date()
+                    });
+                
+                if (error) throw error;
+                
+                // Update local profile
+                profile.username = username;
+                profile.bio = bio;
+                updateProfileInfo();
+                
+                // Close modal
+                document.getElementById('edit-profile-modal').classList.add('hidden');
+            } catch (error) {
+                showError('Failed to update profile: ' + error.message);
+            }
+        }
+
         function renderPosts() {
             const container = document.getElementById('posts-container');
             
@@ -671,41 +778,48 @@
                 return;
             }
             
-            container.innerHTML = posts.map(post => `
-                <div class="post-card bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-                    <div class="p-6">
-                        <div class="flex items-start space-x-4">
-                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex-shrink-0"></div>
-                            <div>
-                                <div class="flex items-center">
-                                    <h3 class="font-bold text-slate-800">
-                                        ${post.profiles?.username || 'Anonymous'}
-                                    </h3>
-                                    <span class="text-gray-500 text-sm ml-2">
-                                        ${formatDate(post.created_at)}
-                                    </span>
+            container.innerHTML = posts.map(post => {
+                const isLiked = userLikes.has(post.id);
+                return `
+                    <div class="post-card bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                        <div class="p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex-shrink-0"></div>
+                                <div>
+                                    <div class="flex items-center">
+                                        <h3 class="font-bold text-slate-800">
+                                            ${post.profiles?.username || 'Anonymous'}
+                                        </h3>
+                                        <span class="text-gray-500 text-sm ml-2">
+                                            ${formatDate(post.created_at)}
+                                        </span>
+                                    </div>
+                                    <p class="mt-2 text-gray-700">${post.content}</p>
                                 </div>
-                                <p class="mt-2 text-gray-700">${post.content}</p>
+                            </div>
+                            
+                            <div class="mt-6 flex space-x-6">
+                                <button 
+                                    class="like-button flex items-center text-gray-500 hover:text-indigo-600 ${isLiked ? 'liked' : ''}"
+                                    data-post-id="${post.id}"
+                                    onclick="toggleLike('${post.id}')"
+                                >
+                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart mr-2"></i>
+                                    ${isLiked ? 'Unlike' : 'Like'}
+                                </button>
+                                <button class="flex items-center text-gray-500 hover:text-indigo-600">
+                                    <i class="far fa-comment mr-2"></i>
+                                    <span>Comment</span>
+                                </button>
+                                <button class="flex items-center text-gray-500 hover:text-indigo-600">
+                                    <i class="fas fa-share mr-2"></i>
+                                    <span>Share</span>
+                                </button>
                             </div>
                         </div>
-                        
-                        <div class="mt-6 flex space-x-6">
-                            <button class="flex items-center text-gray-500 hover:text-indigo-600">
-                                <i class="far fa-heart mr-2"></i>
-                                <span>Like</span>
-                            </button>
-                            <button class="flex items-center text-gray-500 hover:text-indigo-600">
-                                <i class="far fa-comment mr-2"></i>
-                                <span>Comment</span>
-                            </button>
-                            <button class="flex items-center text-gray-500 hover:text-indigo-600">
-                                <i class="fas fa-share mr-2"></i>
-                                <span>Share</span>
-                            </button>
-                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function updateProfileInfo() {
