@@ -1,39 +1,738 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Synq — Feed</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="/styles.css" rel="stylesheet">
-  <script type="module" src="/supabase.js"></script>
-  <script type="module" src="/app.js"></script>
-  <script type="module" src="/feed.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synq - Social Media App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .post-card {
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+        }
+        .nav-link.active {
+            color: #6366f1;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #6366f1, #8b5cf6);
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
-<body>
-  <header>
-    <div class="row">
-      <strong>Synq</strong>
-      <nav class="row">
-        <a href="/index.html">Feed</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/notifications.html">Notifications</a>
-      </nav>
+<body class="min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
+                <span class="text-white font-bold text-xl">S</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800">Synq</h1>
+        </div>
+        
+        <div class="hidden md:flex space-x-6">
+            <button id="nav-feed" class="flex items-center text-indigo-600 font-semibold nav-link">
+                <i class="fas fa-home mr-2"></i>
+                Home
+            </button>
+            <button id="nav-create" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link">
+                <i class="fas fa-plus mr-2"></i>
+                Create
+            </button>
+            <button id="nav-profile" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link">
+                <i class="fas fa-user mr-2"></i>
+                Profile
+            </button>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8"></div>
+                <span class="hidden md:inline text-slate-800" id="user-email">Not logged in</span>
+                <button id="logout-btn" class="text-slate-600 hover:text-slate-900 hidden">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-around z-10">
+        <button id="mobile-feed" class="flex flex-col items-center text-indigo-600">
+            <i class="fas fa-home"></i>
+            <span class="text-xs mt-1">Home</span>
+        </button>
+        <button id="mobile-create" class="flex flex-col items-center text-slate-600">
+            <i class="fas fa-plus"></i>
+            <span class="text-xs mt-1">Create</span>
+        </button>
+        <button id="mobile-profile" class="flex flex-col items-center text-slate-600">
+            <i class="fas fa-user"></i>
+            <span class="text-xs mt-1">Profile</span>
+        </button>
     </div>
-    <button id="logout" class="btn secondary">Sign out</button>
-  </header>
 
-  <main class="container">
-    <section class="card">
-      <h2>Create a post</h2>
-      <textarea id="post-content" rows="3" placeholder="What's on your mind?"></textarea>
-      <div class="row">
-        <input type="file" id="post-image" accept="image/*">
-        <button id="publish" class="btn">Publish</button>
-      </div>
-      <p id="compose-status" class="meta"></p>
-    </section>
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 pb-20 md:pb-8">
+        <!-- Auth View -->
+        <div id="auth-view" class="max-w-md mx-auto">
+            <div class="bg-white rounded-xl shadow-md p-8">
+                <h2 class="text-2xl font-bold text-center text-slate-800 mb-6" id="auth-title">
+                    Join Synq
+                </h2>
+                
+                <div id="error-message" class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 hidden">
+                </div>
+                
+                <form id="auth-form" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <input
+                                type="email"
+                                id="email-input"
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                placeholder="your@email.com"
+                                required
+                            />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <input
+                                type="password"
+                                id="password-input"
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        id="auth-submit"
+                        class="w-full btn-primary text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"
+                    >
+                        Sign Up
+                    </button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-gray-600">
+                        Already have an account? 
+                        <button
+                            id="toggle-auth"
+                            class="text-indigo-600 font-semibold"
+                        >
+                            Sign In
+                        </button>
+                    </p>
+                </div>
+                
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                    </div>
+                </div>
+                
+                <button
+                    id="google-login"
+                    class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
+                >
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </div>
 
-    <section id="feed"></section>
-  </main>
+        <!-- Feed View -->
+        <div id="feed-view" class="max-w-2xl mx-auto hidden">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Latest Posts</h2>
+                
+                <!-- Create Post Form -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <div class="flex space-x-4">
+                        <div class="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex-shrink-0"></div>
+                        <div class="flex-grow">
+                            <textarea
+                                id="post-content"
+                                placeholder="What's on your mind?"
+                                class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                rows="3"
+                            ></textarea>
+                            <div class="flex justify-between items-center mt-4">
+                                <div class="flex space-x-2">
+                                    <button class="text-gray-500 hover:text-indigo-600">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                </div>
+                                <button
+                                    id="submit-post"
+                                    class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                                >
+                                    Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Posts Feed -->
+                <div id="posts-container">
+                    <div class="flex justify-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Post View -->
+        <div id="create-view" class="max-w-2xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Create New Post</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Post Content</label>
+                        <textarea
+                            id="create-post-content"
+                            placeholder="Share your thoughts..."
+                            class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            rows="5"
+                        ></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Add Image</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                            <i class="fas fa-camera text-gray-400 text-2xl mb-2"></i>
+                            <p class="text-gray-500">Drag & drop your image here</p>
+                            <p class="text-gray-400 text-sm mt-1">or</p>
+                            <button class="mt-2 text-indigo-600 font-semibold">Browse Files</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button
+                            id="cancel-create"
+                            class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            id="publish-post"
+                            class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+                        >
+                            Publish Post
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile View -->
+        <div id="profile-view" class="max-w-2xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <!-- Profile Header -->
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-32"></div>
+                
+                <div class="px-6 pb-6">
+                    <div class="flex items-end -mt-16 mb-6">
+                        <div class="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 border-4 border-white"></div>
+                        <div class="ml-6 pb-2">
+                            <h2 class="text-2xl font-bold text-slate-800" id="profile-username">Loading...</h2>
+                            <p class="text-gray-600" id="profile-bio">Loading profile...</p>
+                        </div>
+                        <div class="ml-auto">
+                            <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex border-b border-gray-200 pb-4 mb-6">
+                        <div class="text-center px-6">
+                            <p class="text-2xl font-bold text-slate-800" id="post-count">0</p>
+                            <p class="text-gray-600">Posts</p>
+                        </div>
+                        <div class="text-center px-6">
+                            <p class="text-2xl font-bold text-slate-800">0</p>
+                            <p class="text-gray-600">Followers</p>
+                        </div>
+                        <div class="text-center px-6">
+                            <p class="text-2xl font-bold text-slate-800">0</p>
+                            <p class="text-gray-600">Following</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">Your Posts</h3>
+                    <div id="user-posts">
+                        <div class="flex justify-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Supabase Configuration (REPLACE WITH YOUR VALUES)
+        const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
+        
+        // Initialize Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // State
+        let currentUser = null;
+        let currentView = 'auth';
+        let posts = [];
+        let profile = null;
+
+        // DOM Elements
+        const views = {
+            auth: document.getElementById('auth-view'),
+            feed: document.getElementById('feed-view'),
+            create: document.getElementById('create-view'),
+            profile: document.getElementById('profile-view')
+        };
+
+        const navLinks = {
+            feed: document.querySelectorAll('#nav-feed, #mobile-feed'),
+            create: document.querySelectorAll('#nav-create, #mobile-create'),
+            profile: document.querySelectorAll('#nav-profile, #mobile-profile')
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check for existing session
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('logout-btn').classList.remove('hidden');
+                showView('feed');
+                await fetchPosts();
+                await fetchProfile();
+            } else {
+                showView('auth');
+            }
+            
+            // Listen for auth changes
+            supabase.auth.onAuthStateChange((_event, session) => {
+                if (session) {
+                    currentUser = session.user;
+                    document.getElementById('user-email').textContent = currentUser.email;
+                    document.getElementById('logout-btn').classList.remove('hidden');
+                } else {
+                    currentUser = null;
+                    document.getElementById('user-email').textContent = 'Not logged in';
+                    document.getElementById('logout-btn').classList.add('hidden');
+                    showView('auth');
+                }
+            });
+            
+            // Event Listeners
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Navigation
+            navLinks.feed.forEach(link => link.addEventListener('click', () => showView('feed')));
+            navLinks.create.forEach(link => link.addEventListener('click', () => showView('create')));
+            navLinks.profile.forEach(link => link.addEventListener('click', () => showView('profile')));
+            
+            // Auth form
+            document.getElementById('auth-form').addEventListener('submit', handleAuth);
+            document.getElementById('toggle-auth').addEventListener('click', toggleAuthMode);
+            document.getElementById('google-login').addEventListener('click', handleGoogleLogin);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            
+            // Post creation
+            document.getElementById('submit-post').addEventListener('click', createPost);
+            document.getElementById('publish-post').addEventListener('click', createPostFromCreateView);
+            document.getElementById('cancel-create').addEventListener('click', () => showView('feed'));
+        }
+
+        function showView(view) {
+            // Hide all views
+            Object.values(views).forEach(v => v.classList.add('hidden'));
+            
+            // Show requested view
+            views[view].classList.remove('hidden');
+            
+            // Update navigation active state
+            if (view === 'feed') {
+                navLinks.feed.forEach(link => link.classList.add('text-indigo-600', 'font-semibold'));
+                navLinks.create.forEach(link => link.classList.remove('text-indigo-600', 'font-semibold'));
+                navLinks.profile.forEach(link => link.classList.remove('text-indigo-600', 'font-semibold'));
+            } else if (view === 'create') {
+                navLinks.create.forEach(link => link.classList.add('text-indigo-600', 'font-semibold'));
+                navLinks.feed.forEach(link => link.classList.remove('text-indigo-600', 'font-semibold'));
+                navLinks.profile.forEach(link => link.classList.remove('text-indigo-600', 'font-semibold'));
+            } else if (view === 'profile') {
+                navLinks.profile.forEach(link => link.classList.add('text-indigo-600', 'font-semibold'));
+                navLinks.feed.forEach(link => link.classList.remove('text-indigo-600', 'font-semibold'));
+                navLinks.create.forEach(link => link.classList.remove('text-indigo-600', 'font-semibold'));
+            }
+            
+            currentView = view;
+            
+            // Load data when switching to views
+            if (view === 'feed' && posts.length === 0) {
+                fetchPosts();
+            } else if (view === 'profile' && !profile) {
+                fetchProfile();
+            }
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const errorMessage = document.getElementById('error-message');
+            
+            // Reset error
+            errorMessage.classList.add('hidden');
+            
+            // Validate
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            // Get auth mode
+            const isSignUp = document.getElementById('auth-title').textContent === 'Join Synq';
+            
+            // Show loading state
+            document.getElementById('auth-submit').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            document.getElementById('auth-submit').disabled = true;
+            
+            try {
+                let result;
+                if (isSignUp) {
+                    result = await supabase.auth.signUp({ email, password });
+                } else {
+                    result = await supabase.auth.signInWithPassword({ email, password });
+                }
+                
+                if (result.error) throw result.error;
+                
+                if (isSignUp) {
+                    // Create profile for new user
+                    await supabase
+                        .from('profiles')
+                        .upsert({ 
+                            id: result.data.user.id,
+                            username: email.split('@')[0],
+                            bio: 'New to Synq!'
+                        });
+                }
+                
+                // Reset form
+                document.getElementById('auth-form').reset();
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('auth-submit').innerHTML = isSignUp ? 'Sign Up' : 'Sign In';
+                document.getElementById('auth-submit').disabled = false;
+            }
+        }
+
+        function toggleAuthMode() {
+            const isSignUp = document.getElementById('auth-title').textContent === 'Join Synq';
+            const title = document.getElementById('auth-title');
+            const submitBtn = document.getElementById('auth-submit');
+            
+            if (isSignUp) {
+                title.textContent = 'Welcome Back';
+                submitBtn.textContent = 'Sign In';
+            } else {
+                title.textContent = 'Join Synq';
+                submitBtn.textContent = 'Sign Up';
+            }
+        }
+
+        async function handleGoogleLogin() {
+            try {
+                document.getElementById('google-login').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
+                document.getElementById('google-login').disabled = true;
+                
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                });
+                
+                if (error) throw error;
+            } catch (error) {
+                showError(error.message);
+                document.getElementById('google-login').innerHTML = `
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+                    </svg>
+                    <span>Sign in with Google</span>
+                `;
+                document.getElementById('google-login').disabled = false;
+            }
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            posts = [];
+            profile = null;
+        }
+
+        async function createPost() {
+            const content = document.getElementById('post-content').value;
+            if (!content.trim()) return;
+            
+            // Show loading state
+            document.getElementById('submit-post').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+            document.getElementById('submit-post').disabled = true;
+            
+            try {
+                const { error } = await supabase
+                    .from('posts')
+                    .insert({
+                        content,
+                        user_id: currentUser.id
+                    });
+                
+                if (error) throw error;
+                
+                document.getElementById('post-content').value = '';
+                await fetchPosts();
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('submit-post').innerHTML = 'Post';
+                document.getElementById('submit-post').disabled = false;
+            }
+        }
+
+        async function createPostFromCreateView() {
+            const content = document.getElementById('create-post-content').value;
+            if (!content.trim()) return;
+            
+            // Show loading state
+            document.getElementById('publish-post').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+            document.getElementById('publish-post').disabled = true;
+            
+            try {
+                const { error } = await supabase
+                    .from('posts')
+                    .insert({
+                        content,
+                        user_id: currentUser.id
+                    });
+                
+                if (error) throw error;
+                
+                document.getElementById('create-post-content').value = '';
+                await fetchPosts();
+                showView('feed');
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('publish-post').innerHTML = 'Publish Post';
+                document.getElementById('publish-post').disabled = false;
+            }
+        }
+
+        async function fetchPosts() {
+            try {
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select(`
+                        id, 
+                        content, 
+                        created_at,
+                        user_id,
+                        profiles (username, avatar_url)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                posts = data;
+                renderPosts();
+            } catch (error) {
+                showError('Failed to load posts: ' + error.message);
+            }
+        }
+
+        async function fetchProfile() {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error) throw error;
+                
+                profile = data;
+                updateProfileInfo();
+                fetchUserPosts();
+            } catch (error) {
+                showError('Failed to load profile: ' + error.message);
+            }
+        }
+
+        async function fetchUserPosts() {
+            try {
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                const userPostsContainer = document.getElementById('user-posts');
+                if (data.length === 0) {
+                    userPostsContainer.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-comment-alt text-gray-300 text-5xl mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-700">No posts yet</h3>
+                            <p class="text-gray-500 mt-2">Share your first post!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                userPostsContainer.innerHTML = data.map(post => `
+                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                        <p class="text-gray-700">${post.content}</p>
+                        <p class="text-gray-500 text-sm mt-2">${formatDate(post.created_at)}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showError('Failed to load your posts: ' + error.message);
+            }
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('posts-container');
+            
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                        <i class="fas fa-comment-alt text-gray-300 text-5xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-700">No posts yet</h3>
+                        <p class="text-gray-500 mt-2">Be the first to share something!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = posts.map(post => `
+                <div class="post-card bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                    <div class="p-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex-shrink-0"></div>
+                            <div>
+                                <div class="flex items-center">
+                                    <h3 class="font-bold text-slate-800">
+                                        ${post.profiles?.username || 'Anonymous'}
+                                    </h3>
+                                    <span class="text-gray-500 text-sm ml-2">
+                                        ${formatDate(post.created_at)}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-gray-700">${post.content}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex space-x-6">
+                            <button class="flex items-center text-gray-500 hover:text-indigo-600">
+                                <i class="far fa-heart mr-2"></i>
+                                <span>Like</span>
+                            </button>
+                            <button class="flex items-center text-gray-500 hover:text-indigo-600">
+                                <i class="far fa-comment mr-2"></i>
+                                <span>Comment</span>
+                            </button>
+                            <button class="flex items-center text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-share mr-2"></i>
+                                <span>Share</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateProfileInfo() {
+            document.getElementById('profile-username').textContent = profile.username || 'User';
+            document.getElementById('profile-bio').textContent = profile.bio || 'No bio yet';
+            document.getElementById('post-count').textContent = '0'; // Would need to fetch actual count
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorElement.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
