@@ -1,330 +1,566 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Synq - Share Your Moments</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          primary: '#405DE6',
-          secondary: '#5851DB',
-          accent: '#833AB4',
-          dark: '#0f172a',
-          light: '#f8fafc'
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synq - Share Your Moments</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#405DE6',
+                        secondary: '#5851DB',
+                        accent: '#833AB4',
+                        dark: '#0f172a',
+                        light: '#f8fafc'
+                    }
+                }
+            }
         }
-      }
-    }
-  }
-</script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-  body { font-family: 'Roboto', sans-serif; background-color: #fafafa; }
-  .post-card{transition:all 0.3s ease;}
-  .post-card:hover{transform:translateY(-2px);box-shadow:0 10px 25px -5px rgba(0,0,0,.1);}
-  .avatar-placeholder{background:linear-gradient(45deg,#405DE6,#5851DB,#833AB4,#C13584,#E1306C,#FD1D1D);}
-  .loading-spinner{border-top-color:#405DE6;animation:spin 1s linear infinite;}
-  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-  .story-ring{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);}
-  .notification-badge{position:absolute;top:-5px;right:-5px;background-color:#ED4956;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;}
-  .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
-  .modal-content{background-color:white;border-radius:12px;width:90%;max-width:500px;padding:24px;position:relative;overflow-y:auto;max-height:90%;}
-  .close-modal{position:absolute;top:15px;right:15px;font-size:24px;cursor:pointer;}
-  .create-post-btn{position:fixed;bottom:80px;right:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(45deg,#405DE6,#5851DB,#833AB4);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.15);cursor:pointer;z-index:100;}
-  .create-post-btn i{color:white;font-size:24px;}
-  .post-actions button:hover{color:#262626;}
-  .like-btn.liked i{color:#ED4956;}
-  .post-image{width:100%;height:auto;display:block;object-fit:cover;}
-  .comment-input{display:flex;align-items:center;padding:10px 16px;border-top:1px solid #efefef;}
-  .comment-input input{flex:1;border:none;padding:8px;font-size:14px;}
-  .comment-input button{background:none;border:none;color:#0095f6;font-weight:bold;cursor:pointer;opacity:.3;}
-  .comment-input button.active{opacity:1;}
-  .post-header{display:flex;align-items:center;padding:14px 16px;}
-  .post-header .username{font-weight:600;font-size:14px;}
-  .post-caption{padding:0 16px 16px;font-size:14px;}
-  .post-caption .username{font-weight:600;margin-right:4px;}
-  .post-time{padding:0 16px;color:#8e8e8e;font-size:10px;text-transform:uppercase;margin-bottom:16px;}
-  .comment{padding:0 16px 8px;font-size:14px;}
-  .comment .username{font-weight:600;margin-right:4px;}
-  .story{display:flex;flex-direction:column;align-items:center;margin-right:20px;}
-  .story .avatar{width:66px;height:66px;border-radius:50%;padding:3px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);}
-  .story .avatar-inner{width:100%;height:100%;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;}
-  .story .avatar-inner img{width:56px;height:56px;border-radius:50%;}
-  .story .username{font-size:12px;margin-top:6px;}
-  .stories-container{display:flex;padding:16px;overflow-x:auto;border-bottom:1px solid #efefef;}
-  .stories-container::-webkit-scrollbar{display:none;}
-  .post-container{border-bottom:1px solid #efefef;margin-bottom:24px;}
-  .profile-header{display:flex;align-items:center;padding:20px 16px;}
-  .profile-header img{width:80px;height:80px;border-radius:50%;margin-right:24px;}
-  .profile-info{flex:1;}
-  .profile-info .username{font-size:28px;font-weight:300;margin-bottom:8px;}
-  .profile-info .full-name{font-weight:600;margin-bottom:8px;}
-  .profile-info .bio{margin-bottom:8px;}
-  .profile-info .website{color:#00376b;}
-  .profile-actions{display:flex;padding:0 16px 24px;}
-  .profile-actions button{flex:1;margin:0 4px;padding:8px;border-radius:4px;font-weight:600;font-size:14px;}
-  .edit-profile{background:none;border:1px solid #dbdbdb;color:#262626;}
-  .view-archive{background:none;border:1px solid #dbdbdb;color:#262626;}
-  .posts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
-  .post-thumbnail{position:relative;padding-bottom:100%;background-color:#efefef;}
-  .post-thumbnail img{position:absolute;width:100%;height:100%;object-fit:cover;}
-  .post-thumbnail .overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;}
-  .post-thumbnail:hover .overlay{opacity:1;}
-  .post-thumbnail .overlay i{color:white;margin:0 8px;}
-  .post-thumbnail .overlay span{color:white;font-weight:600;margin:0 4px;}
-  .user-suggestion{display:flex;align-items:center;margin-bottom:16px;}
-  .user-suggestion .info{flex:1;}
-  .user-suggestion .username{font-weight:600;font-size:14px;}
-  .user-suggestion .reason{font-size:12px;color:#8e8e8e;}
-  .user-suggestion button{background:none;border:none;color:#0095f6;font-weight:600;font-size:12px;cursor:pointer;}
-  .profile-stats{display:flex;justify-content:space-around;text-align:center;margin-top:20px;}
-  .stat{display:flex;flex-direction:column;}
-  .stat-value{font-weight:bold;font-size:18px;}
-  .stat-label{font-size:14px;color:#8e8e8e;}
-  .post-actions{display:flex;justify-content:space-between;padding:10px 16px;}
-  .action-button{background:none;border:none;font-size:24px;cursor:pointer;color:#262626;}
-</style>
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #fafafa;
+        }
+        .post-card {
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .nav-link.active {
+            border-top: 1px solid #262626;
+        }
+        .avatar-placeholder {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+        }
+        .loading-spinner {
+            border-top-color: #405DE6;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .story-ring {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+        .post-grid {
+            column-count: 3;
+            column-gap: 15px;
+        }
+        .post-grid-item {
+            margin-bottom: 15px;
+            break-inside: avoid;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ED4956;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
-
-<!-- Supabase Client -->
-<script>
-  const supabaseUrl = 'https://qpfjchiucjhfvyohqhih.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  let currentUser = null, posts = [], users = [], stories = [], profileUser = null;
-
-  const authModal = document.getElementById('authModal');
-  const createPostModal = document.getElementById('createPostModal');
-  const profileModal = document.getElementById('profileModal');
-  const postsContainer = document.getElementById('postsContainer');
-  const storiesContainer = document.getElementById('storiesContainer');
-  const suggestedUsersContainer = document.getElementById('suggestedUsers');
-  const postsGrid = document.getElementById('postsGrid');
-  const userAvatar = document.getElementById('userAvatar');
-  const loginBtn = document.getElementById('loginBtn');
-  const userMenu = document.getElementById('userMenu');
-  const loadingSpinner = document.getElementById('loadingSpinner');
-
-  // Event listeners
-  document.getElementById('loginBtn').addEventListener('click',()=>{authModal.style.display='flex';document.getElementById('loginForm').style.display='block';document.getElementById('signupForm').style.display='none';});
-  document.getElementById('signupLink').addEventListener('click',e=>{e.preventDefault();document.getElementById('loginForm').style.display='none';document.getElementById('signupForm').style.display='block';});
-  document.getElementById('loginLink').addEventListener('click',e=>{e.preventDefault();document.getElementById('signupForm').style.display='none';document.getElementById('loginForm').style.display='block';});
-  document.getElementById('closeAuthModal').addEventListener('click',()=>{authModal.style.display='none';});
-  document.getElementById('closeCreatePostModal').addEventListener('click',()=>{createPostModal.style.display='none';});
-  document.getElementById('closeProfileModal').addEventListener('click',()=>{profileModal.style.display='none';});
-  document.getElementById('createPostBtn').addEventListener('click',()=>{if(currentUser){createPostModal.style.display='flex';}else{authModal.style.display='flex';}});
-  document.getElementById('submitPost').addEventListener('click',createPost);
-  document.getElementById('authSubmit').addEventListener('click',signIn);
-  document.getElementById('signupSubmit').addEventListener('click',signUp);
-  document.getElementById('logoutBtn').addEventListener('click',signOut);
-  document.getElementById('viewProfile').addEventListener('click',viewProfile);
-
-  window.addEventListener('click',e=>{if(e.target===authModal)authModal.style.display='none';if(e.target===createPostModal)createPostModal.style.display='none';if(e.target===profileModal)profileModal.style.display='none';});
-
-  async function checkUser(){
-    const {data:{user}}=await supabase.auth.getUser();
-    if(user){
-      currentUser=user;
-      await loadUserProfile();
-      await loadPosts();
-      await loadStories();
-      await loadSuggestedUsers();
-      userAvatar.innerHTML=`<span class="text-white text-sm font-medium">${user.email[0].toUpperCase()}</span>`;
-      loginBtn.style.display='none';
-      userMenu.style.display='block';
-    }else{
-      loginBtn.style.display='block';
-      userMenu.style.display='none';
-    }
-  }
-
-  async function signIn(){
-    const email=document.getElementById('authEmail').value;
-    const password=document.getElementById('authPassword').value;
-    if(!email||!password){alert('Please fill in all fields');return;}
-    const {data,error}=await supabase.auth.signInWithPassword({email,password});
-    if(error){alert('Error: '+error.message);}
-    else{currentUser=data.user;await loadUserProfile();await loadPosts();await loadStories();await loadSuggestedUsers();authModal.style.display='none';userAvatar.innerHTML=`<span class="text-white text-sm font-medium">${currentUser.email[0].toUpperCase()}</span>`;loginBtn.style.display='none';userMenu.style.display='block';}
-  }
-
-  async function signUp(){
-    const email=document.getElementById('signupEmail').value;
-    const password=document.getElementById('signupPassword').value;
-    const name=document.getElementById('signupName').value;
-    const username=document.getElementById('signupUsername').value;
-    if(!email||!password||!name||!username){alert('Please fill in all fields');return;}
-    const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name,username:username}}});
-    if(error){alert('Error: '+error.message);}
-    else{alert('Account created! Check your email for confirmation.');document.getElementById('signupForm').style.display='none';document.getElementById('loginForm').style.display='block';}
-  }
-
-  async function signOut(){const {error}=await supabase.auth.signOut();if(error){alert('Error: '+error.message);}else{currentUser=null;window.location.reload();}}
-
-  async function loadUserProfile(){if(!currentUser)return;profileUser={id:currentUser.id,username:currentUser.user_metadata?.username||currentUser.email.split('@')[0],full_name:currentUser.user_metadata?.full_name||'User Name',bio:'Digital creator | Photography enthusiast | Travel lover',website:'www.synq.com/user',posts_count:42,followers_count:1245,following_count:356};document.getElementById('profileAvatar').innerHTML=`<span class="text-white text-xl font-bold">${profileUser.username[0].toUpperCase()}</span>`;document.getElementById('profileUsername').textContent=profileUser.username;document.getElementById('profileFullName').textContent=profileUser.full_name;document.getElementById('profileBio').textContent=profileUser.bio;document.getElementById('profileWebsite').textContent=profileUser.website;document.getElementById('profilePostsCount').textContent=profileUser.posts_count;document.getElementById('profileFollowersCount').textContent=profileUser.followers_count;document.getElementById('profileFollowingCount').textContent=profileUser.following_count;}
-
-  async function loadPosts(){loadingSpinner.style.display='block';posts=[{id:1,user:{username:'alex_johnson',avatar:'A'},image:'',caption:'Exploring the mountains this weekend! 🏔️ #adventure #nature',likes:1245,comments:42,time:'2 hours ago',liked:false},{id:2,user:{username:'maria_garcia',avatar:'M'},image:'',caption:'Homemade pasta night! 🍝 Recipe in my bio #cooking #italian',likes:3892,comments:128,time:'5 hours ago',liked:true},{id:3,user:{username:'david_smith',avatar:'D'},image:'',caption:'Just finished reading an amazing book about sustainable living. Highly recommend! 🌱📚 #reading #sustainability',likes:876,comments:24,time:'1 day ago',liked:false}];setTimeout(()=>{renderPosts();loadingSpinner.style.display='none';},1000);}
-
-  async function loadStories(){stories=[{username:'Your Story',avatar:'+'},{username:'alex_j',avatar:'A'},{username:'maria_g',avatar:'M'},{username:'david_s',avatar:'D'},{username:'sarah_w',avatar:'S'},{username:'john_d',avatar:'J'},{username:'emma_r',avatar:'E'}];renderStories();}
-
-  async function loadSuggestedUsers(){users=[{username:'sarah_jones',avatar:'S',reason:'Followed by alex_johnson'},{username:'john_doe',avatar:'J',reason:'New to Synq'},{username:'emma_wilson',avatar:'E',reason:'Followed by maria_garcia'},{username:'mike_brown',avatar:'M',reason:'Popular'}];renderSuggestedUsers();}
-
-  async function createPost(){
-    const content=document.getElementById('postContent').value;
-    const image=document.getElementById('postImage').files[0];
-    if(!content){alert('Please add a caption');return;}
-    const newPost={id:posts.length+1,user:{username:currentUser.email.split('@')[0],avatar:currentUser.email[0].toUpperCase()},image:image?URL.createObjectURL(image):'',caption:content,likes:0,comments:0,time:'Just now',liked:false};
-    posts.unshift(newPost);renderPosts();createPostModal.style.display='none';document.getElementById('postContent').value='';document.getElementById('postImage').value='';
-  }
-
-  function renderPosts(){
-    postsContainer.innerHTML=posts.map(post=>`
-      <div class="post-container bg-white">
-        <div class="post-header">
-          <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
-            <span class="text-white text-xs font-medium">${post.user.avatar}</span>
-          </div>
-          <span class="username ml-3">${post.user.username}</span>
+    <!-- Navigation Bar -->
+    <nav class="bg-white border-b border-gray-300 fixed top-0 w-full z-50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">S</span>
+                        </div>
+                        <span class="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Synq</span>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="hidden md:flex items-center">
+                    <div class="relative">
+                        <input type="text" placeholder="Search" class="bg-gray-100 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64">
+                        <i class="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Navigation Icons -->
+                <div class="flex items-center space-x-5">
+                    <a href="#" class="text-2xl text-gray-800 nav-link active">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <a href="#" class="text-2xl text-gray-500 nav-link">
+                        <i class="far fa-paper-plane"></i>
+                        <span class="notification-badge">3</span>
+                    </a>
+                    <a href="#" class="text-2xl text-gray-500 nav-link">
+                        <i class="far fa-plus-square"></i>
+                    </a>
+                    <a href="#" class="text-2xl text-gray-500 nav-link">
+                        <i class="far fa-compass"></i>
+                    </a>
+                    <a href="#" class="text-2xl text-gray-500 nav-link">
+                        <i class="far fa-heart"></i>
+                        <span class="notification-badge">7</span>
+                    </a>
+                    <a href="#" class="flex items-center">
+                        <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">U</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="w-full h-96 bg-gray-200 flex items-center justify-center">
-          ${post.image?`<img src="${post.image}" class="post-image">`:'<span>No image</span>'}
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-5xl mx-auto pt-20 pb-10">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Left Sidebar (Stories) -->
+            <div class="w-full md:w-2/3">
+                <!-- Stories -->
+                <div class="bg-white rounded-lg shadow-sm p-4 mb-6 overflow-x-auto">
+                    <div class="flex space-x-4">
+                        <!-- Your Story -->
+                        <div class="flex flex-col items-center">
+                            <div class="story-ring p-0.5 rounded-full">
+                                <div class="bg-white p-0.5 rounded-full">
+                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-plus text-gray-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs mt-1 text-gray-500">Your story</span>
+                        </div>
+                        
+                        <!-- Friend Stories -->
+                        <div class="flex flex-col items-center">
+                            <div class="story-ring p-0.5 rounded-full">
+                                <div class="bg-white p-0.5 rounded-full">
+                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-white font-bold">A</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs mt-1 text-gray-800">Alex</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="story-ring p-0.5 rounded-full">
+                                <div class="bg-white p-0.5 rounded-full">
+                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-white font-bold">M</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs mt-1 text-gray-800">Maria</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="story-ring p-0.5 rounded-full">
+                                <div class="bg-white p-0.5 rounded-full">
+                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-white font-bold">D</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs mt-1 text-gray-800">David</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="story-ring p-0.5 rounded-full">
+                                <div class="bg-white p-0.5 rounded-full">
+                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-white font-bold">S</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs mt-1 text-gray-800">Sarah</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="story-ring p-0.5 rounded-full">
+                                <div class="bg-white p-0.5 rounded-full">
+                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-white font-bold">J</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs mt-1 text-gray-800">John</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Posts Feed -->
+                <div id="postsContainer">
+                    <!-- Post 1 -->
+                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
+                        <div class="p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
+                                        <span class="text-white font-bold">A</span>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h4 class="text-sm font-bold text-gray-900">alex_johnson</h4>
+                                    </div>
+                                </div>
+                                <button class="text-gray-500">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between mb-2">
+                                <div class="flex space-x-4">
+                                    <button class="text-2xl text-gray-800 hover:text-red-500">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                    <button class="text-2xl text-gray-800">
+                                        <i class="far fa-comment"></i>
+                                    </button>
+                                    <button class="text-2xl text-gray-800">
+                                        <i class="far fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                                <button class="text-2xl text-gray-800">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="font-bold text-sm">1,245 likes</p>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="text-sm"><span class="font-bold mr-2">alex_johnson</span>Exploring the mountains this weekend! 🏔️ #adventure #nature</p>
+                            </div>
+                            
+                            <div class="text-gray-500 text-sm mb-2">
+                                View all 42 comments
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white text-xs font-bold">U</span>
+                                </div>
+                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
+                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Post 2 -->
+                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
+                        <div class="p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
+                                        <span class="text-white font-bold">M</span>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h4 class="text-sm font-bold text-gray-900">maria_garcia</h4>
+                                    </div>
+                                </div>
+                                <button class="text-gray-500">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between mb-2">
+                                <div class="flex space-x-4">
+                                    <button class="text-2xl text-red-500">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    <button class="text-2xl text-gray-800">
+                                        <i class="far fa-comment"></i>
+                                    </button>
+                                    <button class="text-2xl text-gray-800">
+                                        <i class="far fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                                <button class="text-2xl text-gray-800">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="font-bold text-sm">3,892 likes</p>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="text-sm"><span class="font-bold mr-2">maria_garcia</span>Homemade pasta night! 🍝 Recipe in my bio #cooking #italian</p>
+                            </div>
+                            
+                            <div class="text-gray-500 text-sm mb-2">
+                                View all 128 comments
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white text-xs font-bold">U</span>
+                                </div>
+                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
+                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Post 3 -->
+                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
+                        <div class="p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
+                                        <span class="text-white font-bold">D</span>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h4 class="text-sm font-bold text-gray-900">david_smith</h4>
+                                    </div>
+                                </div>
+                                <button class="text-gray-500">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between mb-2">
+                                <div class="flex space-x-4">
+                                    <button class="text-2xl text-gray-800 hover:text-red-500">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                    <button class="text-2xl text-gray-800">
+                                        <i class="far fa-comment"></i>
+                                    </button>
+                                    <button class="text-2xl text-gray-800">
+                                        <i class="far fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                                <button class="text-2xl text-gray-800">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="font-bold text-sm">876 likes</p>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="text-sm"><span class="font-bold mr-2">david_smith</span>Just finished reading an amazing book about sustainable living. Highly recommend! 🌱📚 #reading #sustainability</p>
+                            </div>
+                            
+                            <div class="text-gray-500 text-sm mb-2">
+                                View all 24 comments
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white text-xs font-bold">U</span>
+                                </div>
+                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
+                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Sidebar -->
+            <div class="w-full md:w-1/3">
+                <!-- User Profile -->
+                <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                    <div class="flex items-center">
+                        <div class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">U</span>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="font-bold text-gray-900">username</h2>
+                            <p class="text-gray-500 text-sm">User Name</p>
+                        </div>
+                        <div class="ml-auto">
+                            <button class="text-blue-500 text-sm font-medium">Switch</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-6">
+                        <div class="text-center">
+                            <p class="font-bold">42</p>
+                            <p class="text-gray-500 text-sm">Posts</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold">1,245</p>
+                            <p class="text-gray-500 text-sm">Followers</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold">356</p>
+                            <p class="text-gray-500 text-sm">Following</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Suggestions -->
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-500">Suggestions For You</h3>
+                        <a href="#" class="text-xs font-medium">See All</a>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <span class="text-white font-bold">S</span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">sarah_jones</p>
+                                    <p class="text-xs text-gray-500">Followed by alex_johnson</p>
+                                </div>
+                            </div>
+                            <button class="text-blue-500 text-xs font-medium">Follow</button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <span class="text-white font-bold">J</span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">john_doe</p>
+                                    <p class="text-xs text-gray-500">New to Synq</p>
+                                </div>
+                            </div>
+                            <button class="text-blue-500 text-xs font-medium">Follow</button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <span class="text-white font-bold">E</span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">emma_wilson</p>
+                                    <p class="text-xs text-gray-500">Followed by maria_garcia</p>
+                                </div>
+                            </div>
+                            <button class="text-blue-500 text-xs font-medium">Follow</button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <span class="text-white font-bold">M</span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">mike_brown</p>
+                                    <p class="text-xs text-gray-500">Popular</p>
+                                </div>
+                            </div>
+                            <button class="text-blue-500 text-xs font-medium">Follow</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer Links -->
+                <div class="mt-6 text-xs text-gray-400">
+                    <div class="flex flex-wrap">
+                        <a href="#" class="mr-2 mb-1">About</a>
+                        <a href="#" class="mr-2 mb-1">Help</a>
+                        <a href="#" class="mr-2 mb-1">Press</a>
+                        <a href="#" class="mr-2 mb-1">API</a>
+                        <a href="#" class="mr-2 mb-1">Jobs</a>
+                        <a href="#" class="mr-2 mb-1">Privacy</a>
+                        <a href="#" class="mr-2 mb-1">Terms</a>
+                        <a href="#" class="mr-2 mb-1">Locations</a>
+                        <a href="#" class="mr-2 mb-1">Language</a>
+                    </div>
+                    <p class="mt-2">© 2023 SYNQ FROM META</p>
+                </div>
+            </div>
         </div>
-        <div class="post-actions flex justify-between px-4 py-2">
-          <button class="action-button like-btn ${post.liked?'liked':''}"><i class="fa fa-heart"></i></button>
-          <button class="action-button"><i class="fa fa-comment"></i></button>
-          <button class="action-button"><i class="fa fa-share"></i></button>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 md:hidden">
+        <div class="flex justify-around items-center py-3">
+            <a href="#" class="text-2xl text-gray-800 nav-link active">
+                <i class="fas fa-home"></i>
+            </a>
+            <a href="#" class="text-2xl text-gray-500 nav-link">
+                <i class="far fa-search"></i>
+            </a>
+            <a href="#" class="text-2xl text-gray-500 nav-link">
+                <i class="far fa-plus-square"></i>
+            </a>
+            <a href="#" class="text-2xl text-gray-500 nav-link">
+                <i class="far fa-heart"></i>
+            </a>
+            <a href="#" class="text-2xl text-gray-500 nav-link">
+                <div class="h-6 w-6 rounded-full avatar-placeholder flex items-center justify-center">
+                    <span class="text-white text-xs font-medium">U</span>
+                </div>
+            </a>
         </div>
-        <div class="px-4 pb-2">
-          <div class="likes"><span>${post.likes}</span> likes</div>
-          <div class="post-caption"><span class="username">${post.user.username}</span> ${post.caption}</div>
-          <div class="post-time">${post.time}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderStories(){
-    storiesContainer.innerHTML=stories.map(story=>`
-      <div class="story">
-        <div class="avatar"><div class="avatar-inner"><span class="text-white font-bold">${story.avatar}</span></div></div>
-        <div class="username">${story.username}</div>
-      </div>
-    `).join('');
-  }
-
-  function renderSuggestedUsers(){
-    suggestedUsersContainer.innerHTML=users.map(user=>`
-      <div class="user-suggestion">
-        <div class="info">
-          <div class="username">${user.username}</div>
-          <div class="reason">${user.reason}</div>
-        </div>
-        <button>Follow</button>
-      </div>
-    `).join('');
-  }
-
-  function viewProfile(){profileModal.style.display='flex';}
-
-  checkUser();
-</script>
-
-<!-- Loading Spinner -->
-<div id="loadingSpinner" class="loading-spinner fixed top-1/2 left-1/2 w-12 h-12 border-4 border-gray-200 rounded-full" style="display:none;"></div>
-
-<!-- Navbar -->
-<div class="flex justify-between items-center p-4 bg-white border-b">
-  <div class="text-2xl font-bold">Synq</div>
-  <div class="flex items-center">
-    <button id="loginBtn" class="px-4 py-2 text-white bg-blue-500 rounded">Login</button>
-    <div id="userMenu" class="flex items-center space-x-4 hidden">
-      <div id="userAvatar" class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center cursor-pointer"></div>
-      <button id="logoutBtn" class="text-red-500 font-bold">Logout</button>
-      <button id="viewProfile" class="text-gray-800 font-bold">Profile</button>
     </div>
-  </div>
-</div>
 
-<!-- Stories -->
-<div class="stories-container" id="storiesContainer"></div>
-
-<!-- Posts -->
-<div class="px-4" id="postsContainer"></div>
-
-<!-- Suggested Users -->
-<div class="px-4 mt-4">
-  <h2 class="font-bold mb-2">Suggested Users</h2>
-  <div id="suggestedUsers"></div>
-</div>
-
-<!-- Create Post Button -->
-<div id="createPostBtn" class="create-post-btn"><i class="fa fa-plus"></i></div>
-
-<!-- Auth Modal -->
-<div id="authModal" class="modal flex">
-  <div class="modal-content">
-    <span id="closeAuthModal" class="close-modal">&times;</span>
-    <div id="loginForm">
-      <h2 class="text-xl font-bold mb-4">Login</h2>
-      <input type="email" id="authEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded">
-      <input type="password" id="authPassword" placeholder="Password" class="w-full mb-2 p-2 border rounded">
-      <button id="authSubmit" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
-      <p class="mt-2 text-sm">Don't have an account? <a href="#" id="signupLink" class="text-blue-500">Sign up</a></p>
-    </div>
-    <div id="signupForm" style="display:none;">
-      <h2 class="text-xl font-bold mb-4">Sign Up</h2>
-      <input type="text" id="signupName" placeholder="Full Name" class="w-full mb-2 p-2 border rounded">
-      <input type="text" id="signupUsername" placeholder="Username" class="w-full mb-2 p-2 border rounded">
-      <input type="email" id="signupEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded">
-      <input type="password" id="signupPassword" placeholder="Password" class="w-full mb-2 p-2 border rounded">
-      <button id="signupSubmit" class="w-full bg-green-500 text-white p-2 rounded">Sign Up</button>
-      <p class="mt-2 text-sm">Already have an account? <a href="#" id="loginLink" class="text-blue-500">Login</a></p>
-    </div>
-  </div>
-</div>
-
-<!-- Create Post Modal -->
-<div id="createPostModal" class="modal flex">
-  <div class="modal-content">
-    <span id="closeCreatePostModal" class="close-modal">&times;</span>
-    <h2 class="text-xl font-bold mb-4">Create Post</h2>
-    <textarea id="postContent" placeholder="What's on your mind?" class="w-full mb-2 p-2 border rounded"></textarea>
-    <input type="file" id="postImage" class="mb-2">
-    <button id="submitPost" class="w-full bg-blue-500 text-white p-2 rounded">Post</button>
-  </div>
-</div>
-
-<!-- Profile Modal -->
-<div id="profileModal" class="modal flex">
-  <div class="modal-content">
-    <span id="closeProfileModal" class="close-modal">&times;</span>
-    <div class="profile-header">
-      <div id="profileAvatar" class="h-20 w-20 rounded-full bg-gray-400 flex items-center justify-center"></div>
-      <div class="profile-info">
-        <div id="profileUsername" class="username"></div>
-        <div id="profileFullName" class="full-name"></div>
-        <div id="profileBio" class="bio"></div>
-        <a href="#" id="profileWebsite" class="website"></a>
-      </div>
-    </div>
-    <div class="profile-stats">
-      <div class="stat"><div id="profilePostsCount" class="stat-value"></div><div class="stat-label">Posts</div></div>
-      <div class="stat"><div id="profileFollowersCount" class="stat-value"></div><div class="stat-label">Followers</div></div>
-      <div class="stat"><div id="profileFollowingCount" class="stat-value"></div><div class="stat-label">Following</div></div>
-    </div>
-    <div class="profile-actions">
-      <button class="edit-profile">Edit Profile</button>
-      <button class="view-archive">Archive</button>
-    </div>
-    <div class="posts-grid" id="postsGrid"></div>
-  </div>
-</div>
-
+    <script>
+        // Like functionality
+        document.querySelectorAll('.fa-heart').forEach(heart => {
+            heart.addEventListener('click', function() {
+                if (this.classList.contains('far')) {
+                    this.classList.remove('far');
+                    this.classList.add('fas', 'text-red-500');
+                } else {
+                    this.classList.remove('fas', 'text-red-500');
+                    this.classList.add('far');
+                }
+            });
+        });
+        
+        // Bookmark functionality
+        document.querySelectorAll('.fa-bookmark').forEach(bookmark => {
+            bookmark.addEventListener('click', function() {
+                if (this.classList.contains('far')) {
+                    this.classList.remove('far');
+                    this.classList.add('fas');
+                } else {
+                    this.classList.remove('fas');
+                    this.classList.add('far');
+                }
+            });
+        });
+        
+        // Navigation active state
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
 </body>
 </html>
