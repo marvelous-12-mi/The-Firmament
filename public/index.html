@@ -45,6 +45,14 @@
         .like-button.liked {
             color: #ef4444;
         }
+        .comment-form {
+            transition: max-height 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .comment-form.active {
+            max-height: 200px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -187,6 +195,9 @@
                                 <div class="flex space-x-2">
                                     <button class="text-gray-500 hover:text-indigo-600">
                                         <i class="fas fa-camera"></i>
+                                    </button>
+                                    <button class="text-gray-500 hover:text-indigo-600">
+                                        <i class="fas fa-image"></i>
                                     </button>
                                 </div>
                                 <button
@@ -357,6 +368,7 @@
         let posts = [];
         let profile = null;
         let userLikes = new Set();
+        let userComments = {};
 
         // DOM Elements
         const views = {
@@ -597,6 +609,7 @@
                 posts = [];
                 profile = null;
                 userLikes = new Set();
+                userComments = {};
             }
         }
 
@@ -625,7 +638,7 @@
                 if (error) throw error;
                 
                 document.getElementById('post-content').value = '';
-                await fetchPosts();
+                await fetchPosts(); // Refresh posts after creating
             } catch (error) {
                 showError(error.message);
             } finally {
@@ -659,7 +672,7 @@
                 if (error) throw error;
                 
                 document.getElementById('create-post-content').value = '';
-                await fetchPosts();
+                await fetchPosts(); // Refresh posts after creating
                 showView('feed');
             } catch (error) {
                 showError(error.message);
@@ -686,8 +699,44 @@
                 
                 posts = data;
                 renderPosts();
+                fetchCommentsForPosts(); // Fetch comments for all posts
             } catch (error) {
                 showError('Failed to load posts: ' + error.message);
+            }
+        }
+
+        async function fetchCommentsForPosts() {
+            if (posts.length === 0) return;
+            
+            try {
+                const postIds = posts.map(post => post.id);
+                const { data, error } = await supabase
+                    .from('comments')
+                    .select(`
+                        id,
+                        post_id,
+                        content,
+                        created_at,
+                        user_id,
+                        profiles (username)
+                    `)
+                    .in('post_id', postIds)
+                    .order('created_at', { ascending: true });
+                
+                if (error) throw error;
+                
+                // Group comments by post_id
+                userComments = {};
+                data.forEach(comment => {
+                    if (!userComments[comment.post_id]) {
+                        userComments[comment.post_id] = [];
+                    }
+                    userComments[comment.post_id].push(comment);
+                });
+                
+                renderPosts(); // Re-render posts with comments
+            } catch (error) {
+                console.error('Failed to load comments:', error.message);
             }
         }
 
@@ -809,6 +858,27 @@
             }
         }
 
+        async function addComment(postId, content) {
+            if (!currentUser || !content.trim()) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('comments')
+                    .insert({
+                        post_id: postId,
+                        user_id: currentUser.id,
+                        content: content.trim()
+                    });
+                
+                if (error) throw error;
+                
+                // Refresh comments for this post
+                await fetchCommentsForPosts();
+            } catch (error) {
+                showError('Failed to add comment: ' + error.message);
+            }
+        }
+
         async function updateProfile() {
             if (!currentUser) return;
             
@@ -855,6 +925,8 @@
             
             container.innerHTML = posts.map(post => {
                 const isLiked = userLikes.has(post.id);
+                const comments = userComments[post.id] || [];
+                
                 return `
                     <div class="post-card bg-white rounded-xl shadow-sm overflow-hidden mb-6">
                         <div class="p-6">
@@ -882,19 +954,82 @@
                                     <i class="${isLiked ? 'fas' : 'far'} fa-heart mr-2"></i>
                                     ${isLiked ? 'Unlike' : 'Like'}
                                 </button>
-                                <button class="flex items-center text-gray-500 hover:text-indigo-600">
+                                <button 
+                                    class="flex items-center text-gray-500 hover:text-indigo-600"
+                                    onclick="toggleCommentForm('${post.id}')"
+                                >
                                     <i class="far fa-comment mr-2"></i>
-                                    <span>Comment</span>
+                                    <span>Comment (${comments.length})</span>
                                 </button>
                                 <button class="flex items-center text-gray-500 hover:text-indigo-600">
                                     <i class="fas fa-share mr-2"></i>
                                     <span>Share</span>
                                 </button>
                             </div>
+                            
+                            <!-- Comments Section -->
+                            <div class="mt-4">
+                                <div id="comments-${post.id}">
+                                    ${comments.map(comment => `
+                                        <div class="flex mt-4">
+                                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8 flex-shrink-0"></div>
+                                            <div class="ml-3">
+                                                <div class="bg-gray-100 rounded-lg p-3">
+                                                    <div class="font-semibold text-sm">${comment.profiles?.username || 'User'}</div>
+                                                    <p class="text-gray-700 text-sm mt-1">${comment.content}</p>
+                                                </div>
+                                                <div class="text-gray-500 text-xs mt-1">${formatDate(comment.created_at)}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <!-- Comment Form -->
+                                <div id="comment-form-${post.id}" class="comment-form mt-4">
+                                    <div class="flex mt-2">
+                                        <div class="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8 flex-shrink-0"></div>
+                                        <div class="flex-grow ml-3">
+                                            <textarea 
+                                                id="comment-input-${post.id}"
+                                                placeholder="Write a comment..."
+                                                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                rows="2"
+                                            ></textarea>
+                                            <div class="flex justify-end mt-2">
+                                                <button 
+                                                    class="text-indigo-600 font-semibold text-sm"
+                                                    onclick="submitComment('${post.id}')"
+                                                >
+                                                    Post
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function toggleCommentForm(postId) {
+            const form = document.getElementById(`comment-form-${postId}`);
+            form.classList.toggle('active');
+        }
+
+        async function submitComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const content = input.value;
+            
+            if (!content.trim()) return;
+            
+            await addComment(postId, content);
+            input.value = '';
+            
+            // Close comment form
+            const form = document.getElementById(`comment-form-${postId}`);
+            form.classList.remove('active');
         }
 
         function updateProfileInfo() {
