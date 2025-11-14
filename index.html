@@ -1,30 +1,763 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Synq — Social App</title>
-
-  <!-- Tailwind CDN for quick styling (optional) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Lucide icons -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/lucide@0.259.0/dist/lucide.esm.js"></script>
-
-  <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1"
+  />
+  <title>Synq</title>
+  <style>
+    :root {
+      --bg: #0f1218;
+      --card: #151a22;
+      --muted: #8a93a5;
+      --text: #e8ecf1;
+      --primary: #6aa9ff;
+      --accent: #70f0c6;
+      --danger: #ff6b6b;
+      --ring: rgba(106,169,255,.35);
+      --border: #263042;
+    }
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .app {
+      max-width: 980px; margin: 0 auto; padding: 16px;
+    }
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; gap: 8px; align-items: center; justify-content: space-between;
+      padding: 10px 12px; margin-bottom: 16px;
+      background: rgba(15,18,24,.75); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: 16px;
+    }
+    .nav-left, .nav-right {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border: 1px solid var(--border);
+      background: var(--card); color: var(--text); border-radius: 12px;
+      cursor: pointer; transition: .2s ease;
+    }
+    .btn:hover { border-color: var(--ring); box-shadow: 0 0 0 3px var(--ring) inset }
+    .btn.primary { background: #1d2738; border-color: #334361; color: var(--primary) }
+    .btn.ghost { background: transparent }
+    .grid {
+      display: grid; grid-template-columns: 1fr 320px; gap: 16px;
+    }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr } }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .title { font-weight: 700; letter-spacing: .2px }
+    .muted { color: var(--muted) }
+    .input, textarea {
+      width: 100%; background: #0c1016; border: 1px solid var(--border); color: var(--text);
+      padding: 10px 12px; border-radius: 12px; outline: none; transition: .2s ease;
+    }
+    .input:focus, textarea:focus { border-color: var(--ring); box-shadow: 0 0 0 3px var(--ring) }
+    .row { display: flex; gap: 8px; align-items: center }
+    .space { height: 8px }
+    .post { display: grid; grid-template-columns: 40px 1fr; gap: 10px }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%; background: #263042; border: 1px solid var(--border);
+      display: grid; place-items: center; font-size: 14px; color: var(--muted);
+    }
+    .post-content { display: flex; flex-direction: column; gap: 8px }
+    .post-actions { display: flex; gap: 8px; flex-wrap: wrap }
+    .chip { padding: 6px 10px; border-radius: 999px; background: #101520; border: 1px solid var(--border); font-size: 13px }
+    .sticky-cta { position: sticky; bottom: 16px; z-index: 10 }
+    .story-list { display: flex; gap: 10px; overflow: auto; padding-bottom: 6px }
+    .story {
+      min-width: 120px; padding: 12px; border-radius: 12px;
+      background: #101520; border: 1px solid var(--border);
+    }
+    .headline { font-weight: 700 }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px }
+    .pill { padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; cursor: pointer }
+    .pill.active { border-color: var(--ring); box-shadow: 0 0 0 3px var(--ring) inset; color: var(--primary) }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background: #0c1016; border: 1px solid var(--border); padding: 2px 6px; border-radius: 6px }
+    .toast {
+      position: fixed; right: 16px; bottom: 16px; background: #10202a; color: #ccf6ff; border: 1px solid #1f3b47;
+      padding: 10px 12px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .danger { color: var(--danger) }
+    .success { color: var(--accent) }
+    .divider { height: 1px; background: var(--border); margin: 6px 0 }
+    .small { font-size: 13px }
+    .center { text-align: center }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 antialiased">
-  <body style="background:white; color:black">
-TEST WORKS
+<body>
+  <div id="root"></div>
 
-  <div id="root" class="min-h-screen"></div>
+  <script type="module">
+    import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+    import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    import {
+      Heart, MessageCircle, Send, User, LogOut, Home, PlusCircle, Search, Bookmark, Menu, X, Camera,
+      Image as ImageIcon, Smile, MoreHorizontal, Edit, Trash2, UserPlus, UserCheck, Bell, Settings,
+      Grid, Film, Share2, Copy, ThumbsUp
+    } from 'https://esm.sh/lucide-react@0.474.0';
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"></script>
+    // Supabase client (your values)
+    const supabase = createClient(
+      'https://qpfjchiucjhfvyohqhih.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU'
+    );
 
-  <!-- App modules -->
-  <script type="module" src="js/supabaseClient.js"></script>
-  <script type="module" src="js/components.js"></script>
-  <script type="module" src="js/app.js"></script>
+    function Avatar({ name }) {
+      const initial = (name || '?').slice(0,1).toUpperCase();
+      return <div className="avatar">{initial}</div>;
+    }
+
+    function IconBtn({ children, onClick, active, title }) {
+      return (
+        <button className={`btn ${active ? 'primary' : ''}`} onClick={onClick} title={title}>
+          {children}
+        </button>
+      );
+    }
+
+    function Synq() {
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [view, setView] = useState('login');
+
+      const [posts, setPosts] = useState([]);
+      const [stories, setStories] = useState([]);
+
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [username, setUsername] = useState('');
+      const [bio, setBio] = useState('');
+
+      const [newPost, setNewPost] = useState('');
+      const [newStory, setNewStory] = useState('');
+
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+
+      const [showCreatePost, setShowCreatePost] = useState(false);
+      const [showCreateStory, setShowCreateStory] = useState(false);
+
+      const [selectedPost, setSelectedPost] = useState(null);
+      const [comments, setComments] = useState([]);
+      const [commentText, setCommentText] = useState('');
+
+      const [searchQuery, setSearchQuery] = useState('');
+      const [searchResults, setSearchResults] = useState([]);
+
+      const [notifications, setNotifications] = useState([]);
+      const [showNotifications, setShowNotifications] = useState(false);
+
+      const [userPosts, setUserPosts] = useState([]);
+      const [following, setFollowing] = useState(0);
+      const [followers, setFollowers] = useState(0);
+      const [profileView, setProfileView] = useState('posts');
+
+      const [savedPosts, setSavedPosts] = useState([]);
+      const [showShareMenu, setShowShareMenu] = useState(null);
+      const [editingBio, setEditingBio] = useState(false);
+      const [newBio, setNewBio] = useState('');
+
+      const [selectedStory, setSelectedStory] = useState(null);
+      const [replyText, setReplyText] = useState('');
+
+      const fileInputRef = useRef(null);
+
+      useEffect(() => {
+        checkUser();
+      }, []);
+
+      useEffect(() => {
+        if (!user) return;
+        if (view === 'feed') {
+          fetchPosts();
+          fetchStories();
+        } else if (view === 'notifications') {
+          fetchNotifications();
+        } else if (view === 'profile') {
+          fetchUserProfile();
+        } else if (view === 'saved') {
+          fetchSavedPosts();
+        }
+      }, [user, view]);
+
+      async function checkUser() {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+        setLoading(false);
+        if (session?.user) setView('feed');
+      }
+
+      async function signUp() {
+        setError('');
+        setSuccess('');
+        if (!username || !email || !password) {
+          setError('Please fill in all fields');
+          return;
+        }
+        const { error: err } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username, bio: bio || 'New to Synq! 🎉' } }
+        });
+        if (err) setError(err.message);
+        else setSuccess('Check your email to confirm your account!');
+      }
+
+      async function signIn() {
+        setError('');
+        const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
+        if (err) setError(err.message);
+        else {
+          setUser(data.user);
+          setView('feed');
+        }
+      }
+
+      async function signOut() {
+        await supabase.auth.signOut();
+        setUser(null);
+        setView('login');
+        setPosts([]);
+        setStories([]);
+      }
+
+      async function createPost(imageUrl = null) {
+        if (!newPost.trim()) return;
+        const usernameVal = user.user_metadata?.username || user.email.split('@')[0];
+        const { error: err } = await supabase.from('posts').insert([{
+          content: newPost, user_id: user.id, username: usernameVal, image_url: imageUrl
+        }]);
+        if (!err) {
+          setNewPost(''); setShowCreatePost(false);
+          fetchPosts();
+          toast('Post created successfully! 🎉', 'success');
+        } else toast(err.message, 'danger');
+      }
+
+      async function createStory() {
+        if (!newStory.trim()) return;
+        const usernameVal = user.user_metadata?.username || user.email.split('@')[0];
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const { error: err } = await supabase.from('stories').insert([{
+          content: newStory, user_id: user.id, username: usernameVal, expires_at: expiresAt
+        }]);
+        if (!err) {
+          setNewStory(''); setShowCreateStory(false);
+          fetchStories();
+          toast('Story shared! Visible for 24 hours ⏰', 'success');
+        } else toast(err.message, 'danger');
+      }
+
+      async function fetchPosts() {
+        const { data, error: err } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+        if (err) return;
+        const enriched = await Promise.all((data || []).map(async (post) => {
+          const { count: likesCount } = await supabase.from('likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id);
+          const { count: commentsCount } = await supabase.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', post.id);
+          const { data: liked } = await supabase.from('likes').select('*').eq('post_id', post.id).eq('user_id', user.id).maybeSingle();
+          const { data: saved } = await supabase.from('saved_posts').select('*').eq('post_id', post.id).eq('user_id', user.id).maybeSingle();
+          return { ...post, likes_count: likesCount || 0, comments_count: commentsCount || 0, is_liked: !!liked, is_saved: !!saved };
+        }));
+        setPosts(enriched);
+      }
+
+      async function fetchStories() {
+        const { data } = await supabase
+          .from('stories')
+          .select('*')
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false });
+        setStories(data || []);
+      }
+
+      async function fetchNotifications() {
+        const { data } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
+        setNotifications(data || []);
+      }
+
+      async function fetchUserProfile() {
+        const { data: postsData } = await supabase
+          .from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+        setUserPosts(postsData || []);
+        const { count: followingCount } = await supabase
+          .from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id);
+        const { count: followersCount } = await supabase
+          .from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id);
+        setFollowing(followingCount || 0);
+        setFollowers(followersCount || 0);
+      }
+
+      async function fetchSavedPosts() {
+        const { data } = await supabase
+          .from('saved_posts')
+          .select('*, posts(*)')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        setSavedPosts((data || []).map(i => i.posts));
+      }
+
+      async function toggleLike(postId, isLiked) {
+        if (isLiked) {
+          await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', user.id);
+        } else {
+          await supabase.from('likes').insert([{ post_id: postId, user_id: user.id }]);
+          await supabase.from('notifications').insert([{
+            user_id: (posts.find(p => p.id === postId)?.user_id) || null,
+            type: 'like',
+            payload: { from: user.id, post_id: postId }
+          }]);
+        }
+        await fetchPosts();
+      }
+
+      async function toggleSave(postId, isSaved) {
+        if (isSaved) {
+          await supabase.from('saved_posts').delete().eq('post_id', postId).eq('user_id', user.id);
+        } else {
+          await supabase.from('saved_posts').insert([{ post_id: postId, user_id: user.id }]);
+        }
+        await fetchPosts();
+      }
+
+      async function sendComment(postId) {
+        const text = commentText.trim();
+        if (!text) return;
+        await supabase.from('comments').insert([{ post_id: postId, user_id: user.id, text }]);
+        setCommentText('');
+        toast('Comment added', 'success');
+        const { data } = await supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
+        setComments(data || []);
+        fetchPosts();
+      }
+
+      async function openComments(post) {
+        setSelectedPost(post);
+        const { data } = await supabase.from('comments').select('*').eq('post_id', post.id).order('created_at', { ascending: true });
+        setComments(data || []);
+      }
+
+      async function search() {
+        const q = searchQuery.trim();
+        if (!q) { setSearchResults([]); return; }
+        const { data } = await supabase.from('posts').select('*').ilike('content', `%${q}%`).order('created_at', { ascending: false });
+        setSearchResults(data || []);
+      }
+
+      async function updateBio() {
+        const nb = newBio.trim();
+        if (!nb) return;
+        const { error: err } = await supabase.auth.updateUser({ data: { bio: nb } });
+        if (!err) {
+          toast('Bio updated', 'success');
+          setEditingBio(false);
+          setNewBio('');
+          checkUser();
+        } else toast(err.message, 'danger');
+      }
+
+      async function followUser(targetUserId) {
+        if (targetUserId === user.id) return;
+        const { data } = await supabase.from('follows').select('*').eq('follower_id', user.id).eq('following_id', targetUserId);
+        if (data && data.length) {
+          await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', targetUserId);
+        } else {
+          await supabase.from('follows').insert([{ follower_id: user.id, following_id: targetUserId }]);
+          await supabase.from('notifications').insert([{
+            user_id: targetUserId,
+            type: 'follow',
+            payload: { from: user.id }
+          }]);
+        }
+        fetchUserProfile();
+      }
+
+      async function sharePost(post) {
+        try {
+          await navigator.clipboard.writeText(`${location.origin}?post=${post.id}`);
+          toast('Link copied to clipboard', 'success');
+          setShowShareMenu(null);
+        } catch {
+          toast('Copy failed', 'danger');
+        }
+      }
+
+      function toast(msg, tone = 'success') {
+        setSuccess(tone === 'success' ? msg : '');
+        setError(tone === 'danger' ? msg : '');
+        setTimeout(() => { setSuccess(''); setError(''); }, 2500);
+      }
+
+      async function uploadImage(file) {
+        if (!file) return null;
+        const path = `${user.id}/${Date.now()}-${file.name}`;
+        const { data, error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
+        if (error) { toast(error.message, 'danger'); return null; }
+        const { data: urlData } = await supabase.storage.from('media').getPublicUrl(data.path);
+        return urlData.publicUrl;
+      }
+
+      if (loading) return <div className="app"><div className="card center">Loading…</div></div>;
+
+      return (
+        <div className="app">
+          {/* Nav */}
+          <div className="nav">
+            <div className="nav-left">
+              <IconBtn onClick={() => setView('feed')} active={view==='feed'} title="Feed"><Home size={18} />Feed</IconBtn>
+              <IconBtn onClick={() => setView('saved')} active={view==='saved'} title="Saved"><Bookmark size={18} />Saved</IconBtn>
+              <IconBtn onClick={() => setView('profile')} active={view==='profile'} title="Profile"><User size={18} />Profile</IconBtn>
+              <IconBtn onClick={() => { setView('notifications'); setShowNotifications(true); }} active={view==='notifications'} title="Notifications"><Bell size={18} />Alerts</IconBtn>
+            </div>
+            <div className="nav-right">
+              {user ? (
+                <>
+                  <span className="muted small">Signed in as {user.user_metadata?.username || user.email}</span>
+                  <IconBtn onClick={signOut} title="Sign out"><LogOut size={18} />Sign out</IconBtn>
+                </>
+              ) : (
+                <span className="muted small">Welcome to Synq</span>
+              )}
+            </div>
+          </div>
+
+          {/* Auth views */}
+          {(!user && view === 'login') && (
+            <div className="grid">
+              <div>
+                <div className="card">
+                  <div className="title">Sign in</div>
+                  <div className="space"></div>
+                  <input className="input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+                  <div className="space"></div>
+                  <input type="password" className="input" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+                  <div className="space"></div>
+                  <div className="row">
+                    <button className="btn primary" onClick={signIn}><User size={16}/> Sign in</button>
+                    <button className="btn" onClick={() => setView('signup')}><UserPlus size={16}/> Create account</button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className="card">
+                  <div className="title">Why Synq?</div>
+                  <div className="space"></div>
+                  <div className="muted small">Simple, fast social posting with stories, likes, comments, saves, and notifications. Built on Supabase.</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {(!user && view === 'signup') && (
+            <div className="grid">
+              <div>
+                <div className="card">
+                  <div className="title">Create account</div>
+                  <div className="space"></div>
+                  <input className="input" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
+                  <div className="space"></div>
+                  <input className="input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+                  <div className="space"></div>
+                  <input type="password" className="input" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+                  <div className="space"></div>
+                  <textarea rows="3" className="input" placeholder="Bio (optional)" value={bio} onChange={e => setBio(e.target.value)}></textarea>
+                  <div className="space"></div>
+                  <div className="row">
+                    <button className="btn primary" onClick={signUp}><UserCheck size={16}/> Sign up</button>
+                    <button className="btn" onClick={() => setView('login')}><User size={16}/> Back to login</button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className="card">
+                  <div className="title">Tips</div>
+                  <div className="space"></div>
+                  <div className="muted small">You’ll receive a confirmation email. After verifying, return to sign in.</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main views */}
+          {(user && view === 'feed') && (
+            <div className="grid">
+              <div>
+                {/* Create post */}
+                <div className="card">
+                  <div className="row" style={{justifyContent:'space-between'}}>
+                    <div className="title">Create post</div>
+                    <div className="row">
+                      <button className="btn" onClick={() => setShowCreatePost(v => !v)}>
+                        {showCreatePost ? <X size={16}/> : <PlusCircle size={16}/>} {showCreatePost ? 'Close' : 'Open'}
+                      </button>
+                      <button className="btn" onClick={() => setShowCreateStory(v => !v)}>
+                        <Film size={16}/> Story
+                      </button>
+                    </div>
+                  </div>
+                  {showCreatePost && (
+                    <>
+                      <div className="space"></div>
+                      <textarea rows="3" className="input" placeholder="What's happening?" value={newPost} onChange={e => setNewPost(e.target.value)}></textarea>
+                      <div className="space"></div>
+                      <div className="row">
+                        <button className="btn" onClick={() => fileInputRef.current?.click()}><ImageIcon size={16}/> Add image</button>
+                        <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={async e => {
+                          const file = e.target.files?.[0];
+                          const url = await uploadImage(file);
+                          if (url) {
+                            await createPost(url);
+                          }
+                        }} />
+                        <button className="btn primary" onClick={() => createPost(null)}><Send size={16}/> Post</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Stories */}
+                <div className="card">
+                  <div className="row" style={{justifyContent:'space-between'}}>
+                    <div className="title">Stories</div>
+                    <button className="btn" onClick={() => setShowCreateStory(v => !v)}>
+                      {showCreateStory ? <X size={16}/> : <PlusCircle size={16}/>} {showCreateStory ? 'Close' : 'New'}
+                    </button>
+                  </div>
+                  {showCreateStory && (
+                    <>
+                      <div className="space"></div>
+                      <textarea rows="2" className="input" placeholder="Share a moment…" value={newStory} onChange={e => setNewStory(e.target.value)}></textarea>
+                      <div className="space"></div>
+                      <button className="btn primary" onClick={createStory}><Send size={16}/> Share</button>
+                    </>
+                  )}
+                  <div className="space"></div>
+                  <div className="story-list">
+                    {stories.map(s => (
+                      <div key={s.id} className="story" onClick={() => setSelectedStory(s)}>
+                        <div className="headline">{s.username}</div>
+                        <div className="small muted">{new Date(s.created_at).toLocaleString()}</div>
+                        <div className="space"></div>
+                        <div className="small">{s.content}</div>
+                      </div>
+                    ))}
+                    {!stories.length && <div className="muted small">No active stories</div>}
+                  </div>
+                </div>
+
+                {/* Feed */}
+                <div className="card">
+                  <div className="row" style={{justifyContent:'space-between'}}>
+                    <div className="title">Feed</div>
+                    <div className="row">
+                      <input className="input" placeholder="Search posts…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                      <button className="btn" onClick={search}><Search size={16}/> Search</button>
+                    </div>
+                  </div>
+                  <div className="space"></div>
+
+                  {(searchResults.length ? searchResults : posts).map(post => (
+                    <div key={post.id} className="post">
+                      <Avatar name={post.username} />
+                      <div className="post-content">
+                        <div className="row" style={{justifyContent:'space-between'}}>
+                          <div className="headline">{post.username}</div>
+                          <button className="btn ghost" onClick={() => setShowShareMenu(p => p === post.id ? null : post.id)} title="More">
+                            <MoreHorizontal size={18}/>
+                          </button>
+                        </div>
+                        <div className="small muted">{new Date(post.created_at).toLocaleString()}</div>
+                        <div>{post.content}</div>
+                        {post.image_url && <img src={post.image_url} alt="" style="width:100%; border-radius:12px; border:1px solid var(--border);" />}
+                        <div className="post-actions">
+                          <button className="btn" onClick={() => toggleLike(post.id, post.is_liked)} title="Like">
+                            <Heart size={16} color={post.is_liked ? '#ff6b6b' : undefined} /> {post.likes_count}
+                          </button>
+                          <button className="btn" onClick={() => openComments(post)} title="Comments">
+                            <MessageCircle size={16}/> {post.comments_count}
+                          </button>
+                          <button className="btn" onClick={() => toggleSave(post.id, post.is_saved)} title="Save">
+                            <Bookmark size={16} color={post.is_saved ? '#6aa9ff' : undefined} /> Save
+                          </button>
+                          <button className="btn" onClick={() => sharePost(post)} title="Share">
+                            <Share2 size={16}/> Share
+                          </button>
+                        </div>
+                        {showShareMenu === post.id && (
+                          <div className="chip">Copied link is shareable. Paste anywhere.</div>
+                        )}
+                        {selectedPost?.id === post.id && (
+                          <div className="card" style={{padding:'10px'}}>
+                            <div className="row">
+                              <input className="input" placeholder="Write a comment…" value={commentText} onChange={e => setCommentText(e.target.value)} />
+                              <button className="btn primary" onClick={() => sendComment(post.id)}><Send size={16}/> Send</button>
+                            </div>
+                            <div className="space"></div>
+                            {(comments || []).map(c => (
+                              <div key={c.id} className="row">
+                                <span className="kbd">{c.user_id.slice(0,6)}</span>
+                                <span className="small">{c.text}</span>
+                                <span className="muted small">{new Date(c.created_at).toLocaleTimeString()}</span>
+                              </div>
+                            ))}
+                            {!comments.length && <div className="muted small">No comments yet</div>}
+                          </div>
+                        )}
+                        <div className="divider"></div>
+                      </div>
+                    </div>
+                  ))}
+                  {(!posts.length && !searchResults.length) && <div className="muted small">No posts yet</div>}
+                </div>
+              </div>
+
+              {/* Right column */}
+              <div>
+                {/* Notifications */}
+                <div className="card">
+                  <div className="row" style={{justifyContent:'space-between'}}>
+                    <div className="title">Notifications</div>
+                    <button className="btn" onClick={() => setShowNotifications(v => !v)}>
+                      {showNotifications ? <X size={16}/> : <Bell size={16}/>} {showNotifications ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  {showNotifications && (
+                    <>
+                      <div className="space"></div>
+                      {(notifications || []).map(n => (
+                        <div key={n.id} className="row">
+                          <span className="kbd">{n.type}</span>
+                          <span className="small">{JSON.stringify(n.payload)}</span>
+                          <span className="muted small">{new Date(n.created_at).toLocaleTimeString()}</span>
+                        </div>
+                      ))}
+                      {!notifications.length && <div className="muted small">No notifications</div>}
+                    </>
+                  )}
+                </div>
+
+                {/* Profile */}
+                <div className="card">
+                  <div className="row" style={{justifyContent:'space-between'}}>
+                    <div className="title">Profile</div>
+                    <button className="btn" onClick={() => setEditingBio(v => !v)}>{editingBio ? <X size={16}/> : <Edit size={16}/>} {editingBio ? 'Cancel' : 'Edit bio'}</button>
+                  </div>
+                  <div className="space"></div>
+                  <div className="row">
+                    <Avatar name={user.user_metadata?.username || user.email} />
+                    <div>
+                      <div className="headline">{user.user_metadata?.username || user.email}</div>
+                      <div className="muted small">{user.user_metadata?.bio || 'New to Synq! 🎉'}</div>
+                    </div>
+                  </div>
+                  {editingBio && (
+                    <>
+                      <div className="space"></div>
+                      <textarea rows="2" className="input" placeholder="Update your bio…" value={newBio} onChange={e => setNewBio(e.target.value)}></textarea>
+                      <div className="space"></div>
+                      <button className="btn primary" onClick={updateBio}><Edit size={16}/> Save bio</button>
+                    </>
+                  )}
+                  <div className="space"></div>
+                  <div className="tabs">
+                    <div className={`pill ${profileView==='posts' ? 'active':''}`} onClick={() => setProfileView('posts')}>Posts</div>
+                    <div className={`pill ${profileView==='stats' ? 'active':''}`} onClick={() => setProfileView('stats')}>Stats</div>
+                    <div className={`pill ${profileView==='saved' ? 'active':''}`} onClick={() => setProfileView('saved')}>Saved</div>
+                  </div>
+                  {profileView === 'posts' && (
+                    <>
+                      {(userPosts || []).map(p => (
+                        <div key={p.id} className="card">
+                          <div className="row" style={{justifyContent:'space-between'}}>
+                            <div className="small">{new Date(p.created_at).toLocaleString()}</div>
+                            <button className="btn"><Trash2 size={16}/> Remove</button>
+                          </div>
+                          <div>{p.content}</div>
+                          {p.image_url && <img src={p.image_url} alt="" style="width:100%; border-radius:12px; border:1px solid var(--border);" />}
+                        </div>
+                      ))}
+                      {!userPosts.length && <div className="muted small">No posts yet</div>}
+                    </>
+                  )}
+                  {profileView === 'stats' && (
+                    <div className="row" style={{gap:'16px'}}>
+                      <div className="chip">Following: {following}</div>
+                      <div className="chip">Followers: {followers}</div>
+                    </div>
+                  )}
+                  {profileView === 'saved' && (
+                    <>
+                      {(savedPosts || []).map(p => (
+                        <div key={p.id} className="card">
+                          <div className="small">{p.username} • {new Date(p.created_at).toLocaleString()}</div>
+                          <div>{p.content}</div>
+                          {p.image_url && <img src={p.image_url} alt="" style="width:100%; border-radius:12px; border:1px solid var(--border);" />}
+                        </div>
+                      ))}
+                      {!savedPosts.length && <div className="muted small">You haven’t saved any posts</div>}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Toasts */}
+          {(error || success) && (
+            <div className="toast">
+              {error && <div className="danger">{error}</div>}
+              {success && <div className="success">{success}</div>}
+            </div>
+          )}
+
+          {/* Story modal */}
+          {selectedStory && (
+            <div className="card sticky-cta">
+              <div className="row" style={{justifyContent:'space-between'}}>
+                <div className="title">Story by {selectedStory.username}</div>
+                <button className="btn" onClick={() => setSelectedStory(null)}><X size={16}/> Close</button>
+              </div>
+              <div className="small muted">{new Date(selectedStory.created_at).toLocaleString()} • expires {new Date(selectedStory.expires_at).toLocaleString()}</div>
+              <div className="space"></div>
+              <div>{selectedStory.content}</div>
+              <div className="space"></div>
+              <div className="row">
+                <input className="input" placeholder="Reply to story…" value={replyText} onChange={e => setReplyText(e.target.value)} />
+                <button className="btn primary" onClick={async () => {
+                  const txt = replyText.trim();
+                  if (!txt) return;
+                  await supabase.from('story_replies').insert([{
+                    story_id: selectedStory.id, user_id: user.id, text: txt
+                  }]);
+                  setReplyText('');
+                  toast('Reply sent', 'success');
+                }}><Send size={16}/> Send</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(React.createElement(Synq));
+  </script>
 </body>
 </html>
