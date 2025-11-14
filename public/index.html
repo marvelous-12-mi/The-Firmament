@@ -1,320 +1,807 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synq - Social Media App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Synq — Full Social App Prototype</title>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6366f1',
-                        secondary: '#8b5cf6'
-                    }
-                }
-            }
-        }
-    </script>
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .post-card { transition: all 0.3s ease; }
-        .post-card:hover { transform: translateY(-2px); }
-        .nav-link.active { color: #6366f1; font-weight: 600; }
-        .btn-primary { background: linear-gradient(to right, #6366f1, #8b5cf6); }
-        .btn-primary:hover { opacity: 0.9; }
-        .like-button.liked { color: #ef4444; }
-        .comment-form { transition: max-height 0.3s ease; max-height: 0; overflow: hidden; }
-        .comment-form.active { max-height: 200px; }
-    </style>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  :root{--bg:#f8fafc;--card:#fff;--muted:#6b7280;--text:#0f172a;--accent:#6366f1}
+  html.dark{--bg:#0f1115;--card:#0f1720;--muted:#94a3b8;--text:#e6eef8;--accent:#7dd3fc}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text); transition:background .2s,color .2s}
+  .glass{background: linear-gradient( rgba(255,255,255,0.6), rgba(255,255,255,0.4) ); backdrop-filter: blur(6px) }
+  html.dark .glass{background: linear-gradient( rgba(16,24,32,0.6), rgba(16,24,32,0.4) )}
+  .post-card{transition:transform .18s ease, box-shadow .18s ease}
+  .post-card:hover{transform:translateY(-6px); box-shadow:0 10px 30px rgba(2,6,23,0.12)}
+  .avatar{width:44px;height:44px;border-radius:9999px;object-fit:cover}
+  .small-avatar{width:32px;height:32px;border-radius:9999px;object-fit:cover}
+  .story{width:72px;height:72px;border-radius:9999px;object-fit:cover;border:2px solid rgba(255,255,255,0.9)}
+  .like-anim{animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+  .hidden-by-default{display:none}
+  .toast{position:fixed;right:20px;bottom:20px;z-index:60}
+</style>
 </head>
+<body class="min-h-screen">
 
-<body class="min-h-screen flex flex-col">
+<!-- NAV -->
+<nav class="sticky top-0 z-40 bg-white dark:bg-[var(--card)] shadow px-4 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">S</div>
+    <div>
+      <div class="text-lg font-semibold">Synq</div>
+      <div class="text-xs text-[var(--muted)]">Social prototype</div>
+    </div>
+  </div>
 
-    <!-- NAVBAR -->
-    <nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center space-x-2">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span class="text-white font-bold text-xl">S</span>
-            </div>
-            <h1 class="text-2xl font-bold text-slate-800">Synq</h1>
-        </div>
-        <div class="hidden md:flex space-x-6">
-            <button id="nav-feed" class="flex items-center text-indigo-600 font-semibold nav-link">
-                <i class="fas fa-home mr-2"></i> Home
-            </button>
-            <button id="nav-create" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link">
-                <i class="fas fa-plus mr-2"></i> Create
-            </button>
-            <button id="nav-profile" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link">
-                <i class="fas fa-user mr-2"></i> Profile
-            </button>
-        </div>
-
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8"></div>
-                <span class="hidden md:inline text-slate-800" id="user-email">Not logged in</span>
-                <button id="logout-btn" class="text-slate-600 hover:text-slate-900 hidden">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- MOBILE NAV -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-around z-10">
-        <button id="mobile-feed" class="flex flex-col items-center text-indigo-600">
-            <i class="fas fa-home"></i><span class="text-xs mt-1">Home</span>
-        </button>
-        <button id="mobile-create" class="flex flex-col items-center text-slate-600">
-            <i class="fas fa-plus"></i><span class="text-xs mt-1">Create</span>
-        </button>
-        <button id="mobile-profile" class="flex flex-col items-center text-slate-600">
-            <i class="fas fa-user"></i><span class="text-xs mt-1">Profile</span>
-        </button>
+  <div class="flex items-center gap-3">
+    <div class="hidden md:flex items-center gap-2 bg-gray-100 dark:bg-transparent rounded-lg p-2">
+      <input id="search-input" placeholder="Search users.." class="bg-transparent outline-none px-2 text-sm w-56" />
+      <button id="search-btn" class="text-[var(--muted)] hover:text-[var(--accent)]"><i class="fas fa-search"></i></button>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-grow container mx-auto px-4 py-8 pb-20 md:pb-8">
+    <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700"><i class="fas fa-moon"></i></button>
 
-        <!-- AUTH VIEW -->
-        <div id="auth-view" class="max-w-md mx-auto">
-            <div class="bg-white rounded-xl shadow-md p-8">
-                <h2 class="text-2xl font-bold text-center text-slate-800 mb-6" id="auth-title">Join Synq</h2>
-                <div id="error-message" class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 hidden"></div>
+    <div class="hidden md:flex items-center gap-3">
+      <button id="nav-home" class="text-sm font-medium text-[var(--accent)]"><i class="fas fa-home mr-2"></i>Feed</button>
+      <button id="nav-create" class="text-sm font-medium"><i class="fas fa-plus mr-2"></i>Create</button>
+      <button id="nav-profile" class="text-sm font-medium"><i class="fas fa-user mr-2"></i>Profile</button>
+    </div>
 
-                <form id="auth-form" class="space-y-4">
-                    <div>
-                        <label class="block text-gray-700 mb-2">Email</label>
-                        <input type="email" id="email-input" class="w-full border p-3 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 mb-2">Password</label>
-                        <input type="password" id="password-input" class="w-full border p-3 rounded-lg" required>
-                    </div>
+    <div id="auth-area" class="flex items-center gap-3 ml-4">
+      <span id="user-email" class="text-sm text-[var(--muted)] hidden md:inline">Not logged in</span>
+      <button id="logout-btn" class="hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</nav>
 
-                    <button type="submit" id="auth-submit" class="w-full btn-primary text-white py-3 rounded-lg font-semibold">Sign Up</button>
-                </form>
+<!-- LAYOUT -->
+<div class="container mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
 
-                <div class="text-center mt-4">
-                    <p class="text-gray-600">
-                        Already have an account?
-                        <button id="toggle-auth" class="text-indigo-600 font-semibold">Sign In</button>
-                    </p>
-                </div>
-            </div>
+  <!-- LEFT: Sidebar -->
+  <aside class="col-span-1 md:col-span-1">
+    <div class="bg-[var(--card)] rounded-xl p-4 shadow glass">
+      <div class="flex items-center gap-3">
+        <img id="sidebar-avatar" src="" alt="avatar" class="avatar bg-gray-200" />
+        <div>
+          <div id="sidebar-username" class="font-semibold">Guest</div>
+          <div id="sidebar-bio" class="text-sm text-[var(--muted)]">Not logged in</div>
         </div>
+      </div>
 
-        <!-- FEED VIEW -->
-        <div id="feed-view" class="max-w-2xl mx-auto hidden">
-            <h2 class="text-2xl font-bold mb-6 text-slate-800">Latest Posts</h2>
-
-            <!-- CREATE POST -->
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <textarea id="post-content" placeholder="What's on your mind?" class="w-full border p-4 rounded-lg" rows="3"></textarea>
-                <button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg mt-4 float-right">Post</button>
-            </div>
-
-            <!-- POSTS -->
-            <div id="posts-container">
-                <div class="flex justify-center py-12">
-                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-500"></div>
-                </div>
-            </div>
+      <div class="mt-4 grid grid-cols-3 text-center gap-3">
+        <div>
+          <div id="count-posts" class="text-lg font-semibold">0</div><div class="text-xs text-[var(--muted)]">Posts</div>
         </div>
-
-        <!-- CREATE VIEW -->
-        <div id="create-view" class="max-w-2xl mx-auto hidden">
-            <div class="bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">Create New Post</h2>
-                <textarea id="create-post-content" class="w-full border p-4 rounded-lg" rows="5"></textarea>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button id="cancel-create" class="border px-6 py-3 rounded-lg">Cancel</button>
-                    <button id="publish-post" class="btn-primary text-white px-6 py-3 rounded-lg">Publish Post</button>
-                </div>
-            </div>
+        <div>
+          <div id="count-followers" class="text-lg font-semibold">0</div><div class="text-xs text-[var(--muted)]">Followers</div>
         </div>
-
-        <!-- PROFILE VIEW -->
-        <div id="profile-view" class="max-w-2xl mx-auto hidden">
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-32"></div>
-
-                <div class="px-6 pb-6">
-                    <div class="flex items-end -mt-16 mb-6">
-                        <div class="bg-gray-200 border-4 border-white rounded-xl w-32 h-32"></div>
-
-                        <div class="ml-6 pb-2">
-                            <h2 id="profile-username" class="text-2xl font-bold">Loading…</h2>
-                            <p id="profile-bio" class="text-gray-600">Loading profile…</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-xl font-bold mb-4">Your Posts</h3>
-                    <div id="user-posts">
-                        <div class="flex justify-center py-8">
-                            <div class="animate-spin h-8 w-8 border-t-2 border-indigo-500"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <div id="count-following" class="text-lg font-semibold">0</div><div class="text-xs text-[var(--muted)]">Following</div>
         </div>
+      </div>
 
-        <!-- EDIT PROFILE MODAL -->
-        <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-            <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                <h3 class="text-xl font-bold mb-4">Edit Profile</h3>
-                <input id="edit-username" class="w-full border p-3 mb-3 rounded-lg" placeholder="Username">
-                <textarea id="edit-bio" class="w-full border p-3 rounded-lg" rows="3" placeholder="Bio"></textarea>
+      <div class="mt-4 flex gap-2">
+        <button id="edit-profile-btn" class="flex-1 border rounded-md py-2 text-sm">Edit Profile</button>
+        <button id="new-story-btn" class="px-4 py-2 rounded-md bg-[var(--accent)] text-white">+Story</button>
+      </div>
+    </div>
 
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button id="cancel-edit" class="border px-4 py-2 rounded-lg">Cancel</button>
-                    <button id="save-profile" class="btn-primary text-white px-4 py-2 rounded-lg">Save Changes</button>
-                </div>
-            </div>
+    <!-- Stories -->
+    <div class="bg-[var(--card)] rounded-xl p-3 shadow mt-4 glass">
+      <h4 class="font-semibold text-sm mb-3">Stories</h4>
+      <div id="stories-container" class="flex gap-3 overflow-x-auto py-2"></div>
+    </div>
+
+    <!-- Suggestions / Search Results -->
+    <div id="search-results" class="bg-[var(--card)] rounded-xl p-3 shadow mt-4 glass hidden">
+      <h4 class="font-semibold text-sm mb-3">Search Results</h4>
+      <div id="search-list" class="space-y-2"></div>
+    </div>
+  </aside>
+
+  <!-- CENTER: Main Feed -->
+  <main class="col-span-1 md:col-span-2">
+    <!-- AUTH / SIGNUP -->
+    <div id="auth-card" class="bg-[var(--card)] rounded-xl p-6 shadow glass">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h2 class="text-xl font-semibold mb-2">Join Synq</h2>
+          <p class="text-sm text-[var(--muted)]">Sign up to post, comment, follow friends and chat.</p>
         </div>
+        <form id="auth-form" class="space-y-2">
+          <input id="email-input" placeholder="Email" class="w-full border px-3 py-2 rounded-md" required />
+          <input id="password-input" placeholder="Password" type="password" class="w-full border px-3 py-2 rounded-md" required />
+          <div class="flex gap-2">
+            <button id="signup-btn" class="flex-1 bg-[var(--accent)] text-white py-2 rounded-md">Sign Up</button>
+            <button id="signin-btn" class="flex-1 border py-2 rounded-md">Sign In</button>
+          </div>
+          <div id="auth-error" class="text-sm text-red-500 hidden"></div>
+        </form>
+      </div>
+    </div>
 
-    </main>
+    <!-- Create Post Box -->
+    <div id="create-card" class="bg-[var(--card)] rounded-xl p-4 shadow glass mt-4 hidden">
+      <div class="flex gap-3">
+        <img id="create-avatar" src="" class="small-avatar bg-gray-200" />
+        <div class="flex-1">
+          <textarea id="create-text" rows="3" placeholder="What's on your mind?" class="w-full border p-3 rounded-md"></textarea>
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex gap-2 items-center">
+              <input id="create-image" type="file" accept="image/*" class="text-sm" />
+              <button id="post-btn" class="px-4 py-2 bg-[var(--accent)] text-white rounded-md">Post</button>
+            </div>
+            <div class="text-sm text-[var(--muted)]">
+              <label><input id="feed-toggle" type="checkbox" /> Show only people I follow</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- SCRIPT -->
-    <script>
-        const SUPABASE_URL = "https://qpfjchiucjhfvyohqhih.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"; 
+    <!-- Feed -->
+    <div id="feed" class="mt-4 space-y-4">
+      <!-- posts inserted here -->
+    </div>
+  </main>
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- RIGHT: Activity / DMs / Notifications -->
+  <aside class="col-span-1 md:col-span-1">
+    <div class="bg-[var(--card)] rounded-xl p-4 shadow glass">
+      <div class="flex justify-between items-center">
+        <h4 class="font-semibold">Activity</h4>
+        <div class="flex items-center gap-2">
+          <button id="open-notifs" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-bell"></i></button>
+          <button id="open-dms" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-comments"></i></button>
+        </div>
+      </div>
 
-        let currentUser = null;
-        let posts = [];
-        let userLikes = new Set();
+      <div id="notifications" class="mt-3 space-y-2 max-h-64 overflow-auto"></div>
+    </div>
 
-        const views = {
-            auth: document.getElementById('auth-view'),
-            feed: document.getElementById('feed-view'),
-            create: document.getElementById('create-view'),
-            profile: document.getElementById('profile-view')
-        };
+    <!-- DMs -->
+    <div id="dm-list-card" class="bg-[var(--card)] rounded-xl p-4 shadow glass mt-4">
+      <h4 class="font-semibold">Direct Messages</h4>
+      <div id="dm-list" class="mt-3 space-y-2"></div>
+    </div>
+  </aside>
+</div>
 
-        /* --------------------------
-           NAVIGATION
-        ---------------------------*/
-        function showView(view) {
-            Object.keys(views).forEach(v => views[v].classList.toggle('hidden', v !== view));
-        }
+<!-- EDIT PROFILE MODAL -->
+<div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
+  <div class="bg-[var(--card)] rounded-xl w-full max-w-lg p-6 shadow">
+    <h3 class="font-semibold text-lg mb-3">Edit Profile</h3>
+    <div class="grid grid-cols-1 gap-3">
+      <input id="edit-username" placeholder="Username" class="w-full border px-3 py-2 rounded-md" />
+      <input id="edit-avatar-file" type="file" accept="image/*" class="w-full" />
+      <textarea id="edit-bio" rows="3" placeholder="Bio" class="w-full border p-3 rounded-md"></textarea>
+      <div class="flex justify-end gap-2">
+        <button id="cancel-edit" class="px-4 py-2 border rounded-md">Cancel</button>
+        <button id="save-profile" class="px-4 py-2 bg-[var(--accent)] text-white rounded-md">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        /* --------------------------
-           AUTH
-        ---------------------------*/
-        document.getElementById("auth-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
+<!-- STORY UPLOAD MODAL -->
+<div id="story-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
+  <div class="bg-[var(--card)] rounded-xl w-full max-w-md p-6 shadow">
+    <h3 class="font-semibold text-lg mb-3">Add Story (24h)</h3>
+    <input id="story-file" type="file" accept="image/*" />
+    <div class="flex justify-end gap-2 mt-4">
+      <button id="cancel-story" class="px-4 py-2 border rounded-md">Cancel</button>
+      <button id="upload-story" class="px-4 py-2 bg-[var(--accent)] text-white rounded-md">Upload</button>
+    </div>
+  </div>
+</div>
 
-            const email = document.getElementById("email-input").value;
-            const password = document.getElementById("password-input").value;
+<!-- DM MODAL -->
+<div id="dm-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
+  <div class="bg-[var(--card)] rounded-xl w-full max-w-2xl p-4 shadow">
+    <div class="flex gap-3">
+      <div class="w-1/3 border-r pr-3">
+        <h4 class="font-semibold">Conversations</h4>
+        <div id="dm-contacts" class="mt-2 space-y-2 max-h-96 overflow-auto"></div>
+      </div>
+      <div class="flex-1">
+        <div id="dm-chat" class="max-h-96 overflow-auto p-2"></div>
+        <div class="flex gap-2 mt-2">
+          <input id="dm-input" class="flex-1 border p-2 rounded-md" placeholder="Type a message..." />
+          <input id="dm-attach" type="file" accept="image/*" class="hidden" />
+          <button id="dm-send" class="px-4 py-2 bg-[var(--accent)] text-white rounded-md">Send</button>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-end mt-3">
+      <button id="close-dm" class="px-4 py-2 border rounded-md">Close</button>
+    </div>
+  </div>
+</div>
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
+<!-- TOASTS -->
+<div id="toast-root" class="toast"></div>
 
-            if (error) {
-                document.getElementById("error-message").textContent = error.message;
-                document.getElementById("error-message").classList.remove("hidden");
-                return;
-            }
+<script>
+/* =======================
+   CONFIG — Replace these
+   ======================= */
+const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // auto-create profile
-            await supabase.from("profiles").insert({
-                id: data.user.id,
-                username: email.split("@")[0]
-            });
+/* =======================
+   STATE
+   ======================= */
+let currentUser = null;
+let profilesCache = {}; // userid -> profile
+let posts = [];
+let followingOnly = false;
+let activeConversation = null;
 
-            showView("feed");
-        });
+/* =======================
+   HELPERS
+   ======================= */
+function el(id) { return document.getElementById(id); }
+function show(elm){ elm.classList.remove('hidden'); }
+function hide(elm){ elm.classList.add('hidden'); }
+function toast(msg, t=3000){ const root = el('toast-root'); const d = document.createElement('div'); d.className='bg-black text-white px-4 py-2 rounded shadow mb-2'; d.textContent=msg; root.appendChild(d); setTimeout(()=>d.remove(), t); }
 
-        document.getElementById("logout-btn").addEventListener("click", async () => {
-            await supabase.auth.signOut();
-            showView("auth");
-        });
+/* =======================
+   THEME
+   ======================= */
+el('theme-toggle').addEventListener('click', ()=>{
+  document.documentElement.classList.toggle('dark');
+});
 
-        /* --------------------------
-           FETCH POSTS WITH USERNAME
-        ---------------------------*/
-        async function fetchPosts() {
-            const { data, error } = await supabase
-                .from("posts")
-                .select("id, content, created_at, user_id, profiles(username)")
-                .order("created_at", { ascending: false });
+/* =======================
+   AUTH
+   ======================= */
+async function signUp(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+  // create profile once verification may arrive — create anyway
+  await supabase.from('profiles').upsert({ id: data.user.id, username: email.split('@')[0], bio: 'New to Synq!' });
+  return data;
+}
+async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+}
+async function signOut(){
+  await supabase.auth.signOut();
+  currentUser = null;
+  setupUiFor(null);
+}
 
-            if (!error) posts = data;
+/* auth form handlers */
+el('signup-btn').addEventListener('click', async (e)=>{
+  e.preventDefault();
+  try{
+    el('auth-error').classList.add('hidden');
+    const email = el('email-input').value;
+    const pass = el('password-input').value;
+    if(!email||!pass) throw new Error('Provide email and password');
+    await signUp(email, pass);
+    toast('Check your email for confirmation — profile created.');
+  } catch(err){ el('auth-error').textContent = err.message; el('auth-error').classList.remove('hidden'); }
+});
+el('signin-btn').addEventListener('click', async (e)=>{
+  e.preventDefault();
+  try{
+    el('auth-error').classList.add('hidden');
+    const email = el('email-input').value;
+    const pass = el('password-input').value;
+    if(!email||!pass) throw new Error('Provide email and password');
+    const { data } = await signIn(email, pass);
+    currentUser = data.user;
+    setupUiFor(currentUser);
+    toast('Signed in');
+    await loadAllForUser();
+  } catch(err){ el('auth-error').textContent = err.message; el('auth-error').classList.remove('hidden'); }
+});
 
-            renderPosts();
-        }
+/* session check */
+supabase.auth.getSession().then(({ data: { session }})=>{
+  if(session){ currentUser = session.user; setupUiFor(currentUser); loadAllForUser(); }
+  else { setupUiFor(null); }
+});
+supabase.auth.onAuthStateChange((_event, session)=>{
+  if(session?.user){ currentUser = session.user; setupUiFor(currentUser); loadAllForUser(); }
+  else { currentUser = null; setupUiFor(null); }
+});
 
-        /* --------------------------
-           RENDER POSTS
-        ---------------------------*/
-        function renderPosts() {
-            const container = document.getElementById("posts-container");
-            container.innerHTML = "";
+/* =======================
+   UI initialization
+   ======================= */
+function setupUiFor(user){
+  if(user){
+    el('user-email').textContent = user.email; el('user-email').classList.remove('hidden'); el('logout-btn').classList.remove('hidden');
+    show(el('create-card')); hide(el('auth-card'));
+  } else {
+    el('user-email').textContent = 'Not logged in'; el('user-email').classList.add('hidden'); el('logout-btn').classList.add('hidden');
+    hide(el('create-card')); show(el('auth-card'));
+  }
+}
 
-            posts.forEach(post => {
-                const el = document.createElement("div");
-                el.className = "bg-white rounded-xl shadow-sm p-6 mb-6 post-card";
+/* logout btn */
+el('logout-btn').addEventListener('click', async ()=>{ await signOut(); show(el('auth-card')); hide(el('create-card')); toast('Signed out'); });
 
-                el.innerHTML = `
-                    <h3 class="font-semibold text-indigo-600 mb-1">
-                        ${post.profiles?.username || "Unknown User"}
-                    </h3>
+/* NAV */
+el('nav-home').addEventListener('click', ()=>window.scrollTo(0,0));
+el('nav-create').addEventListener('click', ()=>{ if(!currentUser){ toast('Login to create posts'); return; } window.scrollTo(0,0); el('create-text').focus(); });
+el('nav-profile').addEventListener('click', ()=>{ if(!currentUser){ toast('Login to view profile'); return; } openProfile(currentUser.id); });
 
-                    <p class="text-gray-800 mb-4">${post.content}</p>
+/* =======================
+   STORAGE HELPERS
+   ======================= */
+async function uploadFileToBucket(bucket, file, pathPrefix='') {
+  if (!file) return null;
+  const filename = `${pathPrefix}${Date.now()}-${file.name.replace(/\s+/g,'_')}`;
+  const { data, error } = await supabase.storage.from(bucket).upload(filename, file, {upsert: false});
+  if (error) { console.error('Upload error', error); throw error; }
+  // make public URL (assuming public bucket)
+  const { publicURL, error: urlErr } = supabase.storage.from(bucket).getPublicUrl(data.path);
+  if (urlErr) { console.error('getPublicUrl error', urlErr); throw urlErr; }
+  return publicURL;
+}
 
-                    <div class="flex items-center justify-between text-gray-500">
-                        <span>${new Date(post.created_at).toLocaleString()}</span>
-                        <button class="like-button" data-post-id="${post.id}">
-                            <i class="fas fa-heart mr-1"></i> Like
-                        </button>
-                    </div>
-                `;
+/* =======================
+   PROFILE CRUD
+   ======================= */
+el('edit-profile-btn').addEventListener('click', async ()=>{
+  if(!currentUser) { toast('Login first'); return; }
+  // populate fields
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+  if(!error && data){ el('edit-username').value = data.username || ''; el('edit-bio').value = data.bio || ''; el('sidebar-username').textContent = data.username || 'User'; el('sidebar-bio').textContent = data.bio || ''; }
+  show(el('edit-profile-modal'));
+});
+el('cancel-edit').addEventListener('click', ()=>hide(el('edit-profile-modal')));
+el('save-profile').addEventListener('click', async ()=>{
+  try{
+    const username = el('edit-username').value.trim();
+    const bio = el('edit-bio').value.trim();
+    const file = el('edit-avatar-file').files[0];
+    let avatar_url = null;
+    if(file){ avatar_url = await uploadFileToBucket('avatars', file, `avatars/${currentUser.id}-`); }
+    const payload = { id: currentUser.id, username, bio };
+    if(avatar_url) payload.avatar_url = avatar_url;
+    await supabase.from('profiles').upsert(payload);
+    hide(el('edit-profile-modal'));
+    await loadProfile(currentUser.id);
+    toast('Profile saved');
+  } catch(err){ console.error(err); toast('Failed saving profile'); }
+});
 
-                container.appendChild(el);
-            });
-        }
+/* load profile and cache */
+async function loadProfile(userId){
+  if(!userId) return null;
+  if(profilesCache[userId]) return profilesCache[userId];
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  if(error) return null;
+  profilesCache[userId] = data;
+  return data;
+}
 
-        /* --------------------------
-           CREATE POST
-        ---------------------------*/
-        document.getElementById("submit-post").addEventListener("click", async () => {
-            const content = document.getElementById("post-content").value;
-            if (!content.trim()) return;
+/* load counts for sidebar */
+async function refreshCounts(userId){
+  if(!userId) return;
+  const [{count:postsCount}] = await supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+  const [{count:followersCount}] = await supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following', userId);
+  const [{count:followingCount}] = await supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower', userId);
+  el('count-posts').textContent = postsCount || 0;
+  el('count-followers').textContent = followersCount || 0;
+  el('count-following').textContent = followingCount || 0;
+}
 
-            await supabase.from("posts").insert({
-                content,
-                user_id: currentUser.id
-            });
+/* =======================
+   STORIES
+   ======================= */
+el('new-story-btn').addEventListener('click', ()=>{ if(!currentUser){ toast('Login to add story'); return; } show(el('story-modal')); });
+el('cancel-story').addEventListener('click', ()=>hide(el('story-modal')));
+el('upload-story').addEventListener('click', async ()=>{
+  try{
+    const file = el('story-file').files[0];
+    if(!file) throw new Error('Choose an image');
+    const url = await uploadFileToBucket('stories', file, `stories/${currentUser.id}-`);
+    const expires = new Date(Date.now() + 24*60*60*1000).toISOString();
+    await supabase.from('stories').insert({ user_id: currentUser.id, image_url: url, expires_at: expires });
+    hide(el('story-modal'));
+    toast('Story uploaded');
+  } catch(err){ console.error(err); toast(err.message || 'Story upload failed'); }
+});
 
-            document.getElementById("post-content").value = "";
-            fetchPosts();
-        });
+/* render stories */
+async function renderStories(){
+  const { data } = await supabase.from('stories').select('id,user_id,image_url,expires_at,created_at').order('created_at',{ascending:false});
+  const container = el('stories-container'); container.innerHTML = '';
+  const now = new Date();
+  (data||[]).forEach(async s=>{
+    if(new Date(s.expires_at) < now) return; // skip expired
+    const profile = await loadProfile(s.user_id);
+    const img = document.createElement('img');
+    img.src = s.image_url;
+    img.className = 'story';
+    img.title = profile?.username || 'User';
+    container.appendChild(img);
+  });
+}
 
-        /* --------------------------
-           SESSION CHECK
-        ---------------------------*/
-        document.addEventListener("DOMContentLoaded", async () => {
-            const { data: { session }} = await supabase.auth.getSession();
+/* =======================
+   FOLLOW / UNFOLLOW
+   ======================= */
+async function followUser(targetId){
+  if(!currentUser) { toast('Login first'); return; }
+  await supabase.from('follows').insert({ follower: currentUser.id, following: targetId }).throwOnError();
+  // notify
+  await supabase.from('notifications').insert({ user_id: targetId, actor_id: currentUser.id, type: 'follow', meta: JSON.stringify({}) });
+}
+async function unfollowUser(targetId){
+  if(!currentUser) { toast('Login first'); return; }
+  await supabase.from('follows').delete().eq('follower', currentUser.id).eq('following', targetId);
+}
 
-            if (session) {
-                currentUser = session.user;
-                document.getElementById("user-email").textContent = currentUser.email;
-                document.getElementById("logout-btn").classList.remove("hidden");
-                showView("feed");
-                fetchPosts();
-            } else {
-                showView("auth");
-            }
-        });
-    </script>
+/* =======================
+   POSTS: fetch / render / create / edit / delete
+   ======================= */
+el('post-btn').addEventListener('click', async ()=>{
+  if(!currentUser){ toast('Login to post'); return; }
+  try{
+    const text = el('create-text').value.trim();
+    const file = el('create-image').files[0];
+    let image_url = null;
+    if(file) image_url = await uploadFileToBucket('post-images', file, `post-${currentUser.id}-`);
+    const payload = { content: text || null, user_id: currentUser.id, image_url };
+    const { data, error } = await supabase.from('posts').insert(payload).select().single();
+    if(error) throw error;
+    el('create-text').value = ''; el('create-image').value = '';
+    toast('Posted!');
+    // create notification for followers? skip
+    fetchAndRenderFeed();
+  }catch(err){ console.error(err); toast(err.message || 'Failed posting'); }
+});
+
+/* fetch feed (global or following only) */
+async function fetchPostsFromDB(onlyFollowing=false){
+  let query = supabase.from('posts')
+    .select(`
+      id, content, created_at, image_url, user_id,
+      profiles(username, avatar_url)
+    `)
+    .order('created_at',{ascending:false});
+  if(onlyFollowing && currentUser){
+    // get following ids
+    const { data: following } = await supabase.from('follows').select('following').eq('follower', currentUser.id);
+    const ids = (following||[]).map(f=>f.following);
+    if(ids.length===0) return [];
+    query = query.in('user_id', ids);
+  }
+  const { data, error } = await query;
+  if(error){ console.error(error); return []; }
+  return data || [];
+}
+
+/* render posts */
+async function fetchAndRenderFeed(){
+  const onlyFollowing = el('feed-toggle').checked;
+  posts = await fetchPostsFromDB(onlyFollowing);
+  renderFeed(posts);
+}
+
+/* render feed to DOM */
+function renderFeed(postsList){
+  const feed = el('feed');
+  feed.innerHTML = '';
+  if(!postsList || postsList.length===0){
+    feed.innerHTML = '<div class="bg-[var(--card)] rounded-xl p-6 shadow glass text-center">No posts to show</div>';
+    return;
+  }
+  postsList.forEach(post=>{
+    const div = document.createElement('div');
+    div.className = 'post-card bg-[var(--card)] rounded-xl p-4 shadow glass';
+    const username = post.profiles?.username || 'Unknown';
+    const avatar = post.profiles?.avatar_url || '';
+    const time = new Date(post.created_at).toLocaleString();
+    const likesSpanId = `likes-${post.id}`;
+    const commentsContainerId = `comments-${post.id}`;
+
+    div.innerHTML = `
+      <div class="flex gap-3">
+        <img src="${avatar||'/'}" class="small-avatar bg-gray-200" onerror="this.src='https://via.placeholder.com/44?text=U'"/>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-semibold">${username}</div>
+              <div class="text-xs text-[var(--muted)]">${time}</div>
+            </div>
+            <div class="flex items-center gap-2">
+              ${currentUser && currentUser.id===post.user_id ? `<button class="text-sm px-2 py-1 border rounded" data-action="edit" data-id="${post.id}">Edit</button><button class="text-sm px-2 py-1 border rounded" data-action="delete" data-id="${post.id}">Delete</button>` : ''}
+            </div>
+          </div>
+          <div class="mt-3">${post.content ? `<p class="mb-3">${escapeHtml(post.content)}</p>` : ''}${post.image_url ? `<img src="${post.image_url}" class="w-full rounded-lg mb-2" />` : ''}</div>
+
+          <div class="flex items-center gap-4 mt-2">
+            <button class="like-btn flex items-center gap-2 text-[var(--muted)]" data-post="${post.id}">
+              <i class="far fa-heart"></i><span id="${likesSpanId}">0</span>
+            </button>
+            <button class="comment-toggle text-[var(--muted)]" data-post="${post.id}"><i class="far fa-comment"></i> Comment</button>
+            <button class="text-[var(--muted)] share-btn" data-post="${post.id}"><i class="fas fa-share"></i> Share</button>
+          </div>
+
+          <div class="mt-3" id="${commentsContainerId}"></div>
+          <div class="mt-2 hidden" id="comment-form-${post.id}">
+            <div class="flex gap-2">
+              <input id="comment-input-${post.id}" class="flex-1 border rounded px-3 py-2" placeholder="Write a comment..." />
+              <button class="px-3 py-2 bg-[var(--accent)] text-white rounded comment-post-btn" data-post="${post.id}">Post</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    feed.appendChild(div);
+  });
+  // set up event listeners for likes / comments / edit / delete
+  document.querySelectorAll('.like-btn').forEach(btn=>{
+    btn.onclick = async ()=>{ const pid = btn.dataset.post; await toggleLike(pid); updateLikesCount(pid); };
+  });
+  document.querySelectorAll('.comment-toggle').forEach(btn=>{
+    btn.onclick = (e)=>{ const pid = btn.dataset.post; const f = el(`comment-form-${pid}`); f.classList.toggle('hidden'); };
+  });
+  document.querySelectorAll('.comment-post-btn').forEach(btn=>{
+    btn.onclick = async ()=>{ const pid = btn.dataset.post; const val = el(`comment-input-${pid}`).value.trim(); if(!val) return; await addComment(pid, val); el(`comment-input-${pid}`).value=''; fetchCommentsForPost(pid); toast('Comment posted'); };
+  });
+  document.querySelectorAll('[data-action="delete"]').forEach(btn=>btn.onclick = async ()=>{
+    const id = btn.dataset.id; if(!confirm('Delete post?')) return; await supabase.from('posts').delete().eq('id', id); fetchAndRenderFeed(); toast('Post deleted');
+  });
+  document.querySelectorAll('[data-action="edit"]').forEach(btn=>btn.onclick = async ()=>{
+    const id = btn.dataset.id; const data = prompt('Edit your post (text only):'); if(data==null) return; await supabase.from('posts').update({content:data}).eq('id', id); fetchAndRenderFeed(); toast('Post updated');
+  });
+
+  // load likes and comments counts
+  postsList.forEach(p=>{ updateLikesCount(p.id); fetchCommentsForPost(p.id); });
+}
+
+/* escape content */
+function escapeHtml(unsafe){
+  if(!unsafe) return '';
+  return unsafe.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+}
+
+/* update likes count & button state */
+async function updateLikesCount(postId){
+  // count
+  const { count } = await supabase.from('likes').select('id', { count: 'exact', head: true }).eq('post_id', postId);
+  const span = el(`likes-${postId}`);
+  if(span) span.textContent = count || 0;
+  // set liked style
+  if(currentUser){
+    const { data } = await supabase.from('likes').select('*').eq('post_id', postId).eq('user_id', currentUser.id).single();
+    const btn = document.querySelector(`.like-btn[data-post="${postId}"]`);
+    if(btn) {
+      if(data){ btn.classList.add('text-red-500'); btn.querySelector('i').className='fas fa-heart like-anim'; }
+      else { btn.classList.remove('text-red-500'); btn.querySelector('i').className='far fa-heart'; }
+    }
+  }
+}
+
+/* toggle like */
+async function toggleLike(postId){
+  if(!currentUser){ toast('Login to like'); return; }
+  const { data: existing } = await supabase.from('likes').select('*').eq('post_id', postId).eq('user_id', currentUser.id).single();
+  if(existing){ await supabase.from('likes').delete().eq('id', existing.id); }
+  else { await supabase.from('likes').insert({ user_id: currentUser.id, post_id: postId }); 
+    // notify post owner
+    const post = posts.find(p=>p.id==postId); if(post && post.user_id!==currentUser.id) {
+      await supabase.from('notifications').insert({ user_id: post.user_id, actor_id: currentUser.id, type: 'like', meta: JSON.stringify({ post_id: postId }) });
+    }
+  }
+}
+
+/* COMMENTS */
+async function addComment(postId, content){
+  if(!currentUser) { toast('Login to comment'); return; }
+  await supabase.from('comments').insert({ post_id: postId, user_id: currentUser.id, content });
+  // create notification to post owner
+  const post = posts.find(p=>p.id==postId);
+  if(post && post.user_id !== currentUser.id){
+    await supabase.from('notifications').insert({ user_id: post.user_id, actor_id: currentUser.id, type:'comment', meta: JSON.stringify({ post_id: postId }) });
+  }
+  fetchCommentsForPost(postId);
+}
+async function fetchCommentsForPost(postId){
+  const { data } = await supabase.from('comments').select('id,content,created_at,user_id,profiles(username,avatar_url)').eq('post_id', postId).order('created_at',{ascending:true});
+  const container = el(`comments-${postId}`);
+  if(!container) return;
+  container.innerHTML = '';
+  (data||[]).forEach(c=>{
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-start mt-2';
+    row.innerHTML = `<img src="${c.profiles?.avatar_url || '/'}" class="small-avatar bg-gray-200" onerror="this.src='https://via.placeholder.com/32?text=U'" />
+      <div class="flex-1"><div class="text-sm font-semibold">${c.profiles?.username || 'User'}</div><div class="text-sm">${escapeHtml(c.content)}</div><div class="text-xs text-[var(--muted)]">${new Date(c.created_at).toLocaleString()}</div></div>`;
+    container.appendChild(row);
+  });
+}
+
+/* fetch user posts for profile */
+async function fetchUserPosts(userId){
+  const { data } = await supabase.from('posts').select('id,content,created_at,image_url').eq('user_id', userId).order('created_at',{ascending:false});
+  return data || [];
+}
+
+/* open profile view */
+async function openProfile(userId){
+  // load profile
+  const profile = await loadProfile(userId);
+  el('profile-username').textContent = profile?.username || 'User';
+  el('profile-bio').textContent = profile?.bio || '';
+  el('sidebar-avatar').src = profile?.avatar_url || 'https://via.placeholder.com/44?text=U';
+  await refreshCounts(userId);
+  show(el('profile-view')); hideAllViewsExcept('profile-view');
+  // load user's posts
+  const ups = await fetchUserPosts(userId);
+  const container = el('user-posts');
+  container.innerHTML = '';
+  ups.forEach(p=>{
+    const div = document.createElement('div'); div.className='border p-3 rounded mb-3'; div.innerHTML = `<p>${escapeHtml(p.content)}</p><div class="text-xs text-[var(--muted)]">${new Date(p.created_at).toLocaleString()}</div>`; container.appendChild(div);
+  });
+}
+
+/* helper to hide other main views */
+function hideAllViewsExcept(viewId){
+  ['auth-card','create-card'].forEach(id=>{ if(id===viewId) show(el(id)); else hide(el(id)); });
+}
+
+/* =======================
+   SEARCH USERS
+   ======================= */
+el('search-btn').addEventListener('click', async ()=>{
+  const q = el('search-input').value.trim();
+  if(!q) return;
+  const { data } = await supabase.from('profiles').select('id,username,avatar_url,bio').ilike('username', `%${q}%`).limit(20);
+  const list = el('search-list'); list.innerHTML = '';
+  (data||[]).forEach(u=>{
+    const row = document.createElement('div'); row.className='flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800';
+    row.innerHTML = `<img src="${u.avatar_url||'/'}" class="small-avatar bg-gray-200" onerror="this.src='https://via.placeholder.com/32?text=U'"/><div class="flex-1"><div class="font-semibold">${u.username}</div><div class="text-xs text-[var(--muted)]">${u.bio||''}</div></div><button class="px-3 py-1 border rounded" data-id="${u.id}">View</button>`;
+    list.appendChild(row);
+  });
+  show(el('search-results'));
+  // attach view handlers
+  document.querySelectorAll('#search-list button').forEach(b=>b.onclick = ()=>openProfile(b.dataset.id));
+});
+
+/* =======================
+   NOTIFICATIONS
+   ======================= */
+async function refreshNotifications(){
+  if(!currentUser) return;
+  const { data } = await supabase.from('notifications').select('id,type,actor_id,meta,read,created_at, profiles(username,avatar_url)').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(50);
+  const container = el('notifications'); container.innerHTML = '';
+  (data||[]).forEach(n=>{
+    const act = n.profiles?.username || 'Someone';
+    const label = `${act} ${n.type}`;
+    const row = document.createElement('div'); row.className='p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-3';
+    row.innerHTML = `<img src="${n.profiles?.avatar_url||'/'}" class="small-avatar" onerror="this.src='https://via.placeholder.com/32?text=U'"/><div class="flex-1"><div class="text-sm">${label}</div><div class="text-xs text-[var(--muted)]">${new Date(n.created_at).toLocaleString()}</div></div>`;
+    container.appendChild(row);
+  });
+}
+el('open-notifs').addEventListener('click', ()=>{ if(!currentUser){ toast('Login'); return; } refreshNotifications(); });
+
+/* =======================
+   DM (Simple)
+   ======================= */
+el('open-dms').addEventListener('click', async ()=>{
+  if(!currentUser){ toast('Login'); return; }
+  show(el('dm-modal'));
+  // load contacts
+  const res = await supabase.from('messages').select('sender,recipient,profiles(username,avatar_url)').or(`sender.eq.${currentUser.id},recipient.eq.${currentUser.id}`).order('created_at',{ascending:false}).limit(200);
+  const contacts = {};
+  (res.data||[]).forEach(m=>{
+    const other = m.sender===currentUser.id ? m.recipient : m.sender;
+    contacts[other] = contacts[other] || m.profiles;
+  });
+  const contactsEl = el('dm-contacts'); contactsEl.innerHTML = '';
+  for(const cid in contacts){ const u = contacts[cid]; const div = document.createElement('div'); div.className='p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2'; div.innerHTML = `<img src="${u?.avatar_url||'/'}" class="small-avatar"/><div class="flex-1">${u?.username||'User'}</div>`; div.onclick = ()=>openConversation(cid); contactsEl.appendChild(div); }
+});
+el('close-dm').addEventListener('click', ()=>hide(el('dm-modal')));
+
+async function openConversation(userId){
+  activeConversation = userId;
+  // load messages between currentUser and userId
+  const { data } = await supabase.from('messages').select('id,sender,recipient,content,attachment_url,created_at,profiles(username,avatar_url)').or(`and(sender.eq.${currentUser.id},recipient.eq.${userId}),and(sender.eq.${userId},recipient.eq.${currentUser.id})`).order('created_at',{ascending:true});
+  const chat = el('dm-chat'); chat.innerHTML = '';
+  (data||[]).forEach(m=>{
+    const side = m.sender===currentUser.id ? 'text-right' : 'text-left';
+    const who = m.profiles?.username || 'User';
+    const div = document.createElement('div'); div.className=`my-2 ${side}`; div.innerHTML = `<div class="inline-block bg-gray-100 dark:bg-gray-800 p-2 rounded">${escapeHtml(m.content||'')}</div>`; chat.appendChild(div);
+  });
+  // attach send handler
+  el('dm-send').onclick = async ()=>{
+    const text = el('dm-input').value.trim();
+    if(!text) return;
+    await supabase.from('messages').insert({ sender: currentUser.id, recipient: activeConversation, content: text });
+    el('dm-input').value='';
+    openConversation(activeConversation);
+    // notify recipient
+    await supabase.from('notifications').insert({ user_id: activeConversation, actor_id: currentUser.id, type: 'dm', meta: JSON.stringify({}) });
+  };
+}
+
+/* =======================
+   REALTIME SUBSCRIPTIONS
+   ======================= */
+function subscribeRealtime(){
+  // posts inserted
+  supabase.channel('realtime-posts')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload=>{
+      // re-fetch feed
+      fetchAndRenderFeed();
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, payload=>{ fetchAndRenderFeed(); })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, payload=>{ fetchAndRenderFeed(); })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, payload=>{
+      fetchAndRenderFeed(); // comments may be shown under posts
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'likes' }, payload=>{
+      fetchAndRenderFeed();
+      if(currentUser) refreshNotifications();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload=>{
+      if(payload.record.user_id === currentUser?.id) refreshNotifications();
+    })
+    .subscribe();
+}
+subscribeRealtime();
+
+/* =======================
+   INITIAL LOAD
+   ======================= */
+async function loadAllForUser(){
+  // load profile
+  if(currentUser){
+    await loadProfile(currentUser.id);
+    await refreshCounts(currentUser.id);
+    el('sidebar-avatar').src = profilesCache[currentUser.id]?.avatar_url || 'https://via.placeholder.com/44?text=U';
+    el('create-avatar').src = profilesCache[currentUser.id]?.avatar_url || 'https://via.placeholder.com/44?text=U';
+  }
+  await renderStories();
+  await fetchAndRenderFeed();
+  await refreshNotifications();
+}
+
+/* Fetch comments initial for every post
+   But we fetch on-demand in renderFeed per post */
+async function fetchCommentsAll(){
+  // no-op, handled per-post
+}
+
+/* fetch and update UI periodically */
+setInterval(()=>{ if(currentUser) fetchAndRenderFeed(); }, 60_000);
+
+/* initial UI */
+fetchAndRenderFeed();
+
+/* =======================
+   COMMENTS LIKE COUNTS PRELOAD ON LOAD
+   ======================= */
+async function loadInitialCounts(){
+  // preload likes counts for all posts currently loaded
+  const postIds = posts.map(p=>p.id);
+  if(postIds.length===0) return;
+  const { data } = await supabase.from('likes').select('post_id,count:post_id',{ count: 'planned' });
+}
+
+/* helper to escape in templates (used above) included */
+
+</script>
+
 </body>
 </html>
