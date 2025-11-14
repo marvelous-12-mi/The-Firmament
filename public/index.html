@@ -3,227 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Synq X - Full App</title>
+<title>Synq - Social Media App</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-body { font-family: 'Inter', sans-serif; background:#f8fafc; }
-.nav-link.active { color: #6366f1; font-weight:600; }
-.btn-primary { background: linear-gradient(to right,#6366f1,#8b5cf6); }
-.btn-primary:hover { opacity:0.9; }
-.post-card { transition: all 0.3s ease; border-radius:12px; }
-.post-card:hover { transform: translateY(-2px); }
-.carousel { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; margin-top:6px; }
-.carousel img, .carousel video { scroll-snap-align:center; border-radius:12px; max-height:400px; margin-right:8px; }
-.vertical-feed { display:flex; flex-direction:column; overflow-y:auto; max-height:70vh; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+body{font-family:'Inter',sans-serif;background-color:#f8fafc;}
+.post-card{transition:all 0.3s ease;}
+.post-card:hover{transform:translateY(-2px);}
+.nav-link.active{color:#6366f1;font-weight:600;}
+.btn-primary{background:linear-gradient(to right,#6366f1,#8b5cf6);}
+.btn-primary:hover{opacity:0.9;}
+.like-button.liked{color:#ef4444;}
+.comment-form{transition:max-height 0.3s ease;max-height:0;overflow:hidden;}
+.comment-form.active{max-height:200px;}
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
 <!-- Navigation -->
 <nav class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
-<div class="flex items-center space-x-2">
-<div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-<span class="text-white font-bold text-xl">S</span>
-</div>
-<h1 class="text-2xl font-bold text-slate-800">Synq X</h1>
-</div>
-<div class="flex items-center space-x-4">
-<span id="user-email" class="text-slate-800">Not logged in</span>
-<button id="logout-btn" class="text-slate-600 hover:text-slate-900 hidden"><i class="fas fa-sign-out-alt"></i></button>
-</div>
+  <div class="flex items-center space-x-2">
+    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
+      <span class="text-white font-bold text-xl">S</span>
+    </div>
+    <h1 class="text-2xl font-bold text-slate-800">Synq</h1>
+  </div>
+  <div class="hidden md:flex space-x-6">
+    <button id="nav-feed" class="flex items-center text-indigo-600 font-semibold nav-link"><i class="fas fa-home mr-2"></i>Home</button>
+    <button id="nav-create" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link"><i class="fas fa-plus mr-2"></i>Create</button>
+    <button id="nav-profile" class="flex items-center text-slate-600 hover:text-indigo-500 nav-link"><i class="fas fa-user mr-2"></i>Profile</button>
+  </div>
+  <div class="flex items-center space-x-4">
+    <span class="hidden md:inline text-slate-800" id="user-email">Not logged in</span>
+    <button id="logout-btn" class="text-slate-600 hover:text-slate-900 hidden"><i class="fas fa-sign-out-alt"></i></button>
+  </div>
 </nav>
 
+<!-- Main Content -->
 <main class="flex-grow container mx-auto px-4 py-8 pb-20 md:pb-8">
 
-<!-- Auth -->
-<div id="auth-view" class="max-w-md mx-auto">
-<div class="bg-white rounded-xl shadow-md p-8">
-<h2 id="auth-title" class="text-2xl font-bold text-center text-slate-800 mb-6">Join Synq X</h2>
-<div id="error-message" class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 hidden"></div>
-<form id="auth-form" class="space-y-4">
-<div>
-<label class="block text-gray-700 mb-2">Email</label>
-<input type="email" id="email-input" class="w-full border border-gray-300 rounded-lg p-3" placeholder="you@email.com" required>
-</div>
-<div>
-<label class="block text-gray-700 mb-2">Password</label>
-<input type="password" id="password-input" class="w-full border border-gray-300 rounded-lg p-3" placeholder="••••••••" required>
-</div>
-<button type="submit" id="auth-submit" class="w-full btn-primary text-white py-3 rounded-lg font-semibold">Sign Up</button>
-</form>
-<p class="text-center mt-4 text-gray-600">
-Already have an account? 
-<button id="toggle-auth" class="text-indigo-600 font-semibold">Sign In</button>
-</p>
-</div>
-</div>
+  <!-- Auth View -->
+  <div id="auth-view" class="max-w-md mx-auto">
+    <div class="bg-white rounded-xl shadow-md p-8">
+      <h2 class="text-2xl font-bold text-center text-slate-800 mb-6" id="auth-title">Join Synq</h2>
+      <div id="error-message" class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 hidden"></div>
+      <form id="auth-form" class="space-y-4">
+        <div>
+          <label class="block text-gray-700 mb-2">Email</label>
+          <input type="email" id="email-input" class="w-full border border-gray-300 rounded-lg p-3" placeholder="your@email.com" required>
+        </div>
+        <div>
+          <label class="block text-gray-700 mb-2">Password</label>
+          <input type="password" id="password-input" class="w-full border border-gray-300 rounded-lg p-3" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="auth-submit" class="w-full btn-primary text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">Sign Up</button>
+      </form>
+      <p class="text-center mt-4 text-gray-600">
+        Already have an account? 
+        <button id="toggle-auth" class="text-indigo-600 font-semibold">Sign In</button>
+      </p>
+    </div>
+  </div>
 
-<!-- Feed -->
-<div id="feed-view" class="max-w-2xl mx-auto hidden">
-<div class="mb-8">
-<h2 class="text-2xl font-bold text-slate-800 mb-6">Latest Posts</h2>
+  <!-- Feed View -->
+  <div id="feed-view" class="max-w-2xl mx-auto hidden">
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Latest Posts</h2>
+      <!-- Create Post -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <textarea id="post-content" placeholder="What's on your mind?" class="w-full border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
+        <div class="flex justify-end mt-4">
+          <button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Post</button>
+        </div>
+      </div>
+      <div id="posts-container">
+        <div class="flex justify-center py-12"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div></div>
+      </div>
+    </div>
+  </div>
 
-<!-- Create Post -->
-<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-<textarea id="post-content" placeholder="What's on your mind?" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="3"></textarea>
-<div class="flex justify-end mt-3">
-<input type="file" id="post-media" multiple>
-<button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition ml-3">Post</button>
-</div>
-</div>
-
-<!-- Posts Feed -->
-<div id="posts-container" class="vertical-feed">
-<div class="flex justify-center py-12"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div></div>
-</div>
-</div>
-</div>
-
-<!-- Profile -->
-<div id="profile-view" class="max-w-2xl mx-auto hidden">
-<div class="bg-white rounded-xl shadow-sm overflow-hidden p-6">
-<h2 class="text-2xl font-bold text-slate-800" id="profile-username">Loading...</h2>
-<p class="text-gray-600" id="profile-bio"></p>
-<input type="file" id="avatar-upload" class="my-2">
-<button id="save-profile" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save Profile</button>
-</div>
-</div>
+  <!-- Profile View -->
+  <div id="profile-view" class="max-w-2xl mx-auto hidden">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-32"></div>
+      <div class="px-6 pb-6">
+        <div class="flex items-end -mt-16 mb-6">
+          <div class="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 border-4 border-white" id="profile-pic"></div>
+          <div class="ml-6 pb-2">
+            <h2 class="text-2xl font-bold text-slate-800" id="profile-username">Loading...</h2>
+          </div>
+        </div>
+        <div class="flex border-b border-gray-200 pb-4 mb-6">
+          <div class="text-center px-6">
+            <p class="text-2xl font-bold text-slate-800" id="post-count">0</p>
+            <p class="text-gray-600">Posts</p>
+          </div>
+        </div>
+        <h3 class="text-xl font-bold text-slate-800 mb-4">Your Posts</h3>
+        <div id="user-posts">
+          <div class="flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </main>
 
 <script>
-// --- Supabase Config ---
-const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
+// Supabase setup
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- State ---
+let authMode = 'signup';
 let currentUser = null;
-let posts = [];
-
-// --- Elements ---
 const authView = document.getElementById('auth-view');
 const feedView = document.getElementById('feed-view');
 const profileView = document.getElementById('profile-view');
 
-// --- Auth Handlers ---
+// Toggle Auth Mode
+document.getElementById('toggle-auth').addEventListener('click', ()=>{
+    const title = document.getElementById('auth-title');
+    const submit = document.getElementById('auth-submit');
+    if(authMode==='signup'){
+        authMode='signin';
+        title.textContent='Sign In';
+        submit.textContent='Sign In';
+    } else {
+        authMode='signup';
+        title.textContent='Join Synq';
+        submit.textContent='Sign Up';
+    }
+});
+
+// Handle Auth
 document.getElementById('auth-form').addEventListener('submit', async e=>{
     e.preventDefault();
     const email=document.getElementById('email-input').value;
     const password=document.getElementById('password-input').value;
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if(error) return showError(error.message);
-    currentUser = data.user;
-    showFeed();
-    fetchPosts();
-    fetchProfile();
+    try{
+        let data;
+        if(authMode==='signup'){
+            ({ data } = await supabase.auth.signUp({ email, password }));
+        } else {
+            ({ data } = await supabase.auth.signInWithPassword({ email, password }));
+        }
+        currentUser=data.user;
+        document.getElementById('user-email').textContent=currentUser.email;
+        document.getElementById('logout-btn').classList.remove('hidden');
+        showView('feed');
+        fetchPosts();
+        fetchProfile();
+    } catch(err){
+        const em = document.getElementById('error-message');
+        em.textContent=err.message;
+        em.classList.remove('hidden');
+    }
 });
 
-document.getElementById('toggle-auth').addEventListener('click', ()=>{
-    const title = document.getElementById('auth-title');
-    const submit = document.getElementById('auth-submit');
-    if(title.textContent.includes('Join')){
-        title.textContent='Sign In'; submit.textContent='Sign In';
-    } else { title.textContent='Join Synq X'; submit.textContent='Sign Up'; }
-});
-
+// Logout
 document.getElementById('logout-btn').addEventListener('click', async ()=>{
     await supabase.auth.signOut();
-    currentUser = null;
-    showAuth();
+    currentUser=null;
+    showView('auth');
 });
 
-// --- Profile Handlers ---
-document.getElementById('save-profile').addEventListener('click', async ()=>{
-    const username = document.getElementById('profile-username').textContent;
-    const bio = document.getElementById('profile-bio').textContent;
-    let avatar_url = null;
-    const avatarFile = document.getElementById('avatar-upload').files[0];
-    if(avatarFile){
-        const { data, error } = await supabase.storage.from('media').upload(`avatars/${currentUser.id}/${avatarFile.name}`, avatarFile, { upsert:true });
-        if(error) return showError(error.message);
-        avatar_url = data.path;
-    }
-    await supabase.from('profiles').upsert({id:currentUser.id, username, bio, avatar_url});
-    fetchProfile();
-});
+// Show Views
+function showView(view){
+    authView.classList.toggle('hidden', view!=='auth');
+    feedView.classList.toggle('hidden', view!=='feed');
+    profileView.classList.toggle('hidden', view!=='profile');
+}
 
-// --- Posts Handlers ---
-document.getElementById('submit-post').addEventListener('click', async ()=>{
-    const content = document.getElementById('post-content').value;
-    const mediaFiles = document.getElementById('post-media').files;
-    const media_urls = [], media_types=[];
-    for(let f of mediaFiles){
-        const { data, error } = await supabase.storage.from('media').upload(`posts/${currentUser.id}/${Date.now()}_${f.name}`, f, { upsert:true });
-        if(error) return showError(error.message);
-        media_urls.push(data.path);
-        media_types.push(f.type.startsWith('image')?'image':'video');
-    }
-    await supabase.from('posts').insert({content, user_id:currentUser.id, media_urls, media_types});
-    document.getElementById('post-content').value='';
-    document.getElementById('post-media').value='';
-    fetchPosts();
-});
-
-// --- Fetch Posts ---
+// Posts
 async function fetchPosts(){
-    const { data, error } = await supabase.from('posts').select('*').order('created_at',{ascending:false});
-    if(error) return console.error(error);
-    posts = data;
-    renderPosts();
-}
-
-// --- Fetch Profile ---
-async function fetchProfile(){
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
-    if(error) return console.error(error);
-    document.getElementById('profile-username').textContent = data.username || 'Unknown';
-    document.getElementById('profile-bio').textContent = data.bio || '';
-}
-
-// --- Render Posts ---
-function renderPosts(){
-    const container = document.getElementById('posts-container');
+    const { data: posts } = await supabase.from('posts').select('*,user_id(email)').order('created_at',{ascending:false});
+    const container=document.getElementById('posts-container');
     container.innerHTML='';
-    posts.forEach(p=>{
+    posts.forEach(post=>{
         const div=document.createElement('div');
-        div.className='bg-white p-4 mb-4 post-card shadow-sm';
-        let mediaHTML='';
-        if(p.media_urls && p.media_urls.length){
-            mediaHTML='<div class="carousel">';
-            for(let i=0;i<p.media_urls.length;i++){
-                const url = supabase.storage.from('media').getPublicUrl(p.media_urls[i]).data.publicUrl;
-                const type = p.media_types[i];
-                mediaHTML += type==='image'?`<img src="${url}"/>`:`<video src="${url}" controls></video>`;
-            }
-            mediaHTML+='</div>';
-        }
-        div.innerHTML=`<p>${p.content}</p>${mediaHTML}`;
+        div.className='bg-white rounded-xl shadow-sm p-6 mb-6 post-card';
+        div.innerHTML=`<p class="text-gray-800 mb-2">${post.content}</p><p class="text-gray-500 text-sm">by ${post.user_id?.email||'Unknown'} | ${new Date(post.created_at).toLocaleString()}</p>`;
         container.appendChild(div);
     });
 }
 
-// --- Views ---
-function showAuth(){ authView.classList.remove('hidden'); feedView.classList.add('hidden'); profileView.classList.add('hidden'); }
-function showFeed(){ authView.classList.add('hidden'); feedView.classList.remove('hidden'); profileView.classList.add('hidden'); }
-function showProfile(){ authView.classList.add('hidden'); feedView.classList.add('hidden'); profileView.classList.remove('hidden'); }
-function showError(msg){ const el=document.getElementById('error-message'); el.textContent=msg; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('hidden'),5000); }
-
-// --- Init ---
-async function init(){
-    const { data:{ session } } = await supabase.auth.getSession();
-    if(session){
-        currentUser=session.user;
-        document.getElementById('user-email').textContent=currentUser.email;
-        showFeed();
-        fetchPosts();
-        fetchProfile();
-    } else { showAuth(); }
+// Profile
+async function fetchProfile(){
+    const { data } = await supabase.from('profiles').select('*').eq('id',currentUser.id).single();
+    if(data){
+        document.getElementById('profile-username').textContent=data.username||currentUser.email;
+    }
 }
-init();
-</script>
 
+// Submit Post
+document.getElementById('submit-post').addEventListener('click', async ()=>{
+    const content=document.getElementById('post-content').value;
+    if(!content) return;
+    await supabase.from('posts').insert({ content, user_id: currentUser.id });
+    document.getElementById('post-content').value='';
+    fetchPosts();
+});
+</script>
 </body>
 </html>
