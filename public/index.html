@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Synq - Social Media App</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
 .post-card { transition: all 0.3s ease; }
@@ -17,6 +17,8 @@ body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
 .like-button.liked { color: #ef4444; }
 .comment-form { transition: max-height 0.3s ease; max-height:0; overflow:hidden; }
 .comment-form.active { max-height:200px; }
+.profile-img { width:40px; height:40px; border-radius:50%; object-fit:cover; }
+.post-img { max-height:300px; width:100%; object-fit:cover; border-radius:0.5rem; margin-top:0.5rem; }
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -38,7 +40,7 @@ body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
 <!-- Main -->
 <main class="flex-grow container mx-auto px-4 py-8">
 
-<!-- Auth -->
+<!-- Auth View -->
 <div id="auth-view" class="max-w-md mx-auto">
   <div class="bg-white rounded-xl shadow-md p-8">
     <h2 id="auth-title" class="text-2xl font-bold text-center text-slate-800 mb-6">Join Synq</h2>
@@ -60,18 +62,21 @@ body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
   </div>
 </div>
 
-<!-- Feed -->
+<!-- Feed View -->
 <div id="feed-view" class="max-w-2xl mx-auto hidden">
-  <h2 class="text-2xl font-bold text-slate-800 mb-6">Feed</h2>
+  <h2 class="text-2xl font-bold text-slate-800 mb-6">Latest Posts</h2>
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <textarea id="post-content" placeholder="What's on your mind?" class="w-full border p-4 rounded-lg mb-2"></textarea>
+    <input type="file" id="post-image" accept="image/*" class="mb-2">
+    <button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Post</button>
+  </div>
   <div id="posts-container"></div>
-  <textarea id="post-content" placeholder="What's on your mind?" class="w-full border p-4 rounded-lg mb-4"></textarea>
-  <button id="submit-post" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Post</button>
 </div>
 
 </main>
 
 <script>
-// Supabase config
+// Supabase
 const SUPABASE_URL = 'https://qpfjchiucjhfvyohqhih.supabase.co';
 const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -141,25 +146,45 @@ document.getElementById('logout-btn').addEventListener('click', async ()=>{
     await supabase.auth.signOut();
 });
 
-// Posts
+// Create post with optional image
 document.getElementById('submit-post').addEventListener('click', async ()=>{
     const content = document.getElementById('post-content').value;
-    if(!content) return;
-    await supabase.from('posts').insert({ content, user_id: currentUser.id });
+    const fileInput = document.getElementById('post-image');
+    if(!content && fileInput.files.length===0) return;
+
+    let image_url = null;
+    if(fileInput.files.length>0){
+        const file = fileInput.files[0];
+        const { data, error } = await supabase.storage.from('posts').upload(`public/${Date.now()}_${file.name}`, file);
+        if(error){ console.error(error); alert('Failed to upload image'); }
+        else image_url = supabase.storage.from('posts').getPublicUrl(data.path).publicUrl;
+    }
+
+    await supabase.from('posts').insert({ content, image_url, user_id: currentUser.id });
     document.getElementById('post-content').value='';
+    fileInput.value='';
     fetchPosts();
 });
 
+// Fetch posts with usernames
 async function fetchPosts(){
-    const { data, error } = await supabase.from('posts').select('*').order('created_at',{ascending:false});
+    const { data, error } = await supabase.from('posts').select('*, profiles(username)').order('created_at',{ascending:false});
     const container = document.getElementById('posts-container');
     container.innerHTML='';
     if(error) return console.error(error);
     if(data.length===0) container.innerHTML='<p class="text-center text-gray-500">No posts yet.</p>';
     data.forEach(post=>{
         const div=document.createElement('div');
-        div.className='bg-white rounded-xl shadow-sm p-4 mb-4';
-        div.innerHTML=`<strong>${post.user_id}</strong>: ${post.content} <br><small>${new Date(post.created_at).toLocaleString()}</small>`;
+        div.className='bg-white rounded-xl shadow-sm p-4 mb-4 post-card';
+        div.innerHTML=`
+            <div class="flex items-center mb-2">
+                <img class="profile-img mr-2" src="${post.profiles?.avatar_url || 'https://via.placeholder.com/40'}">
+                <strong>${post.profiles?.username || post.user_id}</strong>
+            </div>
+            <p>${post.content || ''}</p>
+            ${post.image_url ? `<img class="post-img" src="${post.image_url}">` : ''}
+            <small class="text-gray-500">${new Date(post.created_at).toLocaleString()}</small>
+        `;
         container.appendChild(div);
     });
 }
