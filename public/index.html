@@ -6,6 +6,7 @@
     <title>Synq - Share Your Moments</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -51,14 +52,6 @@
         .story-ring {
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
         }
-        .post-grid {
-            column-count: 3;
-            column-gap: 15px;
-        }
-        .post-grid-item {
-            margin-bottom: 15px;
-            break-inside: avoid;
-        }
         .notification-badge {
             position: absolute;
             top: -5px;
@@ -73,9 +66,755 @@
             align-items: center;
             justify-content: center;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            padding: 24px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .create-post-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            z-index: 100;
+        }
+        .create-post-btn i {
+            color: white;
+            font-size: 24px;
+        }
+        .post-actions button:hover {
+            color: #262626;
+        }
+        .like-btn.liked i {
+            color: #ED4956;
+        }
+        .post-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .comment-input {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            border-top: 1px solid #efefef;
+        }
+        .comment-input input {
+            flex: 1;
+            border: none;
+            padding: 8px;
+            font-size: 14px;
+        }
+        .comment-input button {
+            background: none;
+            border: none;
+            color: #0095f6;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.3;
+        }
+        .comment-input button.active {
+            opacity: 1;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+        }
+        .post-header .username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .post-caption {
+            padding: 0 16px 16px;
+            font-size: 14px;
+        }
+        .post-caption .username {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .post-time {
+            padding: 0 16px;
+            color: #8e8e8e;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .comment {
+            padding: 0 16px 8px;
+            font-size: 14px;
+        }
+        .comment .username {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .story {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .story .avatar {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+        .story .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .story .avatar-inner img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+        }
+        .story .username {
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        .stories-container {
+            display: flex;
+            padding: 16px;
+            overflow-x: auto;
+            border-bottom: 1px solid #efefef;
+        }
+        .stories-container::-webkit-scrollbar {
+            display: none;
+        }
+        .post-container {
+            border-bottom: 1px solid #efefef;
+            margin-bottom: 24px;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 16px;
+        }
+        .profile-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 24px;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-info .username {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 8px;
+        }
+        .profile-info .full-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .profile-info .bio {
+            margin-bottom: 8px;
+        }
+        .profile-info .website {
+            color: #00376b;
+        }
+        .profile-actions {
+            display: flex;
+            padding: 0 16px 24px;
+        }
+        .profile-actions button {
+            flex: 1;
+            margin: 0 4px;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .edit-profile {
+            background: none;
+            border: 1px solid #dbdbdb;
+            color: #262626;
+        }
+        .view-archive {
+            background: none;
+            border: 1px solid #dbdbdb;
+            color: #262626;
+        }
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+        }
+        .post-thumbnail {
+            position: relative;
+            padding-bottom: 100%;
+            background-color: #efefef;
+        }
+        .post-thumbnail img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .post-thumbnail .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .post-thumbnail:hover .overlay {
+            opacity: 1;
+        }
+        .post-thumbnail .overlay i {
+            color: white;
+            margin: 0 8px;
+        }
+        .post-thumbnail .overlay span {
+            color: white;
+            font-weight: 600;
+            margin: 0 4px;
+        }
+        .user-suggestion {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .user-suggestion .info {
+            flex: 1;
+        }
+        .user-suggestion .username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .user-suggestion .reason {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+        .user-suggestion button {
+            background: none;
+            border: none;
+            color: #0095f6;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-value {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #8e8e8e;
+        }
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 16px;
+        }
+        .action-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #262626;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Supabase Client Initialization -->
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://qpfjchiucjhfvyohqhih.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // State management
+        let currentUser = null;
+        let posts = [];
+        let users = [];
+        let stories = [];
+        let profileUser = null;
+        
+        // DOM Elements
+        const authModal = document.getElementById('authModal');
+        const createPostModal = document.getElementById('createPostModal');
+        const profileModal = document.getElementById('profileModal');
+        const postsContainer = document.getElementById('postsContainer');
+        const storiesContainer = document.getElementById('storiesContainer');
+        const suggestedUsersContainer = document.getElementById('suggestedUsers');
+        const profileHeader = document.getElementById('profileHeader');
+        const profileStats = document.getElementById('profileStats');
+        const postsGrid = document.getElementById('postsGrid');
+        const postContent = document.getElementById('postContent');
+        const postImage = document.getElementById('postImage');
+        const authEmail = document.getElementById('authEmail');
+        const authPassword = document.getElementById('authPassword');
+        const signupName = document.getElementById('signupName');
+        const signupUsername = document.getElementById('signupUsername');
+        const signupEmail = document.getElementById('signupEmail');
+        const signupPassword = document.getElementById('signupPassword');
+        const profileImage = document.getElementById('profileImage');
+        const profileUsername = document.getElementById('profileUsername');
+        const profileFullName = document.getElementById('profileFullName');
+        const profileBio = document.getElementById('profileBio');
+        const profileWebsite = document.getElementById('profileWebsite');
+        const profilePostsCount = document.getElementById('profilePostsCount');
+        const profileFollowersCount = document.getElementById('profileFollowersCount');
+        const profileFollowingCount = document.getElementById('profileFollowingCount');
+        const userAvatar = document.getElementById('userAvatar');
+        const loginBtn = document.getElementById('loginBtn');
+        const userMenu = document.getElementById('userMenu');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        // Event Listeners
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            authModal.style.display = 'flex';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+        });
+        
+        document.getElementById('signupLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+        });
+        
+        document.getElementById('loginLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        });
+        
+        document.getElementById('closeAuthModal').addEventListener('click', () => {
+            authModal.style.display = 'none';
+        });
+        
+        document.getElementById('closeCreatePostModal').addEventListener('click', () => {
+            createPostModal.style.display = 'none';
+        });
+        
+        document.getElementById('closeProfileModal').addEventListener('click', () => {
+            profileModal.style.display = 'none';
+        });
+        
+        document.getElementById('createPostBtn').addEventListener('click', () => {
+            if (currentUser) {
+                createPostModal.style.display = 'flex';
+            } else {
+                authModal.style.display = 'flex';
+            }
+        });
+        
+        document.getElementById('submitPost').addEventListener('click', createPost);
+        document.getElementById('authSubmit').addEventListener('click', signIn);
+        document.getElementById('signupSubmit').addEventListener('click', signUp);
+        document.getElementById('logoutBtn').addEventListener('click', signOut);
+        document.getElementById('viewProfile').addEventListener('click', viewProfile);
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) authModal.style.display = 'none';
+            if (e.target === createPostModal) createPostModal.style.display = 'none';
+            if (e.target === profileModal) profileModal.style.display = 'none';
+        });
+        
+        // Supabase Functions
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                await loadUserProfile();
+                await loadPosts();
+                await loadStories();
+                await loadSuggestedUsers();
+                userAvatar.innerHTML = `<span class="text-white text-sm font-medium">${user.email[0].toUpperCase()}</span>`;
+                loginBtn.style.display = 'none';
+                userMenu.style.display = 'block';
+            } else {
+                loginBtn.style.display = 'block';
+                userMenu.style.display = 'none';
+            }
+        }
+        
+        async function signIn() {
+            const email = authEmail.value;
+            const password = authPassword.value;
+            
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                currentUser = data.user;
+                await loadUserProfile();
+                await loadPosts();
+                await loadStories();
+                await loadSuggestedUsers();
+                authModal.style.display = 'none';
+                userAvatar.innerHTML = `<span class="text-white text-sm font-medium">${currentUser.email[0].toUpperCase()}</span>`;
+                loginBtn.style.display = 'none';
+                userMenu.style.display = 'block';
+            }
+        }
+        
+        async function signUp() {
+            const email = signupEmail.value;
+            const password = signupPassword.value;
+            const name = signupName.value;
+            const username = signupUsername.value;
+            
+            if (!email || !password || !name || !username) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: name,
+                        username: username
+                    }
+                }
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Account created! Please check your email for confirmation.');
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            }
+        }
+        
+        async function signOut() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                currentUser = null;
+                window.location.reload();
+            }
+        }
+        
+        async function loadUserProfile() {
+            if (!currentUser) return;
+            
+            // In a real app, we would fetch user data from Supabase
+            // For demo purposes, we'll use mock data
+            profileUser = {
+                id: currentUser.id,
+                username: currentUser.user_metadata?.username || currentUser.email.split('@')[0],
+                full_name: currentUser.user_metadata?.full_name || 'User Name',
+                bio: 'Digital creator | Photography enthusiast | Travel lover',
+                website: 'www.synq.com/user',
+                posts_count: 42,
+                followers_count: 1245,
+                following_count: 356
+            };
+            
+            document.getElementById('profileAvatar').innerHTML = `<span class="text-white text-xl font-bold">${profileUser.username[0].toUpperCase()}</span>`;
+            document.getElementById('profileUsername').textContent = profileUser.username;
+            document.getElementById('profileFullName').textContent = profileUser.full_name;
+            document.getElementById('profileBio').textContent = profileUser.bio;
+            document.getElementById('profileWebsite').textContent = profileUser.website;
+            document.getElementById('profilePostsCount').textContent = profileUser.posts_count;
+            document.getElementById('profileFollowersCount').textContent = profileUser.followers_count;
+            document.getElementById('profileFollowingCount').textContent = profileUser.following_count;
+        }
+        
+        async function loadPosts() {
+            loadingSpinner.style.display = 'block';
+            
+            // In a real app, we would fetch posts from Supabase
+            // For demo purposes, we'll use mock data
+            posts = [
+                {
+                    id: 1,
+                    user: { username: 'alex_johnson', avatar: 'A' },
+                    image: '',
+                    caption: 'Exploring the mountains this weekend! 🏔️ #adventure #nature',
+                    likes: 1245,
+                    comments: 42,
+                    time: '2 hours ago',
+                    liked: false
+                },
+                {
+                    id: 2,
+                    user: { username: 'maria_garcia', avatar: 'M' },
+                    image: '',
+                    caption: 'Homemade pasta night! 🍝 Recipe in my bio #cooking #italian',
+                    likes: 3892,
+                    comments: 128,
+                    time: '5 hours ago',
+                    liked: true
+                },
+                {
+                    id: 3,
+                    user: { username: 'david_smith', avatar: 'D' },
+                    image: '',
+                    caption: 'Just finished reading an amazing book about sustainable living. Highly recommend! 🌱📚 #reading #sustainability',
+                    likes: 876,
+                    comments: 24,
+                    time: '1 day ago',
+                    liked: false
+                }
+            ];
+            
+            setTimeout(() => {
+                renderPosts();
+                loadingSpinner.style.display = 'none';
+            }, 1000);
+        }
+        
+        async function loadStories() {
+            // In a real app, we would fetch stories from Supabase
+            // For demo purposes, we'll use mock data
+            stories = [
+                { username: 'Your Story', avatar: '+' },
+                { username: 'alex_j', avatar: 'A' },
+                { username: 'maria_g', avatar: 'M' },
+                { username: 'david_s', avatar: 'D' },
+                { username: 'sarah_w', avatar: 'S' },
+                { username: 'john_d', avatar: 'J' },
+                { username: 'emma_r', avatar: 'E' }
+            ];
+            
+            renderStories();
+        }
+        
+        async function loadSuggestedUsers() {
+            // In a real app, we would fetch suggested users from Supabase
+            // For demo purposes, we'll use mock data
+            users = [
+                { username: 'sarah_jones', avatar: 'S', reason: 'Followed by alex_johnson' },
+                { username: 'john_doe', avatar: 'J', reason: 'New to Synq' },
+                { username: 'emma_wilson', avatar: 'E', reason: 'Followed by maria_garcia' },
+                { username: 'mike_brown', avatar: 'M', reason: 'Popular' }
+            ];
+            
+            renderSuggestedUsers();
+        }
+        
+        async function createPost() {
+            const content = postContent.value;
+            const image = postImage.files[0];
+            
+            if (!content) {
+                alert('Please add a caption');
+                return;
+            }
+            
+            // In a real app, we would upload the post to Supabase
+            // For demo purposes, we'll just add it to the UI
+            const newPost = {
+                id: posts.length + 1,
+                user: { username: currentUser.email.split('@')[0], avatar: currentUser.email[0].toUpperCase() },
+                image: image ? URL.createObjectURL(image) : '',
+                caption: content,
+                likes: 0,
+                comments: 0,
+                time: 'Just now',
+                liked: false
+            };
+            
+            posts.unshift(newPost);
+            renderPosts();
+            createPostModal.style.display = 'none';
+            postContent.value = '';
+            postImage.value = '';
+        }
+        
+        function renderPosts() {
+            postsContainer.innerHTML = posts.map(post => `
+                <div class="post-container bg-white">
+                    <div class="post-header">
+                        <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
+                            <span class="text-white text-xs font-medium">${post.user.avatar}</span>
+                        </div>
+                        <span class="username ml-3">${post.user.username}</span>
+                    </div>
+                    <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
+                    <div class="post-actions">
+                        <div>
+                            <button class="action-button like-btn ${post.liked ? 'liked' : ''}" data-id="${post.id}">
+                                <i class="far ${post.liked ? 'fas text-red-500' : 'far'} fa-heart"></i>
+                            </button>
+                            <button class="action-button">
+                                <i class="far fa-comment"></i>
+                            </button>
+                            <button class="action-button">
+                                <i class="far fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <button class="action-button">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </div>
+                    <div class="px-4 py-2">
+                        <p class="font-bold text-sm">${post.likes} likes</p>
+                    </div>
+                    <div class="post-caption">
+                        <span class="username">${post.user.username}</span>
+                        ${post.caption}
+                    </div>
+                    <div class="post-time">${post.time}</div>
+                    <div class="comment">
+                        <span class="username">maria_garcia</span>
+                        Looks amazing! Where is this?
+                    </div>
+                    <div class="comment">
+                        <span class="username">david_smith</span>
+                        Beautiful shot!
+                    </div>
+                    <div class="comment-input">
+                        <input type="text" placeholder="Add a comment...">
+                        <button class="post-comment">Post</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to like buttons
+            document.querySelectorAll('.like-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const icon = this.querySelector('i');
+                    const isLiked = icon.classList.contains('fas');
+                    
+                    if (isLiked) {
+                        icon.classList.remove('fas', 'text-red-500');
+                        icon.classList.add('far');
+                        this.classList.remove('liked');
+                        const likesElement = this.closest('.post-container').querySelector('.font-bold');
+                        const currentLikes = parseInt(likesElement.textContent);
+                        likesElement.textContent = (currentLikes - 1) + ' likes';
+                    } else {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas', 'text-red-500');
+                        this.classList.add('liked');
+                        const likesElement = this.closest('.post-container').querySelector('.font-bold');
+                        const currentLikes = parseInt(likesElement.textContent);
+                        likesElement.textContent = (currentLikes + 1) + ' likes';
+                    }
+                });
+            });
+            
+            // Add event listeners to comment inputs
+            document.querySelectorAll('.comment-input input').forEach(input => {
+                input.addEventListener('input', function() {
+                    const button = this.nextElementSibling;
+                    button.classList.toggle('active', this.value.length > 0);
+                });
+            });
+        }
+        
+        function renderStories() {
+            storiesContainer.innerHTML = stories.map(story => `
+                <div class="story">
+                    <div class="avatar">
+                        <div class="avatar-inner">
+                            <div class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center">
+                                <span class="text-white font-bold">${story.avatar}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="username">${story.username}</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderSuggestedUsers() {
+            suggestedUsersContainer.innerHTML = users.map(user => `
+                <div class="user-suggestion">
+                    <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">${user.avatar}</span>
+                    </div>
+                    <div class="info ml-3">
+                        <div class="username">${user.username}</div>
+                        <div class="reason">${user.reason}</div>
+                    </div>
+                    <button class="follow-btn">Follow</button>
+                </div>
+            `).join('');
+            
+            // Add event listeners to follow buttons
+            document.querySelectorAll('.follow-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const username = this.closest('.user-suggestion').querySelector('.username').textContent;
+                    this.textContent = this.textContent === 'Follow' ? 'Following' : 'Follow';
+                    this.classList.toggle('text-gray-500');
+                });
+            });
+        }
+        
+        function viewProfile() {
+            profileModal.style.display = 'flex';
+        }
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUser();
+        });
+    </script>
+
     <!-- Navigation Bar -->
     <nav class="bg-white border-b border-gray-300 fixed top-0 w-full z-50">
         <div class="max-w-5xl mx-auto px-4">
@@ -117,11 +856,27 @@
                         <i class="far fa-heart"></i>
                         <span class="notification-badge">7</span>
                     </a>
-                    <a href="#" class="flex items-center">
-                        <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
-                            <span class="text-white text-sm font-medium">U</span>
+                    <div id="loginBtn">
+                        <button class="bg-gradient-to-r from-primary to-accent text-white px-4 py-1 rounded text-sm font-medium">Login</button>
+                    </div>
+                    <div id="userMenu" class="hidden">
+                        <div class="flex items-center">
+                            <div id="userAvatar" class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
+                                <span class="text-white text-sm font-medium">U</span>
+                            </div>
+                            <div class="ml-2 relative">
+                                <button class="flex items-center text-sm">
+                                    <i class="fas fa-caret-down"></i>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                                    <a href="#" id="viewProfile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Saved</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                                    <a href="#" id="logoutBtn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                                </div>
+                            </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,259 +888,19 @@
             <!-- Left Sidebar (Stories) -->
             <div class="w-full md:w-2/3">
                 <!-- Stories -->
-                <div class="bg-white rounded-lg shadow-sm p-4 mb-6 overflow-x-auto">
-                    <div class="flex space-x-4">
-                        <!-- Your Story -->
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <i class="fas fa-plus text-gray-500"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-500">Your story</span>
-                        </div>
-                        
-                        <!-- Friend Stories -->
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">A</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">Alex</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">M</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">Maria</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">D</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">David</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">S</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">Sarah</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">J</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">John</span>
-                        </div>
+                <div class="bg-white rounded-lg shadow-sm mb-6 overflow-x-auto">
+                    <div id="storiesContainer" class="stories-container">
+                        <!-- Stories will be loaded here -->
                     </div>
                 </div>
                 
                 <!-- Posts Feed -->
+                <div id="loadingSpinner" class="text-center py-10" style="display: none;">
+                    <div class="loading-spinner w-10 h-10 border-4 border-gray-200 rounded-full mx-auto"></div>
+                    <p class="mt-4 text-gray-500">Loading posts...</p>
+                </div>
                 <div id="postsContainer">
-                    <!-- Post 1 -->
-                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                                        <span class="text-white font-bold">A</span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h4 class="text-sm font-bold text-gray-900">alex_johnson</h4>
-                                    </div>
-                                </div>
-                                <button class="text-gray-500">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
-                        
-                        <div class="p-4">
-                            <div class="flex justify-between mb-2">
-                                <div class="flex space-x-4">
-                                    <button class="text-2xl text-gray-800 hover:text-red-500">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <button class="text-2xl text-gray-800">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="font-bold text-sm">1,245 likes</p>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="text-sm"><span class="font-bold mr-2">alex_johnson</span>Exploring the mountains this weekend! 🏔️ #adventure #nature</p>
-                            </div>
-                            
-                            <div class="text-gray-500 text-sm mb-2">
-                                View all 42 comments
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-xs font-bold">U</span>
-                                </div>
-                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
-                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Post 2 -->
-                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                                        <span class="text-white font-bold">M</span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h4 class="text-sm font-bold text-gray-900">maria_garcia</h4>
-                                    </div>
-                                </div>
-                                <button class="text-gray-500">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
-                        
-                        <div class="p-4">
-                            <div class="flex justify-between mb-2">
-                                <div class="flex space-x-4">
-                                    <button class="text-2xl text-red-500">
-                                        <i class="fas fa-heart"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <button class="text-2xl text-gray-800">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="font-bold text-sm">3,892 likes</p>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="text-sm"><span class="font-bold mr-2">maria_garcia</span>Homemade pasta night! 🍝 Recipe in my bio #cooking #italian</p>
-                            </div>
-                            
-                            <div class="text-gray-500 text-sm mb-2">
-                                View all 128 comments
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-xs font-bold">U</span>
-                                </div>
-                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
-                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Post 3 -->
-                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                                        <span class="text-white font-bold">D</span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h4 class="text-sm font-bold text-gray-900">david_smith</h4>
-                                    </div>
-                                </div>
-                                <button class="text-gray-500">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
-                        
-                        <div class="p-4">
-                            <div class="flex justify-between mb-2">
-                                <div class="flex space-x-4">
-                                    <button class="text-2xl text-gray-800 hover:text-red-500">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <button class="text-2xl text-gray-800">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="font-bold text-sm">876 likes</p>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="text-sm"><span class="font-bold mr-2">david_smith</span>Just finished reading an amazing book about sustainable living. Highly recommend! 🌱📚 #reading #sustainability</p>
-                            </div>
-                            
-                            <div class="text-gray-500 text-sm mb-2">
-                                View all 24 comments
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-xs font-bold">U</span>
-                                </div>
-                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
-                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Posts will be loaded here -->
                 </div>
             </div>
             
@@ -394,12 +909,12 @@
                 <!-- User Profile -->
                 <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
                     <div class="flex items-center">
-                        <div class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
+                        <div id="profileAvatar" class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
                             <span class="text-white text-xl font-bold">U</span>
                         </div>
                         <div class="ml-4">
-                            <h2 class="font-bold text-gray-900">username</h2>
-                            <p class="text-gray-500 text-sm">User Name</p>
+                            <h2 id="profileUsername" class="font-bold text-gray-900">username</h2>
+                            <p id="profileFullName" class="text-gray-500 text-sm">User Name</p>
                         </div>
                         <div class="ml-auto">
                             <button class="text-blue-500 text-sm font-medium">Switch</button>
@@ -408,15 +923,15 @@
                     
                     <div class="flex justify-between mt-6">
                         <div class="text-center">
-                            <p class="font-bold">42</p>
+                            <p id="profilePostsCount" class="font-bold">42</p>
                             <p class="text-gray-500 text-sm">Posts</p>
                         </div>
                         <div class="text-center">
-                            <p class="font-bold">1,245</p>
+                            <p id="profileFollowersCount" class="font-bold">1,245</p>
                             <p class="text-gray-500 text-sm">Followers</p>
                         </div>
                         <div class="text-center">
-                            <p class="font-bold">356</p>
+                            <p id="profileFollowingCount" class="font-bold">356</p>
                             <p class="text-gray-500 text-sm">Following</p>
                         </div>
                     </div>
@@ -429,58 +944,8 @@
                         <a href="#" class="text-xs font-medium">See All</a>
                     </div>
                     
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">S</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">sarah_jones</p>
-                                    <p class="text-xs text-gray-500">Followed by alex_johnson</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">J</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">john_doe</p>
-                                    <p class="text-xs text-gray-500">New to Synq</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">E</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">emma_wilson</p>
-                                    <p class="text-xs text-gray-500">Followed by maria_garcia</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">M</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">mike_brown</p>
-                                    <p class="text-xs text-gray-500">Popular</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
+                    <div id="suggestedUsers">
+                        <!-- Suggested users will be loaded here -->
                     </div>
                 </div>
                 
@@ -503,64 +968,100 @@
         </div>
     </div>
 
-    <!-- Mobile Navigation -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 md:hidden">
-        <div class="flex justify-around items-center py-3">
-            <a href="#" class="text-2xl text-gray-800 nav-link active">
-                <i class="fas fa-home"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <i class="far fa-search"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <i class="far fa-plus-square"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <i class="far fa-heart"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <div class="h-6 w-6 rounded-full avatar-placeholder flex items-center justify-center">
-                    <span class="text-white text-xs font-medium">U</span>
+    <!-- Create Post Button -->
+    <div id="createPostBtn" class="create-post-btn">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeAuthModal">&times;</span>
+            <h2 class="text-2xl font-bold text-center mb-6">Synq</h2>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="mb-4">
+                    <input type="email" id="authEmail" placeholder="Email" class="w-full px-4 py-2 border rounded bg-gray-50">
                 </div>
-            </a>
+                <div class="mb-4">
+                    <input type="password" id="authPassword" placeholder="Password" class="w-full px-4 py-2 border rounded bg-gray-50">
+                </div>
+                <button id="authSubmit" class="w-full bg-gradient-to-r from-primary to-accent text-white py-2 rounded font-medium mb-4">Log In</button>
+                <div class="text-center text-sm text-gray-500 mb-4">OR</div>
+                <button class="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded font-medium mb-4">
+                    <i class="fab fa-facebook-f mr-2"></i> Log in with Facebook
+                </button>
+                <div class="text-center">
+                    <a href="#" class="text-sm text-blue-500">Forgot password?</a>
+                </div>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <div class="mb-4">
+                    <input type="text" id="signupName" placeholder="Full Name" class="w-full px-4 py-2 border rounded bg-gray-50">
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="signupUsername" placeholder="Username" class="w-full px-4 py-2 border rounded bg-gray-50">
+                </div>
+                <div class="mb-4">
+                    <input type="email" id="signupEmail" placeholder="Email" class="w-full px-4 py-2 border rounded bg-gray-50">
+                </div>
+                <div class="mb-4">
+                    <input type="password" id="signupPassword" placeholder="Password" class="w-full px-4 py-2 border rounded bg-gray-50">
+                </div>
+                <button id="signupSubmit" class="w-full bg-gradient-to-r from-primary to-accent text-white py-2 rounded font-medium mb-4">Sign Up</button>
+                <p class="text-xs text-gray-500 text-center">
+                    By signing up, you agree to our Terms, Data Policy and Cookies Policy.
+                </p>
+                <div class="text-center mt-4">
+                    <a href="#" id="loginLink" class="text-sm text-blue-500">Already have an account? Log In</a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Like functionality
-        document.querySelectorAll('.fa-heart').forEach(heart => {
-            heart.addEventListener('click', function() {
-                if (this.classList.contains('far')) {
-                    this.classList.remove('far');
-                    this.classList.add('fas', 'text-red-500');
-                } else {
-                    this.classList.remove('fas', 'text-red-500');
-                    this.classList.add('far');
-                }
-            });
-        });
-        
-        // Bookmark functionality
-        document.querySelectorAll('.fa-bookmark').forEach(bookmark => {
-            bookmark.addEventListener('click', function() {
-                if (this.classList.contains('far')) {
-                    this.classList.remove('far');
-                    this.classList.add('fas');
-                } else {
-                    this.classList.remove('fas');
-                    this.classList.add('far');
-                }
-            });
-        });
-        
-        // Navigation active state
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    </script>
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeCreatePostModal">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Create Post</h2>
+            <textarea id="postContent" class="w-full border rounded p-2 mb-4" placeholder="What's on your mind?"></textarea>
+            <input type="file" id="postImage" class="mb-4">
+            <button id="submitPost" class="w-full bg-gradient-to-r from-primary to-accent text-white py-2 rounded font-medium">Post</button>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeProfileModal">&times;</span>
+            <div class="text-center mb-4">
+                <div id="profileAvatar" class="h-20 w-20 rounded-full avatar-placeholder flex items-center justify-center mb-2">
+                    <span class="text-white text-xl font-bold">U</span>
+                </div>
+                <h2 id="profileUsername" class="font-bold text-lg">username</h2>
+                <p id="profileFullName" class="text-gray-500 text-sm">Full Name</p>
+                <p id="profileBio" class="text-sm mt-2">Bio goes here</p>
+                <a id="profileWebsite" href="#" class="text-blue-500 text-sm block mt-1">Website</a>
+            </div>
+            <div class="flex justify-around text-center mb-4">
+                <div>
+                    <p id="profilePostsCount" class="font-bold">0</p>
+                    <span class="text-gray-500 text-sm">Posts</span>
+                </div>
+                <div>
+                    <p id="profileFollowersCount" class="font-bold">0</p>
+                    <span class="text-gray-500 text-sm">Followers</span>
+                </div>
+                <div>
+                    <p id="profileFollowingCount" class="font-bold">0</p>
+                    <span class="text-gray-500 text-sm">Following</span>
+                </div>
+            </div>
+            <button class="w-full bg-gray-200 py-2 rounded font-medium">Edit Profile</button>
+        </div>
+    </div>
 </body>
 </html>
