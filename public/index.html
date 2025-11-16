@@ -1,566 +1,719 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synq - Share Your Moments</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#405DE6',
-                        secondary: '#5851DB',
-                        accent: '#833AB4',
-                        dark: '#0f172a',
-                        light: '#f8fafc'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #fafafa;
-        }
-        .post-card {
-            transition: all 0.3s ease;
-        }
-        .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        .nav-link.active {
-            border-top: 1px solid #262626;
-        }
-        .avatar-placeholder {
-            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
-        }
-        .loading-spinner {
-            border-top-color: #405DE6;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .story-ring {
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-        }
-        .post-grid {
-            column-count: 3;
-            column-gap: 15px;
-        }
-        .post-grid-item {
-            margin-bottom: 15px;
-            break-inside: avoid;
-        }
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #ED4956;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>Synq — Supabase (Upgraded)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #f3f4f6; }
+    .avatar { background: linear-gradient(45deg,#405DE6,#5851DB,#833AB4); }
+    .clickable { cursor: pointer; }
+    .ghost-btn { background: transparent; border:1px solid rgba(0,0,0,0.06); }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation Bar -->
-    <nav class="bg-white border-b border-gray-300 fixed top-0 w-full z-50">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <div class="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center">
-                            <span class="text-white font-bold text-xl">S</span>
-                        </div>
-                        <span class="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Synq</span>
-                    </div>
-                </div>
-                
-                <!-- Search Bar -->
-                <div class="hidden md:flex items-center">
-                    <div class="relative">
-                        <input type="text" placeholder="Search" class="bg-gray-100 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64">
-                        <i class="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
-                    </div>
-                </div>
-                
-                <!-- Navigation Icons -->
-                <div class="flex items-center space-x-5">
-                    <a href="#" class="text-2xl text-gray-800 nav-link active">
-                        <i class="fas fa-home"></i>
-                    </a>
-                    <a href="#" class="text-2xl text-gray-500 nav-link">
-                        <i class="far fa-paper-plane"></i>
-                        <span class="notification-badge">3</span>
-                    </a>
-                    <a href="#" class="text-2xl text-gray-500 nav-link">
-                        <i class="far fa-plus-square"></i>
-                    </a>
-                    <a href="#" class="text-2xl text-gray-500 nav-link">
-                        <i class="far fa-compass"></i>
-                    </a>
-                    <a href="#" class="text-2xl text-gray-500 nav-link">
-                        <i class="far fa-heart"></i>
-                        <span class="notification-badge">7</span>
-                    </a>
-                    <a href="#" class="flex items-center">
-                        <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
-                            <span class="text-white text-sm font-medium">U</span>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="min-h-screen">
 
-    <!-- Main Content -->
-    <div class="max-w-5xl mx-auto pt-20 pb-10">
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Left Sidebar (Stories) -->
-            <div class="w-full md:w-2/3">
-                <!-- Stories -->
-                <div class="bg-white rounded-lg shadow-sm p-4 mb-6 overflow-x-auto">
-                    <div class="flex space-x-4">
-                        <!-- Your Story -->
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <i class="fas fa-plus text-gray-500"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-500">Your story</span>
-                        </div>
-                        
-                        <!-- Friend Stories -->
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">A</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">Alex</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">M</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">Maria</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">D</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">David</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">S</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">Sarah</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="story-ring p-0.5 rounded-full">
-                                <div class="bg-white p-0.5 rounded-full">
-                                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span class="text-white font-bold">J</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-xs mt-1 text-gray-800">John</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Posts Feed -->
-                <div id="postsContainer">
-                    <!-- Post 1 -->
-                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                                        <span class="text-white font-bold">A</span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h4 class="text-sm font-bold text-gray-900">alex_johnson</h4>
-                                    </div>
-                                </div>
-                                <button class="text-gray-500">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
-                        
-                        <div class="p-4">
-                            <div class="flex justify-between mb-2">
-                                <div class="flex space-x-4">
-                                    <button class="text-2xl text-gray-800 hover:text-red-500">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <button class="text-2xl text-gray-800">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="font-bold text-sm">1,245 likes</p>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="text-sm"><span class="font-bold mr-2">alex_johnson</span>Exploring the mountains this weekend! 🏔️ #adventure #nature</p>
-                            </div>
-                            
-                            <div class="text-gray-500 text-sm mb-2">
-                                View all 42 comments
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-xs font-bold">U</span>
-                                </div>
-                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
-                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Post 2 -->
-                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                                        <span class="text-white font-bold">M</span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h4 class="text-sm font-bold text-gray-900">maria_garcia</h4>
-                                    </div>
-                                </div>
-                                <button class="text-gray-500">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
-                        
-                        <div class="p-4">
-                            <div class="flex justify-between mb-2">
-                                <div class="flex space-x-4">
-                                    <button class="text-2xl text-red-500">
-                                        <i class="fas fa-heart"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <button class="text-2xl text-gray-800">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="font-bold text-sm">3,892 likes</p>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="text-sm"><span class="font-bold mr-2">maria_garcia</span>Homemade pasta night! 🍝 Recipe in my bio #cooking #italian</p>
-                            </div>
-                            
-                            <div class="text-gray-500 text-sm mb-2">
-                                View all 128 comments
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-xs font-bold">U</span>
-                                </div>
-                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
-                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Post 3 -->
-                    <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                                        <span class="text-white font-bold">D</span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h4 class="text-sm font-bold text-gray-900">david_smith</h4>
-                                    </div>
-                                </div>
-                                <button class="text-gray-500">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-200 border-2 border-dashed w-full h-96"></div>
-                        
-                        <div class="p-4">
-                            <div class="flex justify-between mb-2">
-                                <div class="flex space-x-4">
-                                    <button class="text-2xl text-gray-800 hover:text-red-500">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="text-2xl text-gray-800">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <button class="text-2xl text-gray-800">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="font-bold text-sm">876 likes</p>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="text-sm"><span class="font-bold mr-2">david_smith</span>Just finished reading an amazing book about sustainable living. Highly recommend! 🌱📚 #reading #sustainability</p>
-                            </div>
-                            
-                            <div class="text-gray-500 text-sm mb-2">
-                                View all 24 comments
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-xs font-bold">U</span>
-                                </div>
-                                <input type="text" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none">
-                                <button class="text-blue-500 font-medium text-sm ml-2">Post</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right Sidebar -->
-            <div class="w-full md:w-1/3">
-                <!-- User Profile -->
-                <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-                    <div class="flex items-center">
-                        <div class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
-                            <span class="text-white text-xl font-bold">U</span>
-                        </div>
-                        <div class="ml-4">
-                            <h2 class="font-bold text-gray-900">username</h2>
-                            <p class="text-gray-500 text-sm">User Name</p>
-                        </div>
-                        <div class="ml-auto">
-                            <button class="text-blue-500 text-sm font-medium">Switch</button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex justify-between mt-6">
-                        <div class="text-center">
-                            <p class="font-bold">42</p>
-                            <p class="text-gray-500 text-sm">Posts</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="font-bold">1,245</p>
-                            <p class="text-gray-500 text-sm">Followers</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="font-bold">356</p>
-                            <p class="text-gray-500 text-sm">Following</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Suggestions -->
-                <div class="bg-white rounded-lg shadow-sm p-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-500">Suggestions For You</h3>
-                        <a href="#" class="text-xs font-medium">See All</a>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">S</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">sarah_jones</p>
-                                    <p class="text-xs text-gray-500">Followed by alex_johnson</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">J</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">john_doe</p>
-                                    <p class="text-xs text-gray-500">New to Synq</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">E</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">emma_wilson</p>
-                                    <p class="text-xs text-gray-500">Followed by maria_garcia</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-white font-bold">M</span>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">mike_brown</p>
-                                    <p class="text-xs text-gray-500">Popular</p>
-                                </div>
-                            </div>
-                            <button class="text-blue-500 text-xs font-medium">Follow</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Footer Links -->
-                <div class="mt-6 text-xs text-gray-400">
-                    <div class="flex flex-wrap">
-                        <a href="#" class="mr-2 mb-1">About</a>
-                        <a href="#" class="mr-2 mb-1">Help</a>
-                        <a href="#" class="mr-2 mb-1">Press</a>
-                        <a href="#" class="mr-2 mb-1">API</a>
-                        <a href="#" class="mr-2 mb-1">Jobs</a>
-                        <a href="#" class="mr-2 mb-1">Privacy</a>
-                        <a href="#" class="mr-2 mb-1">Terms</a>
-                        <a href="#" class="mr-2 mb-1">Locations</a>
-                        <a href="#" class="mr-2 mb-1">Language</a>
-                    </div>
-                    <p class="mt-2">© 2023 SYNQ FROM META</p>
-                </div>
-            </div>
-        </div>
+<!-- TODO: Add your Supabase keys here -->
+<script>
+const SUPABASE_URL = "https://qpfjchiucjhfvyohqhih.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU";
+</script>
+
+<script>
+if(!SUPABASE_URL || SUPABASE_URL.includes("YOUR_")) {
+  console.warn("Please set SUPABASE_URL and SUPABASE_ANON at the top of the file.");
+}
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { realtime: { params: { eventsPerSecond: 10 } } });
+</script>
+
+<!-- NAV -->
+<nav class="fixed w-full top-0 bg-white/80 backdrop-blur border-b z-40">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">S</div>
+      <div class="text-xl font-semibold">Synq</div>
     </div>
 
-    <!-- Mobile Navigation -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 md:hidden">
-        <div class="flex justify-around items-center py-3">
-            <a href="#" class="text-2xl text-gray-800 nav-link active">
-                <i class="fas fa-home"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <i class="far fa-search"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <i class="far fa-plus-square"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <i class="far fa-heart"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-                <div class="h-6 w-6 rounded-full avatar-placeholder flex items-center justify-center">
-                    <span class="text-white text-xs font-medium">U</span>
-                </div>
-            </a>
+    <div class="flex items-center space-x-3">
+      <div id="searchWrap" class="hidden md:block">
+        <input id="searchInput" class="border rounded px-3 py-1 text-sm" placeholder="Search username..." />
+      </div>
+
+      <div id="navUnauth" class="flex items-center space-x-2">
+        <button id="openAuth" class="px-3 py-1 rounded bg-blue-600 text-white text-sm">Log in / Sign up</button>
+      </div>
+
+      <div id="navAuth" class="hidden items-center space-x-3">
+        <button id="openUploader" class="px-3 py-1 text-sm ghost-btn rounded">New post</button>
+        <div id="navUser" class="flex items-center space-x-2 clickable" title="Open profile">
+          <div id="navAvatar" class="w-9 h-9 rounded-full avatar flex items-center justify-center text-white font-semibold">U</div>
+          <div id="navName" class="text-sm font-medium">You</div>
         </div>
+        <button id="logoutBtn" class="px-3 py-1 rounded bg-red-500 text-white text-sm">Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="max-w-5xl mx-auto mt-20 px-4 pb-24">
+  <div class="grid md:grid-cols-3 gap-6">
+    <!-- FEED -->
+    <section class="md:col-span-2 space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-semibold">Feed</h2>
+        <div class="text-sm text-gray-500" id="feedStatus">Loading…</div>
+      </div>
+
+      <div id="feedList" class="space-y-4"></div>
+
+      <div id="loadMoreWrap" class="text-center">
+        <button id="loadMoreBtn" class="px-4 py-2 rounded bg-gray-200">Load more</button>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="space-y-4">
+      <!-- Profile card -->
+      <div id="profileCard" class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="flex items-center space-x-3">
+          <div id="profileAvatar" class="w-14 h-14 rounded-full avatar flex items-center justify-center text-white font-semibold">U</div>
+          <div>
+            <div id="profileUsername" class="font-bold">guest</div>
+            <div id="profileFull" class="text-sm text-gray-500">Not signed in</div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-3 text-center text-sm">
+          <div>
+            <div id="statPosts" class="font-bold">0</div>
+            <div class="text-gray-500">Posts</div>
+          </div>
+          <div>
+            <div id="statFollowers" class="font-bold">0</div>
+            <div class="text-gray-500">Followers</div>
+          </div>
+          <div>
+            <div id="statFollowing" class="font-bold">0</div>
+            <div class="text-gray-500">Following</div>
+          </div>
+        </div>
+
+        <div id="profileActions" class="mt-4 space-y-2 hidden">
+          <button id="editProfileBtn" class="w-full px-3 py-2 rounded bg-blue-600 text-white">Edit profile</button>
+          <button id="viewFollowingBtn" class="w-full px-3 py-2 rounded ghost-btn">View following</button>
+        </div>
+
+        <div id="signinPrompt" class="mt-4 text-sm text-gray-600">
+          Sign in to post, follow, and comment.
+        </div>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="flex justify-between items-center mb-3">
+          <div class="font-semibold text-sm text-gray-700">Suggestions</div>
+          <a id="seeAllSuggest" class="text-sm text-blue-500 clickable">See all</a>
+        </div>
+        <div id="suggestionsList" class="space-y-3"></div>
+      </div>
+
+      <div class="text-xs text-gray-400">
+        <a class="mr-2">About</a><a class="mr-2">Help</a><a class="mr-2">Privacy</a>
+        <div class="mt-2">© 2025 SYNQ</div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white w-96 rounded-xl p-6">
+    <h3 class="text-lg font-semibold mb-3">Welcome to Synq</h3>
+
+    <div class="space-y-2">
+      <input id="emailInput" placeholder="Email" class="w-full p-2 border rounded" />
+      <input id="passwordInput" placeholder="Password" type="password" class="w-full p-2 border rounded" />
+      <div class="flex gap-2">
+        <button id="authLoginBtn" class="flex-1 bg-blue-600 text-white p-2 rounded">Log in</button>
+        <button id="authSignupBtn" class="flex-1 bg-green-600 text-white p-2 rounded">Sign up</button>
+      </div>
+      <div class="text-xs text-gray-600">Or enter email and click "Send magic link" to sign in without a password.</div>
+      <button id="magicLinkBtn" class="mt-2 w-full p-2 rounded ghost-btn">Send magic link</button>
+      <div class="text-right mt-2">
+        <button id="closeAuth" class="text-sm text-gray-500">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD / EDIT MODAL -->
+<div id="uploadModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white w-96 rounded-xl p-4">
+    <h3 id="uploadTitle" class="text-lg font-semibold mb-2">Create post</h3>
+    <input id="fileInput" type="file" accept="image/*" class="mb-2" />
+    <input id="captionInput" placeholder="Write a caption..." class="w-full p-2 border rounded mb-2" />
+    <div class="flex gap-2">
+      <button id="submitPost" class="flex-1 bg-blue-600 text-white p-2 rounded">Upload</button>
+      <button id="cancelUpload" class="flex-1 p-2 rounded ghost-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE EDIT MODAL -->
+<div id="profileModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white w-96 rounded-xl p-4">
+    <h3 class="text-lg font-semibold mb-2">Edit profile</h3>
+    <input id="editUsername" placeholder="Username" class="w-full p-2 border rounded mb-2" />
+    <input id="editAvatarUrl" placeholder="Avatar image URL (optional)" class="w-full p-2 border rounded mb-2" />
+    <div class="flex gap-2">
+      <button id="saveProfile" class="flex-1 bg-blue-600 text-white p-2 rounded">Save</button>
+      <button id="cancelProfile" class="flex-1 p-2 rounded ghost-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  Important notes:
+  - Ensure SQL includes 'profiles' table with id referencing auth.users(id).
+  - Add 'follows' table:
+      create table follows (
+        id bigint generated always as identity primary key,
+        follower uuid references auth.users(id) on delete cascade,
+        following uuid references auth.users(id) on delete cascade,
+        created_at timestamp default now(),
+        unique(follower, following)
+      );
+    enable RLS and add appropriate policies.
+
+  - Storage bucket 'post-images' (public)
+*/
+
+let sessionUser = null;
+let pageSize = 6;
+let lastCursor = null; // for pagination
+
+const $ = selector => document.querySelector(selector);
+const $$ = selector => document.querySelectorAll(selector);
+
+const authModal = $("#authModal");
+const uploadModal = $("#uploadModal");
+const profileModal = $("#profileModal");
+
+const navUnauth = $("#navUnauth");
+const navAuth = $("#navAuth");
+const navName = $("#navName");
+const navAvatar = $("#navAvatar");
+
+const feedList = $("#feedList");
+const feedStatus = $("#feedStatus");
+const suggestionsList = $("#suggestionsList");
+
+const profileCard = $("#profileCard");
+const profileUsername = $("#profileUsername");
+const profileFull = $("#profileFull");
+const profileAvatar = $("#profileAvatar");
+const profileActions = $("#profileActions");
+const signinPrompt = $("#signinPrompt");
+const statPosts = $("#statPosts");
+const statFollowers = $("#statFollowers");
+const statFollowing = $("#statFollowing");
+
+const loadMoreBtn = $("#loadMoreBtn");
+const loadMoreWrap = $("#loadMoreWrap");
+
+let realtimeChannels = [];
+
+async function init() {
+  // wire UI
+  $("#openAuth").onclick = () => authModal.classList.remove("hidden");
+  $("#closeAuth").onclick = () => authModal.classList.add("hidden");
+  $("#authLoginBtn").onclick = authLogin;
+  $("#authSignupBtn").onclick = authSignup;
+  $("#magicLinkBtn").onclick = sendMagicLink;
+
+  $("#openUploader").onclick = openUploader;
+  $("#cancelUpload").onclick = () => uploadModal.classList.add("hidden");
+  $("#submitPost").onclick = submitPost;
+
+  $("#editProfileBtn").onclick = () => { $("#editUsername").value = sessionUserProfile?.username||""; $("#editAvatarUrl").value = sessionUserProfile?.avatar_url||""; profileModal.classList.remove("hidden"); };
+  $("#cancelProfile").onclick = () => profileModal.classList.add("hidden");
+  $("#saveProfile").onclick = saveProfile;
+
+  $("#logoutBtn").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
+
+  $("#loadMoreBtn").onclick = loadMorePosts;
+
+  $("#searchInput")?.addEventListener("keydown", (e)=>{ if(e.key === "Enter") searchByUsername(e.target.value); });
+
+  // auth listener
+  supabase.auth.onAuthStateChange((_event, session) => {
+    checkUser();
+  });
+
+  // initial
+  await checkUser();
+  await loadSuggestions();
+  subscribeRealtime(); // subscribe to real-time streams
+  await loadPosts(true);
+}
+
+async function checkUser() {
+  const { data } = await supabase.auth.getUser();
+  sessionUser = data.user;
+  // load profile
+  if(sessionUser) {
+    navUnauth.classList.add("hidden");
+    navAuth.classList.remove("hidden");
+    signinPrompt.classList.add("hidden");
+    profileActions.classList.remove("hidden");
+    $("#navName").innerText = sessionUser.email.split("@")[0];
+    $("#navAvatar").innerText = (sessionUser.user_metadata?.preferred_username || sessionUser.email[0] || "U").toUpperCase();
+
+    // load or create profile row
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", sessionUser.id).single().catch(()=>({}));
+    if(!profile) {
+      await supabase.from("profiles").insert([{ id: sessionUser.id, username: sessionUser.email.split("@")[0] }]);
+      sessionUserProfile = { username: sessionUser.email.split("@")[0], avatar_url: null };
+    } else {
+      sessionUserProfile = profile;
+    }
+    updateProfileCard();
+  } else {
+    navUnauth.classList.remove("hidden");
+    navAuth.classList.add("hidden");
+    signinPrompt.classList.remove("hidden");
+    profileActions.classList.add("hidden");
+    profileUsername.innerText = "guest";
+    profileFull.innerText = "Not signed in";
+    profileAvatar.innerText = "U";
+    statPosts.innerText = 0; statFollowers.innerText = 0; statFollowing.innerText = 0;
+  }
+}
+
+let sessionUserProfile = null;
+
+function humanTime(ts) {
+  if(!ts) return "";
+  const d = new Date(ts);
+  const diff = Math.floor((Date.now() - d.getTime())/1000);
+  if(diff < 60) return `${diff}s`;
+  if(diff < 3600) return `${Math.floor(diff/60)}m`;
+  if(diff < 86400) return `${Math.floor(diff/3600)}h`;
+  return d.toLocaleDateString();
+}
+
+function toast(msg) { alert(msg); }
+
+async function authLogin(){
+  const email = $("#emailInput").value;
+  const password = $("#passwordInput").value;
+  if(!email || !password) return toast("Enter email and password");
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) return toast(error.message);
+  authModal.classList.add("hidden");
+  await checkUser();
+}
+
+async function authSignup(){
+  const email = $("#emailInput").value;
+  const password = $("#passwordInput").value;
+  if(!email || !password) return toast("Enter email and password");
+  const { error } = await supabase.auth.signUp({ email, password });
+  if(error) return toast(error.message);
+  toast("Signed up — check your email if you used magic link flow");
+  authModal.classList.add("hidden");
+}
+
+async function sendMagicLink() {
+  const email = $("#emailInput").value;
+  if(!email) return toast("Enter email");
+  const { error } = await supabase.auth.signInWithOtp({ email });
+  if(error) return toast(error.message);
+  toast("Magic link sent to " + email);
+  authModal.classList.add("hidden");
+}
+
+// Upload flow
+function openUploader(){
+  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
+  $("#fileInput").value = "";
+  $("#captionInput").value = "";
+  $("#uploadTitle").innerText = "Create post";
+  $("#submitPost").dataset.editId = "";
+  uploadModal.classList.remove("hidden");
+}
+
+async function submitPost(){
+  const fileInput = $("#fileInput");
+  const caption = $("#captionInput").value || "";
+  const file = fileInput.files[0];
+  const editingId = $("#submitPost").dataset.editId;
+
+  if(editingId) {
+    // edit caption only
+    await supabase.from("posts").update({ caption }).eq("id", editingId);
+    uploadModal.classList.add("hidden");
+    return;
+  }
+
+  if(!file) return toast("Please choose an image");
+  const fileName = `${Date.now()}-${file.name}`;
+  const { error: upErr } = await supabase.storage.from("post-images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+  if(upErr) return toast("Upload failed: "+upErr.message);
+
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/post-images/${encodeURIComponent(fileName)}`;
+  // insert post with user_id set by frontend (RLS expects user_id = auth.uid())
+  const { error } = await supabase.from("posts").insert([{ user_id: sessionUser.id, image_url: publicUrl, caption }]);
+  if(error) return toast("Create post failed: "+error.message);
+  uploadModal.classList.add("hidden");
+  await loadPosts(true);
+}
+
+// Load posts (paginated). If head=true then reset cursor.
+async function loadPosts(head=false){
+  if(head) { lastCursor = null; feedList.innerHTML = ""; }
+  feedStatus.innerText = "Loading…";
+
+  let query = supabase.from("posts").select(`id, user_id, image_url, caption, created_at, profiles (username, avatar_url)`).order("created_at",{ascending:false}).limit(pageSize);
+  if(lastCursor) query = query.range(0, pageSize-1).gt("created_at", lastCursor); // simple cursor - note: may need better cursor by id/time for production
+
+  const { data, error } = await query;
+  if(error) { feedStatus.innerText = "Error"; return console.error(error); }
+  if(!data || data.length === 0) {
+    feedStatus.innerText = head ? "No posts yet" : "No more posts";
+    loadMoreWrap.style.display = "none";
+    return;
+  }
+
+  // append
+  data.forEach(p => {
+    appendPostCard(p);
+  });
+
+  // update cursor
+  lastCursor = data[data.length-1].created_at;
+  feedStatus.innerText = "";
+  loadMoreWrap.style.display = data.length < pageSize ? "none" : "block";
+}
+
+// append a single post card (DOM)
+function appendPostCard(p) {
+  const id = p.id;
+  const username = p.profiles?.username || p.user_id.slice(0,6);
+  const avatarLetter = (p.profiles?.username?.[0] || "U").toUpperCase();
+  const card = document.createElement("div");
+  card.className = "bg-white rounded-xl shadow-sm overflow-hidden";
+  card.id = `post-${id}`;
+
+  card.innerHTML = `
+    <div class="p-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full avatar flex items-center justify-center text-white font-semibold">${avatarLetter}</div>
+        <div>
+          <div class="font-semibold">${username}</div>
+          <div class="text-xs text-gray-500">${humanTime(p.created_at)}</div>
+        </div>
+      </div>
+      <div class="text-sm text-gray-500">
+        ${sessionUser && sessionUser.id === p.user_id ? `<button class="editPostBtn text-xs text-blue-600 mr-2">Edit</button><button class="deletePostBtn text-xs text-red-600">Delete</button>` : `<button class="followBtn text-xs text-blue-500">Follow</button>`}
+      </div>
     </div>
 
-    <script>
-        // Like functionality
-        document.querySelectorAll('.fa-heart').forEach(heart => {
-            heart.addEventListener('click', function() {
-                if (this.classList.contains('far')) {
-                    this.classList.remove('far');
-                    this.classList.add('fas', 'text-red-500');
-                } else {
-                    this.classList.remove('fas', 'text-red-500');
-                    this.classList.add('far');
-                }
-            });
-        });
-        
-        // Bookmark functionality
-        document.querySelectorAll('.fa-bookmark').forEach(bookmark => {
-            bookmark.addEventListener('click', function() {
-                if (this.classList.contains('far')) {
-                    this.classList.remove('far');
-                    this.classList.add('fas');
-                } else {
-                    this.classList.remove('fas');
-                    this.classList.add('far');
-                }
-            });
-        });
-        
-        // Navigation active state
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    </script>
+    <div class="w-full">
+      <img src="${p.image_url}" class="w-full max-h-96 object-cover" alt="post image" />
+    </div>
+
+    <div class="p-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button class="likeBtn text-xl clickable">♡</button>
+          <button class="commentToggle text-xl clickable"><i class="fa fa-comment"></i></button>
+        </div>
+        <div class="text-gray-500 text-sm" id="likes-count-${id}">0 likes</div>
+      </div>
+
+      <div class="mt-2"><span class="font-semibold">${username}</span> ${escapeHtml(p.caption || "")}</div>
+
+      <div class="mt-3 hidden" id="comments-${id}">
+        <div id="commentsList-${id}" class="space-y-2 mb-2"></div>
+        <div class="flex gap-2">
+          <input id="commentInput-${id}" placeholder="Add a comment..." class="flex-1 p-2 border rounded text-sm" />
+          <button class="postCommentBtn px-3 py-1 rounded bg-blue-600 text-white">Post</button>
+        </div>
+      </div>
+    </div>
+  `;
+  feedList.appendChild(card);
+
+  // wire buttons
+  const likeBtn = card.querySelector(".likeBtn");
+  const commentToggle = card.querySelector(".commentToggle");
+  const postCommentBtn = card.querySelector(".postCommentBtn");
+  const editBtn = card.querySelector(".editPostBtn");
+  const deleteBtn = card.querySelector(".deletePostBtn");
+  const followBtn = card.querySelector(".followBtn");
+
+  likeBtn.onclick = () => toggleLikeOptimistic(id, likeBtn);
+  commentToggle.onclick = () => {
+    const c = $(`#comments-${id}`);
+    c.classList.toggle("hidden");
+    if(!c.classList.contains("hidden")) loadComments(id);
+  };
+  postCommentBtn && (postCommentBtn.onclick = () => postComment(id));
+
+  editBtn && (editBtn.onclick = () => openEditPost(p));
+  deleteBtn && (deleteBtn.onclick = () => deletePost(id));
+  followBtn && (followBtn.onclick = () => toggleFollow(p.user_id, followBtn));
+
+  // load likes/count and whether current user liked it
+  loadLikesForPost(id);
+}
+
+// helpers
+function escapeHtml(text) {
+  if(!text) return "";
+  return text.replace(/[&<>"']/g, (m)=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]));
+}
+
+// likes functions (optimistic)
+const likeOptimisticState = {}; // postId => liked boolean
+
+async function toggleLikeOptimistic(postId, btn) {
+  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
+  // optimistic toggle
+  likeOptimisticState[postId] = !likeOptimisticState[postId];
+  updateLikeUI(postId);
+  // backend
+  try {
+    // check existing
+    const { data: existing } = await supabase.from("likes").select("*").eq("post_id",postId).eq("user_id",sessionUser.id);
+    if(existing && existing.length>0) {
+      await supabase.from("likes").delete().eq("id", existing[0].id);
+    } else {
+      await supabase.from("likes").insert([{ post_id: postId, user_id: sessionUser.id }]);
+    }
+  } catch(e) { console.error(e); }
+  // reload counts from server for true state
+  await loadLikesForPost(postId);
+}
+
+async function loadLikesForPost(postId) {
+  const { data: likes } = await supabase.from("likes").select("*").eq("post_id", postId);
+  const liked = sessionUser ? likes.some(l => l.user_id === sessionUser.id) : false;
+  likeOptimisticState[postId] = liked;
+  const el = $(`#likes-count-${postId}`);
+  if(el) el.innerText = `${likes.length} likes`;
+  const btn = $(`#post-${postId} .likeBtn`);
+  if(btn) btn.innerText = liked ? "❤️" : "♡";
+}
+
+function updateLikeUI(postId) {
+  const el = $(`#likes-count-${postId}`);
+  if(!el) return;
+  // quick visual - add/subtract 1
+  const currentText = el.innerText || "0 likes";
+  const currentNum = parseInt(currentText.split(" ")[0]) || 0;
+  const liked = likeOptimisticState[postId];
+  el.innerText = `${ liked ? currentNum + 1 : Math.max(0, currentNum - 1) } likes`;
+  const btn = $(`#post-${postId} .likeBtn`);
+  if(btn) btn.innerText = liked ? "❤️" : "♡";
+}
+
+// comments
+async function postComment(postId) {
+  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
+  const input = $(`#commentInput-${postId}`);
+  if(!input || !input.value.trim()) return;
+  const text = input.value.trim();
+  input.value = "";
+  await supabase.from("comments").insert([{ post_id: postId, user_id: sessionUser.id, comment: text }]);
+  await loadComments(postId);
+}
+
+async function loadComments(postId) {
+  const { data } = await supabase.from("comments").select(`id, comment, created_at, profiles(username)`).eq("post_id", postId).order("created_at",{ascending:true});
+  const list = $(`#commentsList-${postId}`);
+  if(!list) return;
+  list.innerHTML = "";
+  data.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "text-sm";
+    el.innerHTML = `<span class="font-semibold">${c.profiles?.username||'User'}</span> ${escapeHtml(c.comment)} <span class="text-gray-400 text-xs"> · ${humanTime(c.created_at)}</span>`;
+    list.appendChild(el);
+  });
+}
+
+// edit/delete
+function openEditPost(post) {
+  $("#uploadTitle").innerText = "Edit post";
+  $("#captionInput").value = post.caption || "";
+  $("#fileInput").value = "";
+  $("#submitPost").dataset.editId = post.id;
+  uploadModal.classList.remove("hidden");
+}
+
+async function deletePost(postId) {
+  if(!confirm("Delete this post?")) return;
+  await supabase.from("posts").delete().eq("id", postId);
+  $(`#post-${postId}`)?.remove();
+}
+
+// follow/unfollow
+async function toggleFollow(targetUserId, btn) {
+  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
+  if(sessionUser.id === targetUserId) return;
+  // check existing
+  const { data: existing } = await supabase.from("follows").select("*").eq("follower", sessionUser.id).eq("following", targetUserId);
+  if(existing && existing.length) {
+    await supabase.from("follows").delete().eq("id", existing[0].id);
+    btn.innerText = "Follow";
+  } else {
+    await supabase.from("follows").insert([{ follower: sessionUser.id, following: targetUserId }]);
+    btn.innerText = "Following";
+  }
+  await updateFollowCounts();
+}
+
+async function updateFollowCounts() {
+  if(!sessionUser) return;
+  const [{ count: followers }] = await Promise.all([
+    supabase.from("follows").select("*", { count: "exact", head: false }).eq("following", sessionUser.id)
+  ]);
+  const [{ count: following }] = await Promise.all([
+    supabase.from("follows").select("*", { count: "exact", head: false }).eq("follower", sessionUser.id)
+  ]);
+  statFollowers.innerText = followers || 0;
+  statFollowing.innerText = following || 0;
+}
+
+// suggestions (simple: top recent posters)
+async function loadSuggestions() {
+  const { data } = await supabase.from("profiles").select("id, username, avatar_url").limit(6);
+  suggestionsList.innerHTML = "";
+  if(!data) return;
+  data.forEach(u => {
+    const el = document.createElement("div");
+    el.className = "flex items-center justify-between";
+    el.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">${(u.username||'U')[0].toUpperCase()}</div>
+        <div>
+          <div class="text-sm font-medium">${u.username}</div>
+          <div class="text-xs text-gray-500">New to Synq</div>
+        </div>
+      </div>
+      <button class="followSuggestBtn text-sm text-blue-500">Follow</button>
+    `;
+    suggestionsList.appendChild(el);
+    el.querySelector(".followSuggestBtn").onclick = () => toggleFollow(u.id, el.querySelector(".followSuggestBtn"));
+  });
+}
+
+// search by username
+async function searchByUsername(q) {
+  if(!q) return loadPosts(true);
+  const { data } = await supabase.from("profiles").select("id,username").ilike("username", `%${q}%`).limit(20);
+  feedList.innerHTML = "";
+  if(!data || data.length===0) return feedList.innerHTML = `<div class="p-4 bg-white rounded">No users found</div>`;
+  // show user cards (simple)
+  data.forEach(u => {
+    const el = document.createElement("div");
+    el.className = "p-4 bg-white rounded";
+    el.innerHTML = `<div class="flex items-center justify-between"><div><b>${u.username}</b></div><div><button class="px-3 py-1 rounded ghost-btn" onclick="openProfilePage('${u.id}')">View</button></div></div>`;
+    feedList.appendChild(el);
+  });
+}
+
+// open profile page (simple listing of their posts)
+window.openProfilePage = async function(userId) {
+  feedList.innerHTML = "";
+  feedStatus.innerText = "Loading user posts…";
+  const { data } = await supabase.from("posts").select("id, user_id, image_url, caption, created_at, profiles(username)").eq("user_id", userId).order("created_at",{ascending:false});
+  if(!data || data.length===0) { feedList.innerHTML = `<div class="p-4 bg-white rounded">No posts</div>`; feedStatus.innerText = ""; return; }
+  data.forEach(p => appendPostCard(p));
+  feedStatus.innerText = "";
+}
+
+// profile edit
+async function saveProfile() {
+  const username = $("#editUsername").value.trim();
+  const avatar_url = $("#editAvatarUrl").value.trim() || null;
+  if(!username) return toast("Username required");
+  const { error } = await supabase.from("profiles").upsert([{ id: sessionUser.id, username, avatar_url }]);
+  if(error) return toast(error.message);
+  sessionUserProfile = { id: sessionUser.id, username, avatar_url };
+  updateProfileCard();
+  profileModal.classList.add("hidden");
+}
+
+async function updateProfileCard() {
+  if(!sessionUserProfile) return;
+  profileUsername.innerText = sessionUserProfile.username;
+  profileFull.innerText = sessionUser.email;
+  profileAvatar.innerText = (sessionUserProfile.username[0] || 'U').toUpperCase();
+  navAvatar.innerText = profileAvatar.innerText;
+  statPosts.innerText = await countRows("posts", "user_id", sessionUser.id) || 0;
+  await updateFollowCounts();
+}
+
+async function countRows(table, col, val) {
+  const { count } = await supabase.from(table).select(col, { count: "exact", head: false }).eq(col, val);
+  return count;
+}
+
+// realtime subscriptions
+function subscribeRealtime() {
+  // posts
+  const postsChannel = supabase.channel('public:posts')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, payload => {
+      // simple strategy: on INSERT prepend, on UPDATE replace, on DELETE remove
+      if(payload.eventType === 'INSERT') {
+        appendPostCard(payload.new);
+      } else if(payload.eventType === 'UPDATE') {
+        const node = $(`#post-${payload.new.id}`);
+        if(node) node.remove();
+        appendPostCard(payload.new);
+      } else if(payload.eventType === 'DELETE') {
+        $(`#post-${payload.old.id}`)?.remove();
+      }
+    })
+    .subscribe();
+  realtimeChannels.push(postsChannel);
+
+  // likes
+  const likesChannel = supabase.channel('public:likes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, payload => {
+      // update like counts for the affected post
+      const postId = payload.new?.post_id || payload.old?.post_id;
+      if(postId) loadLikesForPost(postId);
+    })
+    .subscribe();
+  realtimeChannels.push(likesChannel);
+
+  // comments
+  const commentsChannel = supabase.channel('public:comments')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, payload => {
+      const postId = payload.new?.post_id || payload.old?.post_id;
+      if(postId) {
+        loadComments(postId);
+      }
+    })
+    .subscribe();
+  realtimeChannels.push(commentsChannel);
+}
+
+// load initial posts
+async function loadMorePosts(){
+  await loadPosts(false);
+}
+
+// initial call
+init();
+</script>
 </body>
 </html>
