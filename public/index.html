@@ -939,91 +939,207 @@
 
     // Load app
     async function loadApp() {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', currentUser.id)
-        .single();
+      console.log('Loading app for user:', currentUser.email);
+      
+      try {
+        // Show loading state
+        document.getElementById('postsContainer').innerHTML = `
+          <div class="post">
+            <div style="padding: 40px; text-align: center; color: #8e8e8e;">
+              <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px;"></i>
+              <div style="font-size: 16px;">Loading...</div>
+            </div>
+          </div>
+        `;
 
-      currentUsername = profile?.username || currentUser.user_metadata?.username || 'user';
+        // Get or create profile
+        let { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', currentUser.id)
+          .single();
 
-      const avatar = currentUsername[0].toUpperCase();
-      document.getElementById('navAvatar').textContent = avatar;
-      document.getElementById('sidebarAvatar').textContent = avatar;
-      document.getElementById('sidebarUsername').textContent = currentUsername;
-      document.getElementById('sidebarEmail').textContent = currentUser.email;
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          console.log('Creating new profile...');
+          currentUsername = currentUser.user_metadata?.username || 'user_' + currentUser.id.substring(0, 8);
+          
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([{
+              id: currentUser.id,
+              username: currentUsername,
+              email: currentUser.email
+            }]);
 
-      showPage('app');
-      loadPosts();
-      loadUserLikes();
-      loadSuggestions();
-      subscribeToChanges();
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          }
+        } else if (profile) {
+          currentUsername = profile.username;
+        } else {
+          currentUsername = 'user';
+        }
+
+        console.log('Username set to:', currentUsername);
+
+        const avatar = currentUsername[0].toUpperCase();
+        document.getElementById('navAvatar').textContent = avatar;
+        document.getElementById('sidebarAvatar').textContent = avatar;
+        document.getElementById('sidebarUsername').textContent = currentUsername;
+        document.getElementById('sidebarEmail').textContent = currentUser.email;
+
+        showPage('app');
+        
+        await loadUserLikes();
+        await loadPosts();
+        await loadSuggestions();
+        subscribeToChanges();
+        
+        console.log('App loaded successfully!');
+      } catch (err) {
+        console.error('Error loading app:', err);
+        alert('Error loading app. Please try logging in again.');
+        await supabase.auth.signOut();
+      }
     }
 
     // Load posts
     async function loadPosts() {
-      const { data: posts } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          likes(count),
-          comments(id, content, created_at, user_id)
-        `)
-        .order('created_at', { ascending: false });
+      const container = document.getElementById('postsContainer');
+      
+      try {
+        console.log('Loading posts...');
+        
+        const { data: posts, error } = await supabase
+          .from('posts')
+          .select(`
+            *,
+            likes(count),
+            comments(id, content, created_at, user_id)
+          `)
+          .order('created_at', { ascending: false });
 
-      if (posts) {
-        const userIds = [...new Set(posts.map(p => p.user_id))];
-        await loadProfiles(userIds);
-        renderPosts(posts);
+        if (error) {
+          console.error('Error loading posts:', error);
+          container.innerHTML = `
+            <div class="post">
+              <div style="padding: 40px; text-align: center; color: #ed4956;">
+                <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <div style="font-size: 16px;">Error loading posts</div>
+                <div style="font-size: 14px; margin-top: 8px;">${error.message}</div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        if (posts && posts.length > 0) {
+          const userIds = [...new Set([
+            ...posts.map(p => p.user_id),
+            ...posts.flatMap(p => p.comments?.map(c => c.user_id) || [])
+          ])];
+          await loadProfiles(userIds);
+          console.log('Loaded', posts.length, 'posts');
+        } else {
+          console.log('No posts found');
+        }
+        
+        renderPosts(posts || []);
+      } catch (err) {
+        console.error('Unexpected error loading posts:', err);
+        container.innerHTML = `
+          <div class="post">
+            <div style="padding: 40px; text-align: center; color: #ed4956;">
+              <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
+              <div style="font-size: 16px;">Something went wrong</div>
+            </div>
+          </div>
+        `;
       }
     }
 
     // Load profiles
     async function loadProfiles(userIds) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .in('id', userIds);
+      if (!userIds || userIds.length === 0) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', userIds);
 
-      if (data) {
-        data.forEach(p => profiles[p.id] = p);
+        if (error) {
+          console.error('Error loading profiles:', error);
+          return;
+        }
+
+        if (data) {
+          data.forEach(p => profiles[p.id] = p);
+          console.log('Loaded', data.length, 'profiles');
+        }
+      } catch (err) {
+        console.error('Unexpected error loading profiles:', err);
       }
     }
 
     // Load user likes
     async function loadUserLikes() {
-      const { data } = await supabase
-        .from('likes')
-        .select('post_id')
-        .eq('user_id', currentUser.id);
+      try {
+        const { data, error } = await supabase
+          .from('likes')
+          .select('post_id')
+          .eq('user_id', currentUser.id);
 
-      if (data) {
-        userLikes = new Set(data.map(like => like.post_id));
+        if (error) {
+          console.error('Error loading user likes:', error);
+          return;
+        }
+
+        if (data) {
+          userLikes = new Set(data.map(like => like.post_id));
+          console.log('Loaded', data.length, 'user likes');
+        }
+      } catch (err) {
+        console.error('Unexpected error loading likes:', err);
       }
     }
 
     // Load suggestions
     async function loadSuggestions() {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .neq('id', currentUser.id)
-        .limit(5);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .neq('id', currentUser.id)
+          .limit(5);
 
-      const container = document.getElementById('suggestionsContainer');
-      if (data && data.length > 0) {
-        container.innerHTML = data.map(user => `
-          <div class="suggestion">
-            <div class="suggestion-avatar">${user.username[0].toUpperCase()}</div>
-            <div class="suggestion-info">
-              <div class="suggestion-username">${escapeHtml(user.username)}</div>
-              <div class="suggestion-meta">Suggested for you</div>
+        const container = document.getElementById('suggestionsContainer');
+        
+        if (error) {
+          console.error('Error loading suggestions:', error);
+          container.innerHTML = '<div style="text-align:center;color:#8e8e8e;font-size:12px;">Unable to load suggestions</div>';
+          return;
+        }
+
+        if (data && data.length > 0) {
+          console.log('Loaded', data.length, 'suggestions');
+          container.innerHTML = data.map(user => `
+            <div class="suggestion">
+              <div class="suggestion-avatar">${user.username[0].toUpperCase()}</div>
+              <div class="suggestion-info">
+                <div class="suggestion-username">${escapeHtml(user.username)}</div>
+                <div class="suggestion-meta">Suggested for you</div>
+              </div>
+              <button class="suggestion-follow">Follow</button>
             </div>
-            <button class="suggestion-follow">Follow</button>
-          </div>
-        `).join('');
-      } else {
-        container.innerHTML = '<div style="text-align:center;color:#8e8e8e;font-size:12px;">No suggestions</div>';
+          `).join('');
+        } else {
+          container.innerHTML = '<div style="text-align:center;color:#8e8e8e;font-size:12px;">No suggestions available</div>';
+        }
+      } catch (err) {
+        console.error('Unexpected error loading suggestions:', err);
+        document.getElementById('suggestionsContainer').innerHTML = '<div style="text-align:center;color:#8e8e8e;font-size:12px;">Unable to load suggestions</div>';
       }
     }
 
