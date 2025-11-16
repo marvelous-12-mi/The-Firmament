@@ -2,718 +2,755 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Synq — Supabase (Upgraded)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Synq — Supabase Instagram Clone (A)</title>
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase JS -->
+  <script src="https://unpkg.com/@supabase/supabase-js/dist/umd/supabase.js"></script>
+
   <style>
-    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #f3f4f6; }
-    .avatar { background: linear-gradient(45deg,#405DE6,#5851DB,#833AB4); }
-    .clickable { cursor: pointer; }
-    .ghost-btn { background: transparent; border:1px solid rgba(0,0,0,0.06); }
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+    :root {
+      --bg:#fafafa;
+      --card:#ffffff;
+      --muted:#889;
+      --text:#111827;
+      --primary:#405DE6;
+      --accent:#833AB4;
+    }
+    body { font-family: 'Roboto', sans-serif; background:var(--bg); color:var(--text); }
+    .avatar-placeholder { background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584); }
+    .story-ring { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .post-card{ transition: all .18s ease; }
+    .post-card:hover{ transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .notification-badge{ position:absolute; top:-5px; right:-5px; background:#ED4956; color:#fff; border-radius:50%; width:18px; height:18px; font-size:10px; display:flex; align-items:center; justify-content:center; }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="bg-gray-50">
 
-<!-- TODO: Add your Supabase keys here -->
-<script>
-const SUPABASE_URL = "https://qpfjchiucjhfvyohqhih.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU";
-</script>
+<!-- 
+  IMPORTANT SQL (run in Supabase SQL editor before using the app)
+  -----------------------------------------------------------------
+  -- Drop old tables (optional)
+  drop table if exists likes cascade;
+  drop table if exists comments cascade;
+  drop table if exists posts cascade;
+  drop table if exists profiles cascade;
+  drop table if exists follows cascade;
 
-<script>
-if(!SUPABASE_URL || SUPABASE_URL.includes("YOUR_")) {
-  console.warn("Please set SUPABASE_URL and SUPABASE_ANON at the top of the file.");
-}
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { realtime: { params: { eventsPerSecond: 10 } } });
-</script>
+  -- Profiles
+  create table profiles (
+    id uuid primary key references auth.users(id) on delete cascade,
+    username text,
+    avatar_url text,
+    created_at timestamp with time zone default now()
+  );
+
+  -- Posts
+  create table posts (
+    id bigint generated always as identity primary key,
+    user_id uuid references auth.users(id) on delete cascade,
+    image_url text,
+    caption text,
+    created_at timestamp with time zone default now()
+  );
+
+  -- Likes
+  create table likes (
+    id bigint generated always as identity primary key,
+    post_id bigint references posts(id) on delete cascade,
+    user_id uuid references auth.users(id) on delete cascade,
+    created_at timestamp with time zone default now(),
+    unique(post_id, user_id)
+  );
+
+  -- Comments
+  create table comments (
+    id bigint generated always as identity primary key,
+    post_id bigint references posts(id) on delete cascade,
+    user_id uuid references auth.users(id) on delete cascade,
+    comment text,
+    created_at timestamp with time zone default now()
+  );
+
+  -- Follows (optional)
+  create table follows (
+    id bigint generated always as identity primary key,
+    follower uuid references auth.users(id) on delete cascade,
+    following uuid references auth.users(id) on delete cascade,
+    created_at timestamp with time zone default now(),
+    unique(follower, following)
+  );
+
+  -- Enable RLS and add safe policies (example)
+  alter table profiles enable row level security;
+  alter table posts enable row level security;
+  alter table likes enable row level security;
+  alter table comments enable row level security;
+  alter table follows enable row level security;
+
+  -- Simple policies (adjust to your needs):
+  create policy "Profiles: read all" on profiles for select using (true);
+  create policy "Profiles: insert own" on profiles for insert with check (auth.uid() = id);
+  create policy "Profiles: update own" on profiles for update using (auth.uid() = id);
+
+  create policy "Posts: read all" on posts for select using (true);
+  create policy "Posts: insert own" on posts for insert with check (auth.uid() = user_id);
+  create policy "Posts: delete own" on posts for delete using (auth.uid() = user_id);
+  create policy "Posts: update own" on posts for update using (auth.uid() = user_id);
+
+  create policy "Likes: read" on likes for select using (true);
+  create policy "Likes: insert own" on likes for insert with check (auth.uid() = user_id);
+  create policy "Likes: delete own" on likes for delete using (auth.uid() = user_id);
+
+  create policy "Comments: read" on comments for select using (true);
+  create policy "Comments: insert own" on comments for insert with check (auth.uid() = user_id);
+
+  create policy "Follows: read" on follows for select using (true);
+  create policy "Follows: insert own" on follows for insert with check (auth.uid() = follower);
+  create policy "Follows: delete own" on follows for delete using (auth.uid() = follower);
+
+  -- Create a public storage bucket named `post-images` and set it to public
+  -----------------------------------------------------------------
+-->
 
 <!-- NAV -->
-<nav class="fixed w-full top-0 bg-white/80 backdrop-blur border-b z-40">
-  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">S</div>
-      <div class="text-xl font-semibold">Synq</div>
-    </div>
-
-    <div class="flex items-center space-x-3">
-      <div id="searchWrap" class="hidden md:block">
-        <input id="searchInput" class="border rounded px-3 py-1 text-sm" placeholder="Search username..." />
-      </div>
-
-      <div id="navUnauth" class="flex items-center space-x-2">
-        <button id="openAuth" class="px-3 py-1 rounded bg-blue-600 text-white text-sm">Log in / Sign up</button>
-      </div>
-
-      <div id="navAuth" class="hidden items-center space-x-3">
-        <button id="openUploader" class="px-3 py-1 text-sm ghost-btn rounded">New post</button>
-        <div id="navUser" class="flex items-center space-x-2 clickable" title="Open profile">
-          <div id="navAvatar" class="w-9 h-9 rounded-full avatar flex items-center justify-center text-white font-semibold">U</div>
-          <div id="navName" class="text-sm font-medium">You</div>
+<nav class="bg-white border-b border-gray-300 fixed top-0 w-full z-50">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="flex justify-between h-16 items-center">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <div class="flex-shrink-0 flex items-center">
+          <div class="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+            <span class="text-white font-bold text-xl">S</span>
+          </div>
+          <span class="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Synq</span>
         </div>
-        <button id="logoutBtn" class="px-3 py-1 rounded bg-red-500 text-white text-sm">Logout</button>
+      </div>
+
+      <!-- Search (not hooked) -->
+      <div class="hidden md:flex items-center">
+        <div class="relative">
+          <input id="searchBox" type="text" placeholder="Search username" class="bg-gray-100 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64">
+          <i class="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
+        </div>
+      </div>
+
+      <!-- Nav Icons -->
+      <div class="flex items-center space-x-5">
+        <a href="#" class="text-2xl text-gray-800 nav-link active">
+          <i class="fas fa-home"></i>
+        </a>
+        <button id="openUploadBtn" class="text-2xl text-gray-500 nav-link">
+          <i class="far fa-plus-square"></i>
+        </button>
+
+        <div id="authArea" class="flex items-center space-x-3">
+          <!-- shown when logged out -->
+          <button id="openAuthBtn" class="px-3 py-1 rounded bg-blue-500 text-white text-sm">Log in</button>
+
+          <!-- shown when logged in -->
+          <div id="userMenu" class="hidden items-center gap-3">
+            <div id="navNotifications" class="relative text-2xl text-gray-500">
+              <i class="far fa-paper-plane"></i>
+              <span class="notification-badge" style="display:none" id="notifCount">0</span>
+            </div>
+
+            <div id="navAvatar" class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center text-white text-sm cursor-pointer">U</div>
+            <button id="logoutBtn" class="text-sm text-gray-700 hidden">Logout</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- MAIN -->
-<main class="max-w-5xl mx-auto mt-20 px-4 pb-24">
-  <div class="grid md:grid-cols-3 gap-6">
-    <!-- FEED -->
-    <section class="md:col-span-2 space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg font-semibold">Feed</h2>
-        <div class="text-sm text-gray-500" id="feedStatus">Loading…</div>
-      </div>
-
-      <div id="feedList" class="space-y-4"></div>
-
-      <div id="loadMoreWrap" class="text-center">
-        <button id="loadMoreBtn" class="px-4 py-2 rounded bg-gray-200">Load more</button>
-      </div>
-    </section>
-
-    <!-- RIGHT SIDEBAR -->
-    <aside class="space-y-4">
-      <!-- Profile card -->
-      <div id="profileCard" class="bg-white rounded-xl p-4 shadow-sm">
-        <div class="flex items-center space-x-3">
-          <div id="profileAvatar" class="w-14 h-14 rounded-full avatar flex items-center justify-center text-white font-semibold">U</div>
-          <div>
-            <div id="profileUsername" class="font-bold">guest</div>
-            <div id="profileFull" class="text-sm text-gray-500">Not signed in</div>
-          </div>
-        </div>
-
-        <div class="mt-4 grid grid-cols-3 text-center text-sm">
-          <div>
-            <div id="statPosts" class="font-bold">0</div>
-            <div class="text-gray-500">Posts</div>
-          </div>
-          <div>
-            <div id="statFollowers" class="font-bold">0</div>
-            <div class="text-gray-500">Followers</div>
-          </div>
-          <div>
-            <div id="statFollowing" class="font-bold">0</div>
-            <div class="text-gray-500">Following</div>
-          </div>
-        </div>
-
-        <div id="profileActions" class="mt-4 space-y-2 hidden">
-          <button id="editProfileBtn" class="w-full px-3 py-2 rounded bg-blue-600 text-white">Edit profile</button>
-          <button id="viewFollowingBtn" class="w-full px-3 py-2 rounded ghost-btn">View following</button>
-        </div>
-
-        <div id="signinPrompt" class="mt-4 text-sm text-gray-600">
-          Sign in to post, follow, and comment.
-        </div>
-      </div>
-
-      <!-- Suggestions -->
-      <div class="bg-white rounded-xl p-4 shadow-sm">
-        <div class="flex justify-between items-center mb-3">
-          <div class="font-semibold text-sm text-gray-700">Suggestions</div>
-          <a id="seeAllSuggest" class="text-sm text-blue-500 clickable">See all</a>
-        </div>
-        <div id="suggestionsList" class="space-y-3"></div>
-      </div>
-
-      <div class="text-xs text-gray-400">
-        <a class="mr-2">About</a><a class="mr-2">Help</a><a class="mr-2">Privacy</a>
-        <div class="mt-2">© 2025 SYNQ</div>
-      </div>
-    </aside>
-  </div>
-</main>
-
 <!-- AUTH MODAL -->
-<div id="authModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white w-96 rounded-xl p-6">
-    <h3 class="text-lg font-semibold mb-3">Welcome to Synq</h3>
-
-    <div class="space-y-2">
-      <input id="emailInput" placeholder="Email" class="w-full p-2 border rounded" />
-      <input id="passwordInput" placeholder="Password" type="password" class="w-full p-2 border rounded" />
-      <div class="flex gap-2">
-        <button id="authLoginBtn" class="flex-1 bg-blue-600 text-white p-2 rounded">Log in</button>
-        <button id="authSignupBtn" class="flex-1 bg-green-600 text-white p-2 rounded">Sign up</button>
-      </div>
-      <div class="text-xs text-gray-600">Or enter email and click "Send magic link" to sign in without a password.</div>
-      <button id="magicLinkBtn" class="mt-2 w-full p-2 rounded ghost-btn">Send magic link</button>
-      <div class="text-right mt-2">
-        <button id="closeAuth" class="text-sm text-gray-500">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- UPLOAD / EDIT MODAL -->
-<div id="uploadModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white w-96 rounded-xl p-4">
-    <h3 id="uploadTitle" class="text-lg font-semibold mb-2">Create post</h3>
-    <input id="fileInput" type="file" accept="image/*" class="mb-2" />
-    <input id="captionInput" placeholder="Write a caption..." class="w-full p-2 border rounded mb-2" />
+<div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white p-6 rounded-xl w-80">
+    <h2 class="text-xl font-bold mb-3">Login or Sign up</h2>
+    <input id="authEmail" type="email" placeholder="Email" class="w-full mb-2 p-2 border rounded">
+    <input id="authPassword" type="password" placeholder="Password" class="w-full mb-3 p-2 border rounded">
     <div class="flex gap-2">
-      <button id="submitPost" class="flex-1 bg-blue-600 text-white p-2 rounded">Upload</button>
-      <button id="cancelUpload" class="flex-1 p-2 rounded ghost-btn">Cancel</button>
+      <button id="loginBtn" class="w-1/2 bg-blue-600 text-white p-2 rounded">Login</button>
+      <button id="signupBtn" class="w-1/2 bg-green-600 text-white p-2 rounded">Sign Up</button>
+    </div>
+    <p class="text-xs text-gray-500 mt-3">Or click "Send magic link" to sign in with email only.</p>
+    <button id="magicBtn" class="mt-2 w-full p-2 rounded border">Send magic link</button>
+    <div class="text-right mt-2">
+      <button id="closeAuth" class="text-sm text-gray-500">Close</button>
     </div>
   </div>
 </div>
 
-<!-- PROFILE EDIT MODAL -->
-<div id="profileModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white w-96 rounded-xl p-4">
-    <h3 class="text-lg font-semibold mb-2">Edit profile</h3>
-    <input id="editUsername" placeholder="Username" class="w-full p-2 border rounded mb-2" />
-    <input id="editAvatarUrl" placeholder="Avatar image URL (optional)" class="w-full p-2 border rounded mb-2" />
+<!-- UPLOAD MODAL -->
+<div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-40">
+  <div class="bg-white w-96 p-4 rounded-xl">
+    <h3 class="font-bold text-lg mb-2">Create Post</h3>
+    <input id="postFile" type="file" accept="image/*" class="mb-3" />
+    <textarea id="postCaption" placeholder="Write a caption..." class="w-full p-2 border rounded h-24 mb-2"></textarea>
     <div class="flex gap-2">
-      <button id="saveProfile" class="flex-1 bg-blue-600 text-white p-2 rounded">Save</button>
-      <button id="cancelProfile" class="flex-1 p-2 rounded ghost-btn">Cancel</button>
+      <button id="createPostBtn" class="flex-1 bg-blue-600 text-white p-2 rounded">Upload</button>
+      <button id="closeUpload" class="flex-1 p-2 rounded border">Cancel</button>
     </div>
   </div>
 </div>
+
+<!-- MAIN -->
+<div class="max-w-5xl mx-auto pt-20 pb-10">
+  <div class="flex flex-col md:flex-row gap-6">
+    <!-- Left/Main -->
+    <div class="w-full md:w-2/3">
+      <!-- Stories -->
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6 overflow-x-auto">
+        <div class="flex space-x-4">
+          <div class="flex flex-col items-center">
+            <div class="story-ring p-0.5 rounded-full">
+              <div class="bg-white p-0.5 rounded-full">
+                <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                  <i class="fas fa-plus text-gray-500"></i>
+                </div>
+              </div>
+            </div>
+            <span class="text-xs mt-1 text-gray-500">Your story</span>
+          </div>
+          <!-- placeholder story icons (we will keep them static) -->
+          <div class="flex flex-col items-center">
+            <div class="story-ring p-0.5 rounded-full">
+              <div class="bg-white p-0.5 rounded-full">
+                <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-white font-bold">A</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-xs mt-1 text-gray-800">Alex</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="story-ring p-0.5 rounded-full">
+              <div class="bg-white p-0.5 rounded-full">
+                <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-white font-bold">M</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-xs mt-1 text-gray-800">Maria</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Posts -->
+      <div id="postsContainer">
+        <!-- existing static posts will be replaced by JS -->
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="w-full md:w-1/3">
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex items-center">
+          <div id="profileAvatar" class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
+            <span class="text-white text-xl font-bold">U</span>
+          </div>
+          <div class="ml-4">
+            <h2 id="profileUsername" class="font-bold text-gray-900">username</h2>
+            <p id="profileFull" class="text-gray-500 text-sm">User Name</p>
+          </div>
+          <div class="ml-auto">
+            <button id="editProfileBtn" class="text-blue-500 text-sm font-medium hidden">Edit</button>
+          </div>
+        </div>
+        <div class="flex justify-between mt-6">
+          <div class="text-center">
+            <p id="statPosts" class="font-bold">0</p>
+            <p class="text-gray-500 text-sm">Posts</p>
+          </div>
+          <div class="text-center">
+            <p id="statFollowers" class="font-bold">0</p>
+            <p class="text-gray-500 text-sm">Followers</p>
+          </div>
+          <div class="text-center">
+            <p id="statFollowing" class="font-bold">0</p>
+            <p class="text-gray-500 text-sm">Following</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-gray-500">Suggestions For You</h3>
+          <a href="#" class="text-xs font-medium">See All</a>
+        </div>
+        <div id="suggestionsList" class="space-y-4">
+          <!-- suggestions will be loaded -->
+        </div>
+      </div>
+
+      <div class="mt-6 text-xs text-gray-400">
+        <div class="flex flex-wrap">
+          <a href="#" class="mr-2 mb-1">About</a>
+          <a href="#" class="mr-2 mb-1">Help</a>
+          <a href="#" class="mr-2 mb-1">Press</a>
+        </div>
+        <p class="mt-2">© 2025 SYNQ</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comment / Caption templates and tiny helper -->
+<template id="postTemplate">
+  <div class="post-card bg-white rounded-lg shadow-sm mb-6">
+    <div class="p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
+            <span class="text-white font-bold">U</span>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-bold text-gray-900 username">username</h4>
+            <div class="text-xs text-gray-500 time">just now</div>
+          </div>
+        </div>
+        <button class="text-gray-500 postMenuBtn">
+          <i class="fas fa-ellipsis-h"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-gray-200 border-2 border-dashed w-full h-96 imageWrap"></div>
+
+    <div class="p-4">
+      <div class="flex justify-between mb-2">
+        <div class="flex space-x-4">
+          <button class="likeBtn text-2xl text-gray-800">
+            <i class="far fa-heart"></i>
+          </button>
+          <button class="commentOpenBtn text-2xl text-gray-800">
+            <i class="far fa-comment"></i>
+          </button>
+          <button class="shareBtn text-2xl text-gray-800">
+            <i class="far fa-paper-plane"></i>
+          </button>
+        </div>
+        <button class="bookmarkBtn text-2xl text-gray-800">
+          <i class="far fa-bookmark"></i>
+        </button>
+      </div>
+
+      <div class="mb-2">
+        <p class="font-bold text-sm likesCount">0 likes</p>
+      </div>
+
+      <div class="mb-2 caption"><p class="text-sm"><span class="font-bold mr-2">username</span>Caption</p></div>
+
+      <div class="text-gray-500 text-sm mb-2 commentsPreview">View comments</div>
+
+      <div class="commentArea flex items-center hidden">
+        <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
+          <span class="text-white text-xs font-bold">U</span>
+        </div>
+        <input type="text" class="ml-2 w-full text-sm focus:outline-none commentInput" placeholder="Add a comment...">
+        <button class="text-blue-500 font-medium text-sm ml-2 postCommentBtn">Post</button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <script>
-/*
-  Important notes:
-  - Ensure SQL includes 'profiles' table with id referencing auth.users(id).
-  - Add 'follows' table:
-      create table follows (
-        id bigint generated always as identity primary key,
-        follower uuid references auth.users(id) on delete cascade,
-        following uuid references auth.users(id) on delete cascade,
-        created_at timestamp default now(),
-        unique(follower, following)
-      );
-    enable RLS and add appropriate policies.
+  // ---------------------------
+  //  ADD YOUR SUPABASE KEYS HERE
+  // ---------------------------
+  const SUPABASE_URL = "https://qpfjchiucjhfvyohqhih.supabase.co";
+  const SUPABASE_ANON = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZmpjaGl1Y2poZnZ5b2hxaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDczMjksImV4cCI6MjA3NTQ4MzMyOX0.kcx9Sr7qGbWudJdf155tXg0gWWX6P1RYavo-lKCoQkU";
+  if (SUPABASE_URL.includes("YOUR") || SUPABASE_ANON.includes("YOUR")) {
+    console.warn("Please set SUPABASE_URL and SUPABASE_ANON at the top of the HTML file.");
+  }
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  - Storage bucket 'post-images' (public)
-*/
+  // DOM refs
+  const postsContainer = document.getElementById('postsContainer');
+  const authModal = document.getElementById('authModal');
+  const openAuthBtn = document.getElementById('openAuthBtn');
+  const closeAuth = document.getElementById('closeAuth');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const magicBtn = document.getElementById('magicBtn');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
 
-let sessionUser = null;
-let pageSize = 6;
-let lastCursor = null; // for pagination
+  const openUploadBtn = document.getElementById('openUploadBtn');
+  const uploadModal = document.getElementById('uploadModal');
+  const closeUpload = document.getElementById('closeUpload');
+  const createPostBtn = document.getElementById('createPostBtn');
+  const postFile = document.getElementById('postFile');
+  const postCaption = document.getElementById('postCaption');
 
-const $ = selector => document.querySelector(selector);
-const $$ = selector => document.querySelectorAll(selector);
+  const navAvatar = document.getElementById('navAvatar');
+  const userMenu = document.getElementById('userMenu');
+  const authArea = document.getElementById('authArea');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-const authModal = $("#authModal");
-const uploadModal = $("#uploadModal");
-const profileModal = $("#profileModal");
+  const profileAvatar = document.getElementById('profileAvatar');
+  const profileUsername = document.getElementById('profileUsername');
+  const profileFull = document.getElementById('profileFull');
+  const editProfileBtn = document.getElementById('editProfileBtn');
+  const statPosts = document.getElementById('statPosts');
 
-const navUnauth = $("#navUnauth");
-const navAuth = $("#navAuth");
-const navName = $("#navName");
-const navAvatar = $("#navAvatar");
+  const suggestionsList = document.getElementById('suggestionsList');
 
-const feedList = $("#feedList");
-const feedStatus = $("#feedStatus");
-const suggestionsList = $("#suggestionsList");
+  const postTemplate = document.getElementById('postTemplate');
 
-const profileCard = $("#profileCard");
-const profileUsername = $("#profileUsername");
-const profileFull = $("#profileFull");
-const profileAvatar = $("#profileAvatar");
-const profileActions = $("#profileActions");
-const signinPrompt = $("#signinPrompt");
-const statPosts = $("#statPosts");
-const statFollowers = $("#statFollowers");
-const statFollowing = $("#statFollowing");
+  let currentUser = null;
+  let userProfile = null;
 
-const loadMoreBtn = $("#loadMoreBtn");
-const loadMoreWrap = $("#loadMoreWrap");
+  // Utility: human-readable times
+  function humanTime(ts) {
+    if(!ts) return '';
+    const d = new Date(ts);
+    const diff = Math.floor((Date.now() - d.getTime())/1000);
+    if(diff < 60) return `${diff}s`;
+    if(diff < 3600) return `${Math.floor(diff/60)}m`;
+    if(diff < 86400) return `${Math.floor(diff/3600)}h`;
+    return d.toLocaleDateString();
+  }
 
-let realtimeChannels = [];
-
-async function init() {
-  // wire UI
-  $("#openAuth").onclick = () => authModal.classList.remove("hidden");
-  $("#closeAuth").onclick = () => authModal.classList.add("hidden");
-  $("#authLoginBtn").onclick = authLogin;
-  $("#authSignupBtn").onclick = authSignup;
-  $("#magicLinkBtn").onclick = sendMagicLink;
-
-  $("#openUploader").onclick = openUploader;
-  $("#cancelUpload").onclick = () => uploadModal.classList.add("hidden");
-  $("#submitPost").onclick = submitPost;
-
-  $("#editProfileBtn").onclick = () => { $("#editUsername").value = sessionUserProfile?.username||""; $("#editAvatarUrl").value = sessionUserProfile?.avatar_url||""; profileModal.classList.remove("hidden"); };
-  $("#cancelProfile").onclick = () => profileModal.classList.add("hidden");
-  $("#saveProfile").onclick = saveProfile;
-
-  $("#logoutBtn").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
-
-  $("#loadMoreBtn").onclick = loadMorePosts;
-
-  $("#searchInput")?.addEventListener("keydown", (e)=>{ if(e.key === "Enter") searchByUsername(e.target.value); });
-
-  // auth listener
-  supabase.auth.onAuthStateChange((_event, session) => {
-    checkUser();
+  // Hook UI
+  openAuthBtn.addEventListener('click', ()=> authModal.classList.remove('hidden'));
+  closeAuth.addEventListener('click', ()=> authModal.classList.add('hidden'));
+  openUploadBtn.addEventListener('click', async ()=> {
+    if(!currentUser) { authModal.classList.remove('hidden'); return; }
+    uploadModal.classList.remove('hidden');
+  });
+  closeUpload.addEventListener('click', ()=> uploadModal.classList.add('hidden'));
+  logoutBtn.addEventListener('click', async ()=> {
+    await supabase.auth.signOut();
+    location.reload();
   });
 
-  // initial
-  await checkUser();
-  await loadSuggestions();
-  subscribeRealtime(); // subscribe to real-time streams
-  await loadPosts(true);
-}
+  // Auth: login / signup / magic link
+  loginBtn.addEventListener('click', async ()=> {
+    const email = authEmail.value;
+    const password = authPassword.value;
+    if(!email || !password) return alert('enter email + password');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if(error) return alert(error.message);
+    authModal.classList.add('hidden');
+    await onAuthChange();
+  });
 
-async function checkUser() {
-  const { data } = await supabase.auth.getUser();
-  sessionUser = data.user;
-  // load profile
-  if(sessionUser) {
-    navUnauth.classList.add("hidden");
-    navAuth.classList.remove("hidden");
-    signinPrompt.classList.add("hidden");
-    profileActions.classList.remove("hidden");
-    $("#navName").innerText = sessionUser.email.split("@")[0];
-    $("#navAvatar").innerText = (sessionUser.user_metadata?.preferred_username || sessionUser.email[0] || "U").toUpperCase();
+  signupBtn.addEventListener('click', async ()=> {
+    const email = authEmail.value;
+    const password = authPassword.value;
+    if(!email || !password) return alert('enter email + password');
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if(error) return alert(error.message);
+    alert('Account created — check email for confirmation (if required). Now login.');
+  });
 
-    // load or create profile row
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", sessionUser.id).single().catch(()=>({}));
-    if(!profile) {
-      await supabase.from("profiles").insert([{ id: sessionUser.id, username: sessionUser.email.split("@")[0] }]);
-      sessionUserProfile = { username: sessionUser.email.split("@")[0], avatar_url: null };
+  magicBtn.addEventListener('click', async ()=> {
+    const email = authEmail.value;
+    if(!email) return alert('enter email');
+    const { data, error } = await supabase.auth.signInWithOtp({ email });
+    if(error) return alert(error.message);
+    alert('Magic link sent to ' + email);
+    authModal.classList.add('hidden');
+  });
+
+  // On page load: check auth
+  (async function init() {
+    const { data } = await supabase.auth.getUser();
+    if(data && data.user) {
+      currentUser = data.user;
+      await ensureProfile();
+      showLoggedInUI();
     } else {
-      sessionUserProfile = profile;
+      showLoggedOutUI();
     }
-    updateProfileCard();
-  } else {
-    navUnauth.classList.remove("hidden");
-    navAuth.classList.add("hidden");
-    signinPrompt.classList.remove("hidden");
-    profileActions.classList.add("hidden");
-    profileUsername.innerText = "guest";
-    profileFull.innerText = "Not signed in";
-    profileAvatar.innerText = "U";
-    statPosts.innerText = 0; statFollowers.innerText = 0; statFollowing.innerText = 0;
-  }
-}
+    await loadSuggestions();
+    await loadPosts();
+    // subscribe to auth changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if(session && session.user) {
+        currentUser = session.user;
+        await ensureProfile();
+        showLoggedInUI();
+        await loadPosts(true);
+      } else {
+        currentUser = null;
+        userProfile = null;
+        showLoggedOutUI();
+        await loadPosts(true);
+      }
+    });
+  })();
 
-let sessionUserProfile = null;
-
-function humanTime(ts) {
-  if(!ts) return "";
-  const d = new Date(ts);
-  const diff = Math.floor((Date.now() - d.getTime())/1000);
-  if(diff < 60) return `${diff}s`;
-  if(diff < 3600) return `${Math.floor(diff/60)}m`;
-  if(diff < 86400) return `${Math.floor(diff/3600)}h`;
-  return d.toLocaleDateString();
-}
-
-function toast(msg) { alert(msg); }
-
-async function authLogin(){
-  const email = $("#emailInput").value;
-  const password = $("#passwordInput").value;
-  if(!email || !password) return toast("Enter email and password");
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if(error) return toast(error.message);
-  authModal.classList.add("hidden");
-  await checkUser();
-}
-
-async function authSignup(){
-  const email = $("#emailInput").value;
-  const password = $("#passwordInput").value;
-  if(!email || !password) return toast("Enter email and password");
-  const { error } = await supabase.auth.signUp({ email, password });
-  if(error) return toast(error.message);
-  toast("Signed up — check your email if you used magic link flow");
-  authModal.classList.add("hidden");
-}
-
-async function sendMagicLink() {
-  const email = $("#emailInput").value;
-  if(!email) return toast("Enter email");
-  const { error } = await supabase.auth.signInWithOtp({ email });
-  if(error) return toast(error.message);
-  toast("Magic link sent to " + email);
-  authModal.classList.add("hidden");
-}
-
-// Upload flow
-function openUploader(){
-  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
-  $("#fileInput").value = "";
-  $("#captionInput").value = "";
-  $("#uploadTitle").innerText = "Create post";
-  $("#submitPost").dataset.editId = "";
-  uploadModal.classList.remove("hidden");
-}
-
-async function submitPost(){
-  const fileInput = $("#fileInput");
-  const caption = $("#captionInput").value || "";
-  const file = fileInput.files[0];
-  const editingId = $("#submitPost").dataset.editId;
-
-  if(editingId) {
-    // edit caption only
-    await supabase.from("posts").update({ caption }).eq("id", editingId);
-    uploadModal.classList.add("hidden");
-    return;
-  }
-
-  if(!file) return toast("Please choose an image");
-  const fileName = `${Date.now()}-${file.name}`;
-  const { error: upErr } = await supabase.storage.from("post-images").upload(fileName, file, { cacheControl: "3600", upsert: false });
-  if(upErr) return toast("Upload failed: "+upErr.message);
-
-  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/post-images/${encodeURIComponent(fileName)}`;
-  // insert post with user_id set by frontend (RLS expects user_id = auth.uid())
-  const { error } = await supabase.from("posts").insert([{ user_id: sessionUser.id, image_url: publicUrl, caption }]);
-  if(error) return toast("Create post failed: "+error.message);
-  uploadModal.classList.add("hidden");
-  await loadPosts(true);
-}
-
-// Load posts (paginated). If head=true then reset cursor.
-async function loadPosts(head=false){
-  if(head) { lastCursor = null; feedList.innerHTML = ""; }
-  feedStatus.innerText = "Loading…";
-
-  let query = supabase.from("posts").select(`id, user_id, image_url, caption, created_at, profiles (username, avatar_url)`).order("created_at",{ascending:false}).limit(pageSize);
-  if(lastCursor) query = query.range(0, pageSize-1).gt("created_at", lastCursor); // simple cursor - note: may need better cursor by id/time for production
-
-  const { data, error } = await query;
-  if(error) { feedStatus.innerText = "Error"; return console.error(error); }
-  if(!data || data.length === 0) {
-    feedStatus.innerText = head ? "No posts yet" : "No more posts";
-    loadMoreWrap.style.display = "none";
-    return;
-  }
-
-  // append
-  data.forEach(p => {
-    appendPostCard(p);
-  });
-
-  // update cursor
-  lastCursor = data[data.length-1].created_at;
-  feedStatus.innerText = "";
-  loadMoreWrap.style.display = data.length < pageSize ? "none" : "block";
-}
-
-// append a single post card (DOM)
-function appendPostCard(p) {
-  const id = p.id;
-  const username = p.profiles?.username || p.user_id.slice(0,6);
-  const avatarLetter = (p.profiles?.username?.[0] || "U").toUpperCase();
-  const card = document.createElement("div");
-  card.className = "bg-white rounded-xl shadow-sm overflow-hidden";
-  card.id = `post-${id}`;
-
-  card.innerHTML = `
-    <div class="p-3 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full avatar flex items-center justify-center text-white font-semibold">${avatarLetter}</div>
-        <div>
-          <div class="font-semibold">${username}</div>
-          <div class="text-xs text-gray-500">${humanTime(p.created_at)}</div>
-        </div>
-      </div>
-      <div class="text-sm text-gray-500">
-        ${sessionUser && sessionUser.id === p.user_id ? `<button class="editPostBtn text-xs text-blue-600 mr-2">Edit</button><button class="deletePostBtn text-xs text-red-600">Delete</button>` : `<button class="followBtn text-xs text-blue-500">Follow</button>`}
-      </div>
-    </div>
-
-    <div class="w-full">
-      <img src="${p.image_url}" class="w-full max-h-96 object-cover" alt="post image" />
-    </div>
-
-    <div class="p-3">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <button class="likeBtn text-xl clickable">♡</button>
-          <button class="commentToggle text-xl clickable"><i class="fa fa-comment"></i></button>
-        </div>
-        <div class="text-gray-500 text-sm" id="likes-count-${id}">0 likes</div>
-      </div>
-
-      <div class="mt-2"><span class="font-semibold">${username}</span> ${escapeHtml(p.caption || "")}</div>
-
-      <div class="mt-3 hidden" id="comments-${id}">
-        <div id="commentsList-${id}" class="space-y-2 mb-2"></div>
-        <div class="flex gap-2">
-          <input id="commentInput-${id}" placeholder="Add a comment..." class="flex-1 p-2 border rounded text-sm" />
-          <button class="postCommentBtn px-3 py-1 rounded bg-blue-600 text-white">Post</button>
-        </div>
-      </div>
-    </div>
-  `;
-  feedList.appendChild(card);
-
-  // wire buttons
-  const likeBtn = card.querySelector(".likeBtn");
-  const commentToggle = card.querySelector(".commentToggle");
-  const postCommentBtn = card.querySelector(".postCommentBtn");
-  const editBtn = card.querySelector(".editPostBtn");
-  const deleteBtn = card.querySelector(".deletePostBtn");
-  const followBtn = card.querySelector(".followBtn");
-
-  likeBtn.onclick = () => toggleLikeOptimistic(id, likeBtn);
-  commentToggle.onclick = () => {
-    const c = $(`#comments-${id}`);
-    c.classList.toggle("hidden");
-    if(!c.classList.contains("hidden")) loadComments(id);
-  };
-  postCommentBtn && (postCommentBtn.onclick = () => postComment(id));
-
-  editBtn && (editBtn.onclick = () => openEditPost(p));
-  deleteBtn && (deleteBtn.onclick = () => deletePost(id));
-  followBtn && (followBtn.onclick = () => toggleFollow(p.user_id, followBtn));
-
-  // load likes/count and whether current user liked it
-  loadLikesForPost(id);
-}
-
-// helpers
-function escapeHtml(text) {
-  if(!text) return "";
-  return text.replace(/[&<>"']/g, (m)=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]));
-}
-
-// likes functions (optimistic)
-const likeOptimisticState = {}; // postId => liked boolean
-
-async function toggleLikeOptimistic(postId, btn) {
-  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
-  // optimistic toggle
-  likeOptimisticState[postId] = !likeOptimisticState[postId];
-  updateLikeUI(postId);
-  // backend
-  try {
-    // check existing
-    const { data: existing } = await supabase.from("likes").select("*").eq("post_id",postId).eq("user_id",sessionUser.id);
-    if(existing && existing.length>0) {
-      await supabase.from("likes").delete().eq("id", existing[0].id);
+  // Create profile row if missing
+  async function ensureProfile() {
+    if(!currentUser) return;
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+    if(data) {
+      userProfile = data;
     } else {
-      await supabase.from("likes").insert([{ post_id: postId, user_id: sessionUser.id }]);
+      // create minimal profile
+      const username = currentUser.email.split('@')[0];
+      const { data: p } = await supabase.from('profiles').insert([{ id: currentUser.id, username }]).select().single();
+      userProfile = p;
     }
-  } catch(e) { console.error(e); }
-  // reload counts from server for true state
-  await loadLikesForPost(postId);
-}
-
-async function loadLikesForPost(postId) {
-  const { data: likes } = await supabase.from("likes").select("*").eq("post_id", postId);
-  const liked = sessionUser ? likes.some(l => l.user_id === sessionUser.id) : false;
-  likeOptimisticState[postId] = liked;
-  const el = $(`#likes-count-${postId}`);
-  if(el) el.innerText = `${likes.length} likes`;
-  const btn = $(`#post-${postId} .likeBtn`);
-  if(btn) btn.innerText = liked ? "❤️" : "♡";
-}
-
-function updateLikeUI(postId) {
-  const el = $(`#likes-count-${postId}`);
-  if(!el) return;
-  // quick visual - add/subtract 1
-  const currentText = el.innerText || "0 likes";
-  const currentNum = parseInt(currentText.split(" ")[0]) || 0;
-  const liked = likeOptimisticState[postId];
-  el.innerText = `${ liked ? currentNum + 1 : Math.max(0, currentNum - 1) } likes`;
-  const btn = $(`#post-${postId} .likeBtn`);
-  if(btn) btn.innerText = liked ? "❤️" : "♡";
-}
-
-// comments
-async function postComment(postId) {
-  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
-  const input = $(`#commentInput-${postId}`);
-  if(!input || !input.value.trim()) return;
-  const text = input.value.trim();
-  input.value = "";
-  await supabase.from("comments").insert([{ post_id: postId, user_id: sessionUser.id, comment: text }]);
-  await loadComments(postId);
-}
-
-async function loadComments(postId) {
-  const { data } = await supabase.from("comments").select(`id, comment, created_at, profiles(username)`).eq("post_id", postId).order("created_at",{ascending:true});
-  const list = $(`#commentsList-${postId}`);
-  if(!list) return;
-  list.innerHTML = "";
-  data.forEach(c => {
-    const el = document.createElement("div");
-    el.className = "text-sm";
-    el.innerHTML = `<span class="font-semibold">${c.profiles?.username||'User'}</span> ${escapeHtml(c.comment)} <span class="text-gray-400 text-xs"> · ${humanTime(c.created_at)}</span>`;
-    list.appendChild(el);
-  });
-}
-
-// edit/delete
-function openEditPost(post) {
-  $("#uploadTitle").innerText = "Edit post";
-  $("#captionInput").value = post.caption || "";
-  $("#fileInput").value = "";
-  $("#submitPost").dataset.editId = post.id;
-  uploadModal.classList.remove("hidden");
-}
-
-async function deletePost(postId) {
-  if(!confirm("Delete this post?")) return;
-  await supabase.from("posts").delete().eq("id", postId);
-  $(`#post-${postId}`)?.remove();
-}
-
-// follow/unfollow
-async function toggleFollow(targetUserId, btn) {
-  if(!sessionUser) { authModal.classList.remove("hidden"); return; }
-  if(sessionUser.id === targetUserId) return;
-  // check existing
-  const { data: existing } = await supabase.from("follows").select("*").eq("follower", sessionUser.id).eq("following", targetUserId);
-  if(existing && existing.length) {
-    await supabase.from("follows").delete().eq("id", existing[0].id);
-    btn.innerText = "Follow";
-  } else {
-    await supabase.from("follows").insert([{ follower: sessionUser.id, following: targetUserId }]);
-    btn.innerText = "Following";
+    updateProfileUI();
   }
-  await updateFollowCounts();
-}
 
-async function updateFollowCounts() {
-  if(!sessionUser) return;
-  const [{ count: followers }] = await Promise.all([
-    supabase.from("follows").select("*", { count: "exact", head: false }).eq("following", sessionUser.id)
-  ]);
-  const [{ count: following }] = await Promise.all([
-    supabase.from("follows").select("*", { count: "exact", head: false }).eq("follower", sessionUser.id)
-  ]);
-  statFollowers.innerText = followers || 0;
-  statFollowing.innerText = following || 0;
-}
+  function showLoggedInUI(){
+    authArea.querySelector('#openAuthBtn').style.display = 'none';
+    userMenu.classList.remove('hidden');
+    logoutBtn.classList.remove('hidden');
+    navAvatar.textContent = (userProfile?.username?.[0] || currentUser?.email?.[0] || 'U').toUpperCase();
+  }
 
-// suggestions (simple: top recent posters)
-async function loadSuggestions() {
-  const { data } = await supabase.from("profiles").select("id, username, avatar_url").limit(6);
-  suggestionsList.innerHTML = "";
-  if(!data) return;
-  data.forEach(u => {
-    const el = document.createElement("div");
-    el.className = "flex items-center justify-between";
-    el.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">${(u.username||'U')[0].toUpperCase()}</div>
-        <div>
-          <div class="text-sm font-medium">${u.username}</div>
-          <div class="text-xs text-gray-500">New to Synq</div>
+  function showLoggedOutUI(){
+    authArea.querySelector('#openAuthBtn').style.display = 'inline-block';
+    userMenu.classList.add('hidden');
+    logoutBtn.classList.add('hidden');
+    navAvatar.textContent = 'U';
+    profileAvatar.querySelector('span') && (profileAvatar.querySelector('span').textContent = 'U');
+    profileUsername.textContent = 'username';
+  }
+
+  function updateProfileUI(){
+    profileUsername.textContent = userProfile?.username || currentUser?.email.split('@')[0];
+    profileFull.textContent = currentUser?.email || '';
+    profileAvatar.querySelector('span') && (profileAvatar.querySelector('span').textContent = (userProfile?.username?.[0] || currentUser?.email?.[0] || 'U').toUpperCase());
+    navAvatar.textContent = (userProfile?.username?.[0] || currentUser?.email?.[0] || 'U').toUpperCase();
+  }
+
+  // Upload post
+  createPostBtn.addEventListener('click', async ()=> {
+    if(!currentUser) { authModal.classList.remove('hidden'); return; }
+    const file = postFile.files[0];
+    const caption = postCaption.value || '';
+    if(!file) return alert('Choose an image.');
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+    // upload to storage
+    const { error: upErr } = await supabase.storage.from('post-images').upload(fileName, file, { cacheControl: '3600', upsert: false });
+    if(upErr) return alert('Upload failed: ' + upErr.message);
+    // get public url
+    const { data: urlData } = await supabase.storage.from('post-images').getPublicUrl(fileName);
+    const imageUrl = urlData.publicUrl;
+    // insert post row
+    const { error: postErr } = await supabase.from('posts').insert([{ user_id: currentUser.id, image_url: imageUrl, caption }]);
+    if(postErr) return alert('Create post failed: ' + postErr.message);
+    postFile.value = '';
+    postCaption.value = '';
+    uploadModal.classList.add('hidden');
+    await loadPosts(true);
+  });
+
+  // Load suggestions (small sample of profiles)
+  async function loadSuggestions() {
+    const { data } = await supabase.from('profiles').select('id,username').limit(6);
+    suggestionsList.innerHTML = '';
+    if(!data) return;
+    data.forEach(u => {
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between';
+      div.innerHTML = `
+        <div class="flex items-center">
+          <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">${(u.username||'U')[0].toUpperCase()}</div>
+          <div>
+            <p class="text-sm font-medium">${u.username}</p>
+            <p class="text-xs text-gray-400">Suggested</p>
+          </div>
         </div>
-      </div>
-      <button class="followSuggestBtn text-sm text-blue-500">Follow</button>
-    `;
-    suggestionsList.appendChild(el);
-    el.querySelector(".followSuggestBtn").onclick = () => toggleFollow(u.id, el.querySelector(".followSuggestBtn"));
-  });
-}
+        <button class="text-blue-500 text-xs followBtn" data-user="${u.id}">Follow</button>
+      `;
+      suggestionsList.appendChild(div);
+      div.querySelector('.followBtn').addEventListener('click', async (e) => {
+        if(!currentUser) { authModal.classList.remove('hidden'); return; }
+        const targetId = e.target.dataset.user;
+        // upsert into follows
+        await supabase.from('follows').insert([{ follower: currentUser.id, following: targetId }]).catch(()=>{});
+        alert('Following!');
+      });
+    });
+  }
 
-// search by username
-async function searchByUsername(q) {
-  if(!q) return loadPosts(true);
-  const { data } = await supabase.from("profiles").select("id,username").ilike("username", `%${q}%`).limit(20);
-  feedList.innerHTML = "";
-  if(!data || data.length===0) return feedList.innerHTML = `<div class="p-4 bg-white rounded">No users found</div>`;
-  // show user cards (simple)
-  data.forEach(u => {
-    const el = document.createElement("div");
-    el.className = "p-4 bg-white rounded";
-    el.innerHTML = `<div class="flex items-center justify-between"><div><b>${u.username}</b></div><div><button class="px-3 py-1 rounded ghost-btn" onclick="openProfilePage('${u.id}')">View</button></div></div>`;
-    feedList.appendChild(el);
-  });
-}
+  // Load posts (reset = true will flush container)
+  async function loadPosts(reset=false) {
+    if(reset) postsContainer.innerHTML = '';
+    // read posts with profiles join
+    const { data, error } = await supabase.from('posts').select('id, user_id, image_url, caption, created_at, profiles(username)').order('created_at', { ascending: false });
+    if(error) return console.error(error);
+    postsContainer.innerHTML = '';
+    if(!data || data.length===0) {
+      postsContainer.innerHTML = '<div class="p-6 bg-white rounded-lg">No posts yet</div>';
+      return;
+    }
+    data.forEach(p => renderPost(p));
+  }
 
-// open profile page (simple listing of their posts)
-window.openProfilePage = async function(userId) {
-  feedList.innerHTML = "";
-  feedStatus.innerText = "Loading user posts…";
-  const { data } = await supabase.from("posts").select("id, user_id, image_url, caption, created_at, profiles(username)").eq("user_id", userId).order("created_at",{ascending:false});
-  if(!data || data.length===0) { feedList.innerHTML = `<div class="p-4 bg-white rounded">No posts</div>`; feedStatus.innerText = ""; return; }
-  data.forEach(p => appendPostCard(p));
-  feedStatus.innerText = "";
-}
+  // Render a single post using the template
+  function renderPost(p) {
+    const temp = postTemplate.content.cloneNode(true);
+    const card = temp.querySelector('.post-card');
+    // header username & time
+    card.querySelector('.username').textContent = p.profiles?.username || (p.user_id ? p.user_id.slice(0,6) : 'User');
+    card.querySelector('.time').textContent = humanTime(p.created_at);
+    // image
+    const imgWrap = card.querySelector('.imageWrap');
+    imgWrap.innerHTML = `<img src="${p.image_url}" alt="post image" class="w-full h-96 object-cover">`;
+    // likes count element
+    const likesCount = card.querySelector('.likesCount');
+    likesCount.textContent = '...';
+    // caption
+    const captionNode = card.querySelector('.caption p');
+    captionNode.innerHTML = `<span class="font-bold mr-2">${p.profiles?.username || 'User'}</span>${escapeHtml(p.caption || '')}`;
 
-// profile edit
-async function saveProfile() {
-  const username = $("#editUsername").value.trim();
-  const avatar_url = $("#editAvatarUrl").value.trim() || null;
-  if(!username) return toast("Username required");
-  const { error } = await supabase.from("profiles").upsert([{ id: sessionUser.id, username, avatar_url }]);
-  if(error) return toast(error.message);
-  sessionUserProfile = { id: sessionUser.id, username, avatar_url };
-  updateProfileCard();
-  profileModal.classList.add("hidden");
-}
+    // comments preview (will show first 2)
+    const commentsPreview = card.querySelector('.commentsPreview');
+    commentsPreview.textContent = 'Loading comments...';
 
-async function updateProfileCard() {
-  if(!sessionUserProfile) return;
-  profileUsername.innerText = sessionUserProfile.username;
-  profileFull.innerText = sessionUser.email;
-  profileAvatar.innerText = (sessionUserProfile.username[0] || 'U').toUpperCase();
-  navAvatar.innerText = profileAvatar.innerText;
-  statPosts.innerText = await countRows("posts", "user_id", sessionUser.id) || 0;
-  await updateFollowCounts();
-}
+    // buttons
+    const likeBtn = card.querySelector('.likeBtn i');
+    const bookmarkBtn = card.querySelector('.bookmarkBtn i');
+    const commentOpenBtn = card.querySelector('.commentOpenBtn');
+    const commentArea = card.querySelector('.commentArea');
+    const postCommentBtn = card.querySelector('.postCommentBtn');
 
-async function countRows(table, col, val) {
-  const { count } = await supabase.from(table).select(col, { count: "exact", head: false }).eq(col, val);
-  return count;
-}
+    // bind comment toggle
+    commentOpenBtn.addEventListener('click', ()=> {
+      commentArea.classList.toggle('hidden');
+      if(!commentArea.classList.contains('hidden')) loadCommentsFor(p.id, card);
+    });
 
-// realtime subscriptions
-function subscribeRealtime() {
-  // posts
-  const postsChannel = supabase.channel('public:posts')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, payload => {
-      // simple strategy: on INSERT prepend, on UPDATE replace, on DELETE remove
-      if(payload.eventType === 'INSERT') {
-        appendPostCard(payload.new);
-      } else if(payload.eventType === 'UPDATE') {
-        const node = $(`#post-${payload.new.id}`);
-        if(node) node.remove();
-        appendPostCard(payload.new);
-      } else if(payload.eventType === 'DELETE') {
-        $(`#post-${payload.old.id}`)?.remove();
+    // post comment
+    postCommentBtn.addEventListener('click', async ()=> {
+      if(!currentUser) { authModal.classList.remove('hidden'); return; }
+      const input = card.querySelector('.commentInput');
+      if(!input.value.trim()) return;
+      await supabase.from('comments').insert([{ post_id: p.id, user_id: currentUser.id, comment: input.value.trim() }]);
+      input.value = '';
+      await loadCommentsFor(p.id, card);
+      await loadLikesCount(p.id, likesCount); // not necessary but keeps UI fresh
+    });
+
+    // like action
+    card.querySelector('.likeBtn').addEventListener('click', async ()=> {
+      if(!currentUser) { authModal.classList.remove('hidden'); return; }
+      // check existing
+      const { data: existing } = await supabase.from('likes').select('*').eq('post_id', p.id).eq('user_id', currentUser.id);
+      if(existing && existing.length > 0) {
+        await supabase.from('likes').delete().eq('id', existing[0].id);
+      } else {
+        await supabase.from('likes').insert([{ post_id: p.id, user_id: currentUser.id }]);
       }
-    })
-    .subscribe();
-  realtimeChannels.push(postsChannel);
+      await loadLikesCount(p.id, likesCount);
+    });
 
-  // likes
-  const likesChannel = supabase.channel('public:likes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, payload => {
-      // update like counts for the affected post
-      const postId = payload.new?.post_id || payload.old?.post_id;
-      if(postId) loadLikesForPost(postId);
-    })
-    .subscribe();
-  realtimeChannels.push(likesChannel);
-
-  // comments
-  const commentsChannel = supabase.channel('public:comments')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, payload => {
-      const postId = payload.new?.post_id || payload.old?.post_id;
-      if(postId) {
-        loadComments(postId);
+    // menu (edit/delete) for owner - basic
+    const postMenuBtn = card.querySelector('.postMenuBtn');
+    postMenuBtn.addEventListener('click', async ()=> {
+      if(!currentUser) { authModal.classList.remove('hidden'); return; }
+      if(currentUser.id === p.user_id) {
+        if(confirm('Delete post?')) {
+          await supabase.from('posts').delete().eq('id', p.id);
+          card.remove();
+        }
+      } else {
+        alert('Post options (report etc).');
       }
-    })
-    .subscribe();
-  realtimeChannels.push(commentsChannel);
-}
+    });
 
-// load initial posts
-async function loadMorePosts(){
-  await loadPosts(false);
-}
+    // insert card into DOM
+    postsContainer.appendChild(card);
 
-// initial call
-init();
+    // load likes count & whether this user liked
+    loadLikesCount(p.id, likesCount);
+
+    // load comments preview
+    loadCommentsPreview(p.id, commentsPreview);
+
+    // update stats (we can update counts for profile)
+    updateProfileStats();
+  }
+
+  // load comments preview (first 2)
+  async function loadCommentsPreview(postId, previewNode) {
+    const { data } = await supabase.from('comments').select('id, comment, created_at, profiles(username)').eq('post_id', postId).order('created_at', { ascending: false }).limit(2);
+    if(!data || data.length===0) {
+      previewNode.textContent = 'Be the first to comment';
+      return;
+    }
+    previewNode.innerHTML = data.slice().reverse().map(c => `<span class="font-semibold">${c.profiles?.username || 'User'}</span> ${escapeHtml(c.comment)}`).join('<br>');
+  }
+
+  // load all comments into the comment area of a post card
+  async function loadCommentsFor(postId, card) {
+    const { data } = await supabase.from('comments').select('id, comment, created_at, profiles(username)').eq('post_id', postId).order('created_at', { ascending: true });
+    const list = card.querySelector('.commentArea');
+    const commentsList = card.querySelector('#commentsList');
+    // we will place comments inside the comment area above input
+    let container = card.querySelector('.commentAreaList');
+    if(!container) {
+      container = document.createElement('div');
+      container.className = 'mb-2 commentAreaList';
+      card.querySelector('.commentArea').insertBefore(container, card.querySelector('.commentArea').firstChild);
+    }
+    container.innerHTML = '';
+    if(!data || data.length===0) {
+      container.innerHTML = '<div class="text-sm text-gray-500">No comments yet</div>';
+      return;
+    }
+    data.forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'text-sm mb-1';
+      d.innerHTML = `<span class="font-semibold">${c.profiles?.username || 'User'}</span> ${escapeHtml(c.comment)} <span class="text-gray-400 text-xs"> · ${humanTime(c.created_at)}</span>`;
+      container.appendChild(d);
+    });
+  }
+
+  // load likes count
+  async function loadLikesCount(postId, node) {
+    const { data } = await supabase.from('likes').select('id, user_id').eq('post_id', postId);
+    const count = data ? data.length : 0;
+    node.textContent = `${count} likes`;
+  }
+
+  // update profile counts (simple)
+  async function updateProfileStats() {
+    if(!userProfile) return;
+    const { data } = await supabase.from('posts').select('id', { count: 'exact', head: false }).eq('user_id', userProfile.id);
+    statPosts.textContent = data?.length || 0;
+  }
+
+  // utility: escape HTML
+  function escapeHtml(text) {
+    if(!text) return '';
+    return text.replace(/[&<>"']/g, (m)=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]));
+  }
+
+  // load comments for a post id (helper)
+  async function loadComments(postId) {
+    const cards = Array.from(postsContainer.querySelectorAll('.post-card'));
+    for(const c of cards) {
+      // find if it's the right post by comparing inner image src
+    }
+  }
+
+  // small helper: refresh feed (call after actions)
+  async function refreshFeed() {
+    await loadPosts(true);
+  }
+
+  // helper: humanTime helper is defined above
+
+  // Escape-friendly console
+  function safeLog(...args) { try { console.log(...args); } catch(e) {} }
+
 </script>
+
 </body>
 </html>
