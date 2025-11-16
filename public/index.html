@@ -3,302 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synq - Share Your Moments</title>
+  <title>Synq - Diagnostic Mode</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#405DE6',
-            secondary: '#5851DB',
-            accent: '#833AB4',
-            dark: '#0f172a',
-            light: '#f8fafc'
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
     body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #fafafa;
-    }
-    .post-card {
-      transition: all 0.3s ease;
-    }
-    .post-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-    .nav-link.active {
-      border-top: 1px solid #262626;
-    }
-    .avatar-placeholder {
-      background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
-    }
-    .loading-spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #405DE6;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .story-ring {
-      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-    }
-    .notification-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background-color: #ED4956;
-      color: white;
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .auth-page {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #405DE6 0%, #833AB4 100%);
+      padding: 20px;
     }
-    .auth-card {
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
       background: white;
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 40px;
-      max-width: 400px;
-      width: 90%;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo h1 {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 15px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    .message {
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .message.error {
+      background: #fee;
+      color: #c33;
+      border: 2px solid #fcc;
+    }
+    .message.success {
+      background: #efe;
+      color: #3c3;
+      border: 2px solid #cfc;
+    }
+    .message.info {
+      background: #eef;
+      color: #33c;
+      border: 2px solid #ccf;
+    }
+    .debug-log {
+      background: #f5f5f5;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .debug-log .log-entry {
+      padding: 5px;
+      border-bottom: 1px solid #ddd;
+    }
+    .debug-log .log-entry.error {
+      color: #c33;
+    }
+    .debug-log .log-entry.success {
+      color: #3c3;
+    }
+    .debug-log .log-entry.info {
+      color: #33c;
     }
     .hidden {
       display: none;
     }
+    .switch-page {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+    }
+    .switch-page a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .app-view {
+      background: #fafafa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .post-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .nav-bar {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .create-post {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .create-post textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
-<body class="bg-gray-50">
+<body>
 
   <!-- Login Page -->
-  <div id="loginPage" class="auth-page">
-    <div class="auth-card">
-      <div class="text-center mb-8">
-        <div class="h-16 w-16 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center mx-auto mb-4">
-          <span class="text-white font-bold text-4xl">S</span>
-        </div>
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Synq</h1>
-        <p class="text-gray-600 mt-2">Share Your Moments</p>
+  <div id="loginPage" class="container">
+    <div class="logo">
+      <h1>Synq</h1>
+      <p style="color: #666;">Share Your Moments</p>
+    </div>
+
+    <div id="loginMessage" class="message"></div>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" required>
       </div>
-      <div id="loginError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
-      <form id="loginForm">
-        <div class="mb-4">
-          <input type="email" id="loginEmail" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-        </div>
-        <div class="mb-6">
-          <input type="password" id="loginPassword" placeholder="Password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-        </div>
-        <button type="submit" class="w-full bg-gradient-to-r from-primary to-accent text-white font-bold py-3 rounded-lg hover:opacity-90 transition">
-          Log In
-        </button>
-      </form>
-      <div class="text-center mt-6">
-        <p class="text-gray-600">Don't have an account? <a href="#" id="showSignup" class="text-primary font-bold">Sign up</a></p>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
       </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+    </form>
+
+    <div class="switch-page">
+      Don't have an account? <a id="goToSignup">Sign up</a>
+    </div>
+
+    <div class="debug-log" id="loginDebug">
+      <strong>Debug Log:</strong>
+      <div id="loginDebugEntries"></div>
     </div>
   </div>
 
   <!-- Signup Page -->
-  <div id="signupPage" class="auth-page hidden">
-    <div class="auth-card">
-      <div class="text-center mb-8">
-        <div class="h-16 w-16 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center mx-auto mb-4">
-          <span class="text-white font-bold text-4xl">S</span>
-        </div>
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Synq</h1>
-        <p class="text-gray-600 mt-2">Sign up to see photos and videos from your friends</p>
+  <div id="signupPage" class="container hidden">
+    <div class="logo">
+      <h1>Synq</h1>
+      <p style="color: #666;">Create Your Account</p>
+    </div>
+
+    <div id="signupMessage" class="message"></div>
+
+    <form id="signupForm">
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="signupUsername" placeholder="username" required minlength="3">
       </div>
-      <div id="signupError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
-      <div id="signupSuccess" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 hidden"></div>
-      <form id="signupForm">
-        <div class="mb-4">
-          <input type="text" id="signupUsername" placeholder="Username" required minlength="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-        </div>
-        <div class="mb-4">
-          <input type="email" id="signupEmail" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-        </div>
-        <div class="mb-6">
-          <input type="password" id="signupPassword" placeholder="Password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-        </div>
-        <button type="submit" class="w-full bg-gradient-to-r from-primary to-accent text-white font-bold py-3 rounded-lg hover:opacity-90 transition">
-          Sign Up
-        </button>
-      </form>
-      <div class="text-center mt-6">
-        <p class="text-gray-600">Have an account? <a href="#" id="showLogin" class="text-primary font-bold">Log in</a></p>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="your@email.com" required>
       </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="••••••••" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary" id="signupBtn">Create Account</button>
+    </form>
+
+    <div class="switch-page">
+      Already have an account? <a id="goToLogin">Login</a>
+    </div>
+
+    <div class="debug-log" id="signupDebug">
+      <strong>Debug Log:</strong>
+      <div id="signupDebugEntries"></div>
     </div>
   </div>
 
   <!-- Main App -->
-  <div id="mainApp" class="hidden">
-    <!-- Navigation Bar -->
-    <nav class="bg-white border-b border-gray-300 fixed top-0 w-full z-50">
-      <div class="max-w-5xl mx-auto px-4">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center">
-            <div class="flex-shrink-0 flex items-center">
-              <div class="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center">
-                <span class="text-white font-bold text-xl">S</span>
-              </div>
-              <span class="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Synq</span>
-            </div>
-          </div>
-          <div class="hidden md:flex items-center">
-            <div class="relative">
-              <input type="text" placeholder="Search" class="bg-gray-100 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64">
-              <i class="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
-            </div>
-          </div>
-          <div class="flex items-center space-x-5">
-            <a href="#" class="text-2xl text-gray-800 nav-link active">
-              <i class="fas fa-home"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-              <i class="far fa-paper-plane"></i>
-            </a>
-            <a href="#" id="createPostBtn" class="text-2xl text-gray-500 nav-link">
-              <i class="far fa-plus-square"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-              <i class="far fa-compass"></i>
-            </a>
-            <a href="#" class="text-2xl text-gray-500 nav-link">
-              <i class="far fa-heart"></i>
-            </a>
-            <a href="#" class="flex items-center">
-              <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center">
-                <span class="text-white text-sm font-medium" id="navAvatar">U</span>
-              </div>
-            </a>
-            <button id="logoutBtn" class="text-sm font-medium text-gray-600 hover:text-gray-900">Logout</button>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="max-w-5xl mx-auto pt-20 pb-10">
-      <div class="flex flex-col md:flex-row gap-6">
-        <!-- Left Sidebar (Feed) -->
-        <div class="w-full md:w-2/3">
-          <!-- Stories -->
-          <div class="bg-white rounded-lg shadow-sm p-4 mb-6 overflow-x-auto">
-            <div class="flex space-x-4">
-              <div class="flex flex-col items-center">
-                <div class="story-ring p-0.5 rounded-full">
-                  <div class="bg-white p-0.5 rounded-full">
-                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                      <i class="fas fa-plus text-gray-500"></i>
-                    </div>
-                  </div>
-                </div>
-                <span class="text-xs mt-1 text-gray-500">Your story</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Posts Feed -->
-          <div id="postsContainer">
-            <div class="loading-spinner"></div>
-          </div>
-        </div>
-
-        <!-- Right Sidebar -->
-        <div class="w-full md:w-1/3">
-          <!-- User Profile -->
-          <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div class="flex items-center">
-              <div class="h-16 w-16 rounded-full avatar-placeholder flex items-center justify-center">
-                <span class="text-white text-xl font-bold" id="profileAvatar">U</span>
-              </div>
-              <div class="ml-4">
-                <h2 class="font-bold text-gray-900" id="profileUsername">username</h2>
-                <p class="text-gray-500 text-sm" id="profileEmail">user@email.com</p>
-              </div>
-            </div>
-            <div class="flex justify-between mt-6">
-              <div class="text-center">
-                <p class="font-bold" id="postsCount">0</p>
-                <p class="text-gray-500 text-sm">Posts</p>
-              </div>
-              <div class="text-center">
-                <p class="font-bold">0</p>
-                <p class="text-gray-500 text-sm">Followers</p>
-              </div>
-              <div class="text-center">
-                <p class="font-bold">0</p>
-                <p class="text-gray-500 text-sm">Following</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Suggestions -->
-          <div class="bg-white rounded-lg shadow-sm p-4">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="font-bold text-gray-500">Suggestions For You</h3>
-            </div>
-            <div class="space-y-4" id="suggestionsContainer">
-              <p class="text-sm text-gray-500">Loading suggestions...</p>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="mt-6 text-xs text-gray-400">
-            <div class="flex flex-wrap">
-              <a href="#" class="mr-2 mb-1">About</a>
-              <a href="#" class="mr-2 mb-1">Help</a>
-              <a href="#" class="mr-2 mb-1">Privacy</a>
-              <a href="#" class="mr-2 mb-1">Terms</a>
-            </div>
-            <p class="mt-2">© 2024 SYNQ</p>
-          </div>
-        </div>
+  <div id="mainApp" class="app-view hidden">
+    <div class="nav-bar">
+      <h2 style="margin: 0; color: #667eea; font-weight: 900;">Synq</h2>
+      <div>
+        <span id="welcomeText" style="margin-right: 20px; font-weight: 600;"></span>
+        <button id="logoutBtn" class="btn btn-secondary" style="width: auto; padding: 10px 20px;">Logout</button>
       </div>
     </div>
-  </div>
 
-  <!-- Create Post Modal -->
-  <div id="createPostModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg max-w-lg w-full mx-4">
-      <div class="border-b border-gray-300 p-4 flex justify-between items-center">
-        <h3 class="font-bold text-lg">Create New Post</h3>
-        <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times text-xl"></i>
-        </button>
-      </div>
-      <div class="p-6">
-        <textarea id="postContentInput" placeholder="Write a caption..." class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="5" maxlength="2200"></textarea>
-        <div class="mt-4 flex justify-end">
-          <button id="submitPostBtn" class="bg-gradient-to-r from-primary to-accent text-white font-bold py-2 px-6 rounded-lg hover:opacity-90 transition">
-            Share
-          </button>
-        </div>
-      </div>
+    <div class="create-post">
+      <h3 style="margin-bottom: 15px;">Create Post</h3>
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <button id="createPostBtn" class="btn btn-primary">Share</button>
     </div>
+
+    <div id="postsContainer"></div>
   </div>
 
   <script>
@@ -309,428 +279,246 @@
     );
 
     let currentUser = null;
-    let currentUsername = '';
-    let profiles = {};
-    let userLikes = new Set();
 
-    // Pages
-    const loginPage = document.getElementById('loginPage');
-    const signupPage = document.getElementById('signupPage');
-    const mainApp = document.getElementById('mainApp');
-    const createPostModal = document.getElementById('createPostModal');
+    // Debug logging
+    function addDebugLog(page, message, type = 'info') {
+      const debugEntries = document.getElementById(page + 'DebugEntries');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      debugEntries.appendChild(entry);
+      debugEntries.scrollTop = debugEntries.scrollHeight;
+      console.log(`[${page}]`, message);
+    }
 
-    // Check auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Show message
+    function showMessage(elementId, message, type) {
+      const el = document.getElementById(elementId);
+      el.textContent = message;
+      el.className = 'message ' + type;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 5000);
+    }
+
+    // Check initial auth state
+    addDebugLog('login', 'App initialized', 'info');
+    addDebugLog('login', 'Checking authentication status...', 'info');
+
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        addDebugLog('login', 'Session check error: ' + error.message, 'error');
+      }
       if (session) {
+        addDebugLog('login', 'Active session found for: ' + session.user.email, 'success');
         currentUser = session.user;
-        loadUserProfile();
+        loadApp();
       } else {
-        showPage('login');
+        addDebugLog('login', 'No active session', 'info');
       }
     });
 
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event, session);
-      
+    // Auth state listener
+    supabase.auth.onAuthStateChange((event, session) => {
+      addDebugLog('login', `Auth event: ${event}`, 'info');
       if (event === 'SIGNED_IN' && session) {
+        addDebugLog('login', 'User signed in: ' + session.user.email, 'success');
         currentUser = session.user;
-        await loadUserProfile();
+        loadApp();
       } else if (event === 'SIGNED_OUT') {
+        addDebugLog('login', 'User signed out', 'info');
         currentUser = null;
-        profiles = {};
-        userLikes = new Set();
-        showPage('login');
-      } else if (session) {
-        currentUser = session.user;
-        await loadUserProfile();
-      } else {
-        showPage('login');
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('signupPage').classList.add('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
       }
     });
 
-    // Login
+    // Login form
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const btn = document.getElementById('loginBtn');
+      btn.textContent = 'Logging in...';
+      btn.disabled = true;
+      
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
       
-      console.log('Attempting login...', email);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      
-      if (error) {
-        console.error('Login error:', error);
-        showError('loginError', error.message);
-      } else {
-        console.log('Login successful:', data);
-        // Auth state change will handle the rest
+      addDebugLog('login', `Attempting login for: ${email}`, 'info');
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          addDebugLog('login', 'Login failed: ' + error.message, 'error');
+          showMessage('loginMessage', error.message, 'error');
+          btn.textContent = 'Login';
+          btn.disabled = false;
+        } else {
+          addDebugLog('login', 'Login successful!', 'success');
+          showMessage('loginMessage', 'Login successful!', 'success');
+          // Auth state change will handle the rest
+        }
+      } catch (err) {
+        addDebugLog('login', 'Unexpected error: ' + err.message, 'error');
+        showMessage('loginMessage', 'An error occurred. Please try again.', 'error');
+        btn.textContent = 'Login';
+        btn.disabled = false;
       }
     });
 
-    // Signup
+    // Signup form
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const btn = document.getElementById('signupBtn');
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+      
       const username = document.getElementById('signupUsername').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
       const password = document.getElementById('signupPassword').value;
-
-      console.log('Attempting signup...', { username, email });
-
-      // Check if username is already taken
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username)
-        .single();
-
-      if (existing) {
-        showError('signupError', 'Username already taken');
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { 
-          data: { username },
-          emailRedirectTo: window.location.origin
-        }
-      });
-
-      if (error) {
-        console.error('Signup error:', error);
-        showError('signupError', error.message);
-      } else {
-        console.log('Signup successful:', data);
-        // Check if email confirmation is required
-        if (data.user && !data.session) {
-          showSuccess('signupSuccess', '✓ Account created! Please check your email to verify.');
-          setTimeout(() => showPage('login'), 3000);
-        } else {
-          // Auto-login if email confirmation is disabled
-          showSuccess('signupSuccess', '✓ Account created successfully!');
-          setTimeout(() => showPage('login'), 1500);
-        }
-      }
-    });
-
-    // Navigation
-    document.getElementById('showSignup').addEventListener('click', (e) => {
-      e.preventDefault();
-      showPage('signup');
-    });
-
-    document.getElementById('showLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      showPage('login');
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      supabase.auth.signOut();
-    });
-
-    // Modal
-    document.getElementById('createPostBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      createPostModal.classList.remove('hidden');
-    });
-
-    document.getElementById('closeModalBtn').addEventListener('click', () => {
-      createPostModal.classList.add('hidden');
-      document.getElementById('postContentInput').value = '';
-    });
-
-    document.getElementById('submitPostBtn').addEventListener('click', async () => {
-      const content = document.getElementById('postContentInput').value.trim();
-      if (!content) return;
-
-      const { error } = await supabase
-        .from('posts')
-        .insert([{ content, user_id: currentUser.id }]);
-
-      if (!error) {
-        createPostModal.classList.add('hidden');
-        document.getElementById('postContentInput').value = '';
-        loadPosts();
-      }
-    });
-
-    // Load user profile
-    async function loadUserProfile() {
-      console.log('Loading user profile for:', currentUser.id);
       
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('username, email')
-          .eq('id', currentUser.id)
-          .single();
+      addDebugLog('signup', `Attempting signup for: ${email}`, 'info');
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error loading profile:', error);
+      try {
+        // Check username
+        addDebugLog('signup', 'Checking if username is available...', 'info');
+        const { data: existingUser, error: checkError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('username', username)
+          .maybeSingle();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          addDebugLog('signup', 'Database error: ' + checkError.message, 'error');
         }
 
-        if (data) {
-          currentUsername = data.username;
-          console.log('Profile loaded:', currentUsername);
-        } else {
-          // Create profile if it doesn't exist
-          currentUsername = currentUser.user_metadata.username || 'user_' + currentUser.id.substring(0, 8);
-          console.log('Creating new profile:', currentUsername);
-          
-          const { error: insertError } = await supabase.from('profiles').upsert({
-            id: currentUser.id,
-            username: currentUsername,
-            email: currentUser.email
-          });
+        if (existingUser) {
+          addDebugLog('signup', 'Username already taken', 'error');
+          showMessage('signupMessage', 'Username already taken', 'error');
+          btn.textContent = 'Create Account';
+          btn.disabled = false;
+          return;
+        }
 
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
+        addDebugLog('signup', 'Username available, creating account...', 'info');
+
+        const { data, error } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { username: username }
+          }
+        });
+
+        if (error) {
+          addDebugLog('signup', 'Signup failed: ' + error.message, 'error');
+          showMessage('signupMessage', error.message, 'error');
+          btn.textContent = 'Create Account';
+          btn.disabled = false;
+        } else {
+          addDebugLog('signup', 'Account created successfully!', 'success');
+          
+          if (data.session) {
+            addDebugLog('signup', 'Automatically logged in', 'success');
+            showMessage('signupMessage', 'Account created! Redirecting...', 'success');
+          } else {
+            addDebugLog('signup', 'Email confirmation required', 'info');
+            showMessage('signupMessage', 'Account created! Check your email to verify.', 'success');
+            setTimeout(() => {
+              document.getElementById('signupPage').classList.add('hidden');
+              document.getElementById('loginPage').classList.remove('hidden');
+            }, 3000);
           }
         }
-
-        const avatar = currentUsername[0].toUpperCase();
-        document.getElementById('navAvatar').textContent = avatar;
-        document.getElementById('profileAvatar').textContent = avatar;
-        document.getElementById('profileUsername').textContent = currentUsername;
-        document.getElementById('profileEmail').textContent = currentUser.email;
-
-        showPage('app');
-        await loadPosts();
-        await loadUserLikes();
-        await loadSuggestions();
-        subscribeToChanges();
       } catch (err) {
-        console.error('Unexpected error loading profile:', err);
-        showPage('login');
-        showError('loginError', 'Failed to load profile. Please try again.');
+        addDebugLog('signup', 'Unexpected error: ' + err.message, 'error');
+        showMessage('signupMessage', 'An error occurred. Please try again.', 'error');
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
       }
+    });
+
+    // Page switching
+    document.getElementById('goToSignup').addEventListener('click', () => {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('signupPage').classList.remove('hidden');
+    });
+
+    document.getElementById('goToLogin').addEventListener('click', () => {
+      document.getElementById('signupPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+    });
+
+    // Load app
+    async function loadApp() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('signupPage').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+
+      // Get or create profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', currentUser.id)
+        .single();
+
+      const username = profile?.username || currentUser.user_metadata?.username || 'User';
+      
+      document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
+      
+      loadPosts();
     }
+
+    // Create post
+    document.getElementById('createPostBtn').addEventListener('click', async () => {
+      const content = document.getElementById('postContent').value.trim();
+      if (!content) return;
+
+      await supabase.from('posts').insert([{
+        user_id: currentUser.id,
+        content: content
+      }]);
+
+      document.getElementById('postContent').value = '';
+      loadPosts();
+    });
 
     // Load posts
     async function loadPosts() {
-      const container = document.getElementById('postsContainer');
-      container.innerHTML = '<div class="loading-spinner"></div>';
-
       const { data: posts } = await supabase
         .from('posts')
         .select(`
           *,
-          likes(count),
-          comments(id, content, created_at, user_id)
+          profiles(username)
         `)
         .order('created_at', { ascending: false });
 
-      if (posts) {
-        const userIds = [...new Set(posts.map(p => p.user_id))];
-        await loadProfiles(userIds);
-        renderPosts(posts);
-        
-        // Update post count
-        const userPosts = posts.filter(p => p.user_id === currentUser.id);
-        document.getElementById('postsCount').textContent = userPosts.length;
-      }
-    }
-
-    // Load profiles
-    async function loadProfiles(userIds) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .in('id', userIds);
-
-      if (data) {
-        data.forEach(p => profiles[p.id] = p);
-      }
-    }
-
-    // Load user likes
-    async function loadUserLikes() {
-      const { data } = await supabase
-        .from('likes')
-        .select('post_id')
-        .eq('user_id', currentUser.id);
-
-      if (data) {
-        userLikes = new Set(data.map(like => like.post_id));
-      }
-    }
-
-    // Load suggestions
-    async function loadSuggestions() {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .neq('id', currentUser.id)
-        .limit(4);
-
-      const container = document.getElementById('suggestionsContainer');
-      if (data && data.length > 0) {
-        container.innerHTML = data.map(user => `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                <span class="text-white font-bold">${user.username[0].toUpperCase()}</span>
-              </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">${user.username}</p>
-                <p class="text-xs text-gray-500">Suggested for you</p>
-              </div>
-            </div>
-            <button class="text-blue-500 text-xs font-medium">Follow</button>
-          </div>
-        `).join('');
-      } else {
-        container.innerHTML = '<p class="text-sm text-gray-500">No suggestions yet</p>';
-      }
-    }
-
-    // Render posts
-    function renderPosts(posts) {
       const container = document.getElementById('postsContainer');
       
-      if (posts.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-            <i class="fas fa-camera text-6xl text-gray-300 mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">No Posts Yet</h3>
-            <p class="text-gray-500">Start sharing your moments!</p>
-          </div>
-        `;
+      if (!posts || posts.length === 0) {
+        container.innerHTML = '<div class="post-card"><p style="text-align:center;color:#999;">No posts yet. Be the first to share!</p></div>';
         return;
       }
 
-      container.innerHTML = posts.map(post => {
-        const profile = profiles[post.user_id] || {};
-        const username = profile.username || 'User';
-        const avatar = username[0].toUpperCase();
-        const likesCount = post.likes?.[0]?.count || 0;
-        const commentsCount = post.comments?.length || 0;
-        const isLiked = userLikes.has(post.id);
-        const timeAgo = getTimeAgo(post.created_at);
-
-        return `
-          <div class="post-card bg-white rounded-lg shadow-sm mb-6">
-            <div class="p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <div class="h-10 w-10 rounded-full avatar-placeholder flex items-center justify-center">
-                    <span class="text-white font-bold">${avatar}</span>
-                  </div>
-                  <div class="ml-3">
-                    <h4 class="text-sm font-bold text-gray-900">${escapeHtml(username)}</h4>
-                    <p class="text-xs text-gray-500">${timeAgo}</p>
-                  </div>
-                </div>
-                <button class="text-gray-500">
-                  <i class="fas fa-ellipsis-h"></i>
-                </button>
-              </div>
-            </div>
-            <div class="px-4 pb-4">
-              <p class="text-sm text-gray-800">${escapeHtml(post.content)}</p>
-            </div>
-            <div class="p-4">
-              <div class="flex justify-between mb-2">
-                <div class="flex space-x-4">
-                  <button onclick="toggleLike('${post.id}')" class="text-2xl ${isLiked ? 'text-red-500' : 'text-gray-800'} hover:text-red-500">
-                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-                  </button>
-                  <button onclick="toggleComments('${post.id}')" class="text-2xl text-gray-800">
-                    <i class="far fa-comment"></i>
-                  </button>
-                  <button class="text-2xl text-gray-800">
-                    <i class="far fa-paper-plane"></i>
-                  </button>
-                </div>
-                <button class="text-2xl text-gray-800">
-                  <i class="far fa-bookmark"></i>
-                </button>
-              </div>
-              <div class="mb-2">
-                <p class="font-bold text-sm">${likesCount} likes</p>
-              </div>
-              ${commentsCount > 0 ? `
-              <div class="text-gray-500 text-sm mb-2">
-                View all ${commentsCount} comments
-              </div>
-              ` : ''}
-              <div class="flex items-center" id="comment-section-${post.id}">
-                <div class="h-8 w-8 rounded-full avatar-placeholder flex items-center justify-center flex-shrink-0">
-                  <span class="text-white text-xs font-bold">${currentUsername[0].toUpperCase()}</span>
-                </div>
-                <input type="text" id="comment-input-${post.id}" placeholder="Add a comment..." class="ml-2 w-full text-sm focus:outline-none" onkeypress="if(event.key==='Enter') addComment('${post.id}')">
-                <button onclick="addComment('${post.id}')" class="text-blue-500 font-medium text-sm ml-2">Post</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Toggle like
-    async function toggleLike(postId) {
-      if (userLikes.has(postId)) {
-        await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUser.id);
-        userLikes.delete(postId);
-      } else {
-        await supabase.from('likes').insert([{ post_id: postId, user_id: currentUser.id }]);
-        userLikes.add(postId);
-      }
-      loadPosts();
-    }
-
-    // Add comment
-    async function addComment(postId) {
-      const input = document.getElementById(`comment-input-${postId}`);
-      const content = input.value.trim();
-      if (!content) return;
-
-      await supabase.from('comments').insert([{
-        post_id: postId,
-        user_id: currentUser.id,
-        content
-      }]);
-
-      input.value = '';
-      loadPosts();
-    }
-
-    // Subscribe to changes
-    function subscribeToChanges() {
-      supabase.channel('posts-channel')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, loadPosts)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, loadPosts)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, loadPosts)
-        .subscribe();
-    }
-
-    // Helper functions
-    function showPage(page) {
-      loginPage.classList.add('hidden');
-      signupPage.classList.add('hidden');
-      mainApp.classList.add('hidden');
-
-      if (page === 'login') loginPage.classList.remove('hidden');
-      else if (page === 'signup') signupPage.classList.remove('hidden');
-      else if (page === 'app') mainApp.classList.remove('hidden');
-    }
-
-    function showError(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 5000);
-    }
-
-    function showSuccess(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 5000);
+      container.innerHTML = posts.map(post => `
+        <div class="post-card">
+          <strong>${post.profiles?.username || 'User'}</strong>
+          <p style="margin-top: 10px;">${escapeHtml(post.content)}</p>
+          <small style="color:#999;">${new Date(post.created_at).toLocaleString()}</small>
+        </div>
+      `).join('');
     }
 
     function escapeHtml(text) {
@@ -738,28 +526,6 @@
       div.textContent = text;
       return div.innerHTML;
     }
-
-    function getTimeAgo(timestamp) {
-      const now = new Date();
-      const past = new Date(timestamp);
-      const seconds = Math.floor((now - past) / 1000);
-
-      if (seconds < 60) return 'Just now';
-      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-      if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-      
-      return past.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
-
-    // Make functions globally accessible
-    window.toggleLike = toggleLike;
-    window.toggleComments = function(postId) {
-      const section = document.getElementById(`comment-section-${postId}`);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const input = document.getElementById(`comment-input-${postId}`);
-        if (input) input.focus();
-      }
-    };
-    window.addComment = addComment;
+  </script>
+</body>
+</html>
