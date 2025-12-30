@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinq - Connect & Share</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 36px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-section, .app-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .post-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .post {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            transition: box-shadow 0.2s;
+        }
+
+        .post:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .post-author {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .post-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .post-content {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .post-actions button {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .like-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .like-btn.liked {
+            background: #667eea;
+            color: white;
+        }
+
+        .comments-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .comment {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 13px;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .comment-form input {
+            margin: 0;
+        }
+
+        .comment-form button {
+            width: auto;
+            padding: 8px 16px;
+            margin: 0;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #28a745;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sinq</h1>
+            <p>Connect, Share, Engage</p>
+            <div id="userInfo" class="user-info hidden">
+                <span id="userEmail"></span>
+                <button id="logoutBtn" class="btn-secondary" style="width: auto; padding: 8px 16px;">Logout</button>
+            </div>
+        </div>
+
+        <div id="authSection" class="auth-section">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('login')">Login</button>
+                <button class="tab" onclick="showTab('signup')">Sign Up</button>
+            </div>
+
+            <div id="loginTab">
+                <h2 style="margin-bottom: 15px; color: #333;">Welcome Back</h2>
+                <input type="email" id="loginEmail" placeholder="Email" />
+                <input type="password" id="loginPassword" placeholder="Password" />
+                <button onclick="login()">Login</button>
+                <div id="loginError" class="error"></div>
+            </div>
+
+            <div id="signupTab" class="hidden">
+                <h2 style="margin-bottom: 15px; color: #333;">Join Sinq</h2>
+                <input type="text" id="signupUsername" placeholder="Username" />
+                <input type="email" id="signupEmail" placeholder="Email" />
+                <input type="password" id="signupPassword" placeholder="Password" />
+                <button onclick="signup()">Sign Up</button>
+                <div id="signupError" class="error"></div>
+            </div>
+        </div>
+
+        <div id="appSection" class="app-section hidden">
+            <div class="post-form">
+                <h3 style="margin-bottom: 15px; color: #333;">Share Something</h3>
+                <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+                <button onclick="createPost()">Post</button>
+                <div id="postError" class="error"></div>
+            </div>
+
+            <div id="postsContainer">
+                <div class="loading">Loading posts...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = null;
+
+        async function init() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showApp();
+                loadPosts();
+            }
+        }
+
+        function showTab(tab) {
+            document.getElementById('loginTab').classList.add('hidden');
+            document.getElementById('signupTab').classList.add('hidden');
+            
+            if (tab === 'login') {
+                document.getElementById('loginTab').classList.remove('hidden');
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.querySelectorAll('.tab')[1].classList.remove('active');
+            } else {
+                document.getElementById('signupTab').classList.remove('hidden');
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.querySelectorAll('.tab')[0].classList.remove('active');
+            }
+        }
+
+        async function signup() {
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const errorEl = document.getElementById('signupError');
+
+            errorEl.textContent = '';
+
+            if (!username || !email || !password) {
+                errorEl.textContent = 'Please fill in all fields';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { username: username }
+                    }
+                });
+
+                if (error) throw error;
+
+                await supabase.from('profiles').insert([
+                    { id: data.user.id, username: username, email: email }
+                ]);
+
+                currentUser = data.user;
+                showApp();
+                loadPosts();
+            } catch (error) {
+                errorEl.textContent = error.message;
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+
+            errorEl.textContent = '';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                currentUser = data.user;
+                showApp();
+                loadPosts();
+            } catch (error) {
+                errorEl.textContent = error.message;
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            currentUser = null;
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('appSection').classList.add('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = currentUser.email;
+        }
+
+        async function createPost() {
+            const content = document.getElementById('postContent').value;
+            const errorEl = document.getElementById('postError');
+
+            errorEl.textContent = '';
+
+            if (!content) {
+                errorEl.textContent = 'Please write something';
+                return;
+            }
+
+            try {
+                const { error } = await supabase.from('posts').insert([
+                    { 
+                        user_id: currentUser.id, 
+                        content: content 
+                    }
+                ]);
+
+                if (error) throw error;
+
+                document.getElementById('postContent').value = '';
+                loadPosts();
+            } catch (error) {
+                errorEl.textContent = error.message;
+            }
+        }
+
+        async function loadPosts() {
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = '<div class="loading">Loading posts...</div>';
+
+            try {
+                const { data: posts, error } = await supabase
+                    .from('posts')
+                    .select(`
+                        *,
+                        profiles (username),
+                        likes (user_id),
+                        comments (*, profiles (username))
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (posts.length === 0) {
+                    container.innerHTML = '<div class="loading">No posts yet. Be the first to share!</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                posts.forEach(post => {
+                    const postEl = createPostElement(post);
+                    container.appendChild(postEl);
+                });
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading posts: ${error.message}</div>`;
+            }
+        }
+
+        function createPostElement(post) {
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post';
+            
+            const isLiked = post.likes.some(like => like.user_id === currentUser.id);
+            const likesCount = post.likes.length;
+
+            const date = new Date(post.created_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            postDiv.innerHTML = `
+                <div class="post-header">
+                    <span class="post-author">@${post.profiles.username}</span>
+                    <span class="post-date">${date}</span>
+                </div>
+                <div class="post-content">${post.content}</div>
+                <div class="post-actions">
+                    <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${post.id}, ${isLiked})">
+                        ${isLiked ? '❤️' : '🤍'} ${likesCount}
+                    </button>
+                    <button class="btn-secondary" onclick="toggleComments(${post.id})">
+                        💬 ${post.comments.length}
+                    </button>
+                </div>
+                <div id="comments-${post.id}" class="comments-section hidden">
+                    ${post.comments.map(c => `
+                        <div class="comment">
+                            <div class="comment-author">@${c.profiles.username}</div>
+                            <div class="comment-text">${c.content}</div>
+                        </div>
+                    `).join('')}
+                    <div class="comment-form">
+                        <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." />
+                        <button onclick="addComment(${post.id})">Post</button>
+                    </div>
+                </div>
+            `;
+
+            return postDiv;
+        }
+
+        async function toggleLike(postId, isLiked) {
+            try {
+                if (isLiked) {
+                    await supabase.from('likes').delete().match({ 
+                        post_id: postId, 
+                        user_id: currentUser.id 
+                    });
+                } else {
+                    await supabase.from('likes').insert([
+                        { post_id: postId, user_id: currentUser.id }
+                    ]);
+                }
+                loadPosts();
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        function toggleComments(postId) {
+            const commentsEl = document.getElementById(`comments-${postId}`);
+            commentsEl.classList.toggle('hidden');
+        }
+
+        async function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const content = input.value;
+
+            if (!content) return;
+
+            try {
+                await supabase.from('comments').insert([
+                    { 
+                        post_id: postId, 
+                        user_id: currentUser.id, 
+                        content: content 
+                    }
+                ]);
+                input.value = '';
+                loadPosts();
+            } catch (error) {
+                console.error('Error adding comment:', error);
+            }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        init();
+    </script>
+</body>
+</html>
