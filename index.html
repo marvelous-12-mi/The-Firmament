@@ -1,575 +1,1470 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sinq - Connect & Share</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <title>LyricsOfAgod | Official Site</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="Official site of LyricsOfAgod a.k.a. Chaakam Sharlawya / Marvelous Noel – truth-centered hip-hop, prophecy, and righteous anthems."
+  />
+  <style>
+    :root {
+      --bg: #050509;
+      --bg-alt: #0b0b15;
+      --accent: #facc15;
+      --accent-soft: rgba(250, 204, 21, 0.12);
+      --accent-strong: #fbbf24;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border-subtle: rgba(156, 163, 175, 0.35);
+      --card-bg: rgba(15, 23, 42, 0.9);
+      --danger: #f97373;
+      --shadow-soft: 0 22px 45px rgba(0, 0, 0, 0.65);
+      --radius-lg: 18px;
+      --radius-xl: 26px;
+      --radius-pill: 999px;
+      --transition-fast: 140ms ease-out;
+      --transition-med: 220ms ease-out;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Inter", sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 48%, #000 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-        .header h1 {
-            color: #667eea;
-            font-size: 36px;
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
+    img {
+      max-width: 100%;
+      display: block;
+    }
 
-        .header p {
-            color: #666;
-            font-size: 14px;
-        }
+    ::selection {
+      background: var(--accent);
+      color: #000;
+    }
 
-        .user-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    /* Layout */
 
-        .auth-section, .app-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-        }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .hidden {
-            display: none;
-        }
+    .shell {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem 3rem;
+    }
 
-        input, textarea, button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-        }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(20px);
+      background: linear-gradient(
+        to bottom,
+        rgba(3, 7, 18, 0.95),
+        rgba(3, 7, 18, 0.75),
+        transparent
+      );
+      border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+    }
 
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
 
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
 
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.2s, opacity 0.2s;
-        }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316 48%, #b91c1c);
+      box-shadow: 0 0 0 1px #facc15, 0 0 18px rgba(250, 204, 21, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.05em;
+    }
 
-        button:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
+    .logo-text-primary {
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
 
-        button:active {
-            transform: translateY(0);
-        }
+    .logo-text-sub {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      color: var(--text-muted);
+    }
 
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
 
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
+    .nav-link {
+      color: var(--text-muted);
+      padding-bottom: 0.15rem;
+      border-bottom: 1px solid transparent;
+      transition: color var(--transition-fast), border-color var(--transition-fast),
+        transform var(--transition-fast);
+    }
 
-        .post-form {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
+    .nav-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
 
-        .post {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
-            transition: box-shadow 0.2s;
-        }
+    .nav-cta {
+      padding: 0.45rem 0.95rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(250, 204, 21, 0.55);
+      background: radial-gradient(circle at 20% 0, #facc15, rgba(15, 23, 42, 0.7));
+      color: #000;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9),
+        0 14px 30px rgba(0, 0, 0, 0.9);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+        background var(--transition-fast);
+      cursor: pointer;
+    }
 
-        .post:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+    .nav-cta span {
+      font-size: 0.6rem;
+      opacity: 0.9;
+      text-transform: none;
+      letter-spacing: 0;
+    }
 
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.95);
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316);
+    }
 
-        .post-author {
-            font-weight: 600;
-            color: #667eea;
-        }
+    /* Hero */
 
-        .post-date {
-            color: #999;
-            font-size: 12px;
-        }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+      gap: 2.5rem;
+      align-items: center;
+      padding-top: 2rem;
+    }
 
-        .post-content {
-            color: #333;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
 
-        .post-actions {
-            display: flex;
-            gap: 10px;
-        }
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: radial-gradient(circle at 0 0, rgba(250, 204, 21, 0.18), transparent);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      color: var(--text-muted);
+    }
 
-        .post-actions button {
-            width: auto;
-            padding: 8px 16px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+    .tag-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 20% 0, #facc15, #22c55e);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6),
+        0 0 12px rgba(34, 197, 94, 0.9);
+    }
 
-        .like-btn {
-            background: #f0f0f0;
-            color: #333;
-        }
+    .hero-heading {
+      font-size: clamp(2.6rem, 4vw, 3.2rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 900;
+      line-height: 1.18;
+    }
 
-        .like-btn.liked {
-            background: #667eea;
-            color: white;
-        }
+    .hero-heading span {
+      display: block;
+    }
 
-        .comments-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #f0f0f0;
-        }
+    .hero-heading-main {
+      background: linear-gradient(to right, #facc15, #f97316, #fbbf24);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.2em;
+    }
 
-        .comment {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
+    .hero-sub {
+      max-width: 36rem;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+    }
 
-        .comment-author {
-            font-weight: 600;
-            font-size: 13px;
-            color: #667eea;
-            margin-bottom: 4px;
-        }
+    .hero-sub strong {
+      color: var(--accent-strong);
+      font-weight: 600;
+    }
 
-        .comment-text {
-            font-size: 13px;
-            color: #333;
-        }
+    .hero-identity {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
 
-        .comment-form {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
+    .id-card {
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top, #111827 0, #020617 80%);
+      padding: 0.75rem 0.8rem;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
 
-        .comment-form input {
-            margin: 0;
-        }
+    .id-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      opacity: 0.12;
+      background: radial-gradient(
+        circle at top left,
+        rgba(250, 204, 21, 0.9),
+        transparent 60%
+      );
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
 
-        .comment-form button {
-            width: auto;
-            padding: 8px 16px;
-            margin: 0;
-        }
+    .id-label {
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
 
-        .error {
-            color: #dc3545;
-            font-size: 13px;
-            margin-top: 5px;
-        }
+    .id-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
 
-        .success {
-            color: #28a745;
-            font-size: 13px;
-            margin-top: 5px;
-        }
+    .id-note {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      margin-top: 0.75rem;
+      align-items: center;
+    }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+    .btn-primary,
+    .btn-ghost {
+      border-radius: var(--radius-pill);
+      padding: 0.75rem 1.35rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      cursor: pointer;
+      transition: transform var(--transition-med),
+        box-shadow var(--transition-med), background var(--transition-med),
+        border-color var(--transition-med), color var(--transition-med);
+      border-width: 1px;
+      border-style: solid;
+    }
 
-        .tab {
-            flex: 1;
-            padding: 10px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+    .btn-primary {
+      background: radial-gradient(circle at 10% 0, #facc15, #f97316);
+      color: #000;
+      border-color: rgba(250, 204, 21, 0.7);
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.9);
+    }
 
-        .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-    </style>
+    .btn-primary:hover {
+      transform: translateY(-1px) translateZ(0);
+      box-shadow: 0 24px 45px rgba(0, 0, 0, 1);
+      background: radial-gradient(circle at 10% 0, #facc15, #f97316, #b91c1c);
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text-muted);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-ghost:hover {
+      color: var(--accent);
+      border-color: rgba(250, 204, 21, 0.7);
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-top: 0.6rem;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .hero-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .meta-pill {
+      border-radius: var(--radius-pill);
+      padding: 0.15rem 0.7rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    /* Hero Right - visual */
+
+    .hero-right {
+      position: relative;
+    }
+
+    .artist-card {
+      border-radius: var(--radius-xl);
+      border: 1px solid #1f2937;
+      background: radial-gradient(circle at 0 0, #111827, #020617 60%, #000);
+      padding: 1.5rem 1.4rem 1.35rem;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .artist-card::before {
+      content: "";
+      position: absolute;
+      inset: -25%;
+      background:
+        radial-gradient(circle at 10% -10%, rgba(250, 204, 21, 0.4), transparent 55%),
+        radial-gradient(circle at 100% 0, rgba(248, 113, 113, 0.38), transparent 60%),
+        radial-gradient(circle at 0 100%, rgba(56, 189, 248, 0.35), transparent 55%);
+      opacity: 0.7;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .artist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+    }
+
+    .artist-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+    }
+
+    .artist-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-pill);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316);
+      box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.9),
+        0 0 16px rgba(248, 250, 252, 0.9);
+    }
+
+    .avatar-wrap {
+      position: relative;
+      border-radius: 999px;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: radial-gradient(circle at 50% 0, #facc15, #0b1120 65%, #020617);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 26px 60px rgba(0, 0, 0, 0.9);
+    }
+
+    .avatar-inner {
+      width: 86%;
+      height: 86%;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      background: conic-gradient(
+        from 200deg,
+        rgba(15, 23, 42, 1),
+        rgba(15, 23, 42, 0.4),
+        rgba(249, 115, 22, 0.16),
+        rgba(15, 23, 42, 0.9)
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(248, 250, 252, 0.92);
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-weight: 700;
+    }
+
+    .avatar-glow {
+      position: absolute;
+      inset: -15%;
+      background: radial-gradient(circle at 50% 0, rgba(250, 204, 21, 0.5), transparent);
+      mix-blend-mode: screen;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .artist-footer {
+      margin-top: 1.35rem;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 1.1rem;
+      align-items: center;
+    }
+
+    .artist-quote {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .artist-quote strong {
+      color: var(--accent-strong);
+      font-weight: 600;
+    }
+
+    .stat-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+    }
+
+    .stat-pill {
+      border-radius: var(--radius-pill);
+      padding: 0.2rem 0.7rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      display: inline-flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.65rem;
+    }
+
+    .stat-value {
+      color: var(--accent-strong);
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+
+    /* Sections */
+
+    main {
+      margin-top: 3.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.75rem;
+    }
+
+    section {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: radial-gradient(circle at top, #020617, #020617 45%, #000);
+      padding: 1.4rem 1.4rem 1.3rem;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--text-muted);
+    }
+
+    .section-kicker {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent-strong);
+    }
+
+    .section-body {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Bio */
+
+    .bio-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1.1fr;
+      gap: 1.35rem;
+    }
+
+    .bio-text p + p {
+      margin-top: 0.75rem;
+    }
+
+    .bio-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
+      font-size: 0.75rem;
+    }
+
+    .bio-tag {
+      border-radius: var(--radius-pill);
+      padding: 0.2rem 0.7rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: var(--text-muted);
+    }
+
+    .bio-card {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: radial-gradient(circle at 0 0, #111827, #020617);
+      padding: 0.9rem 0.85rem;
+    }
+
+    .bio-card h4 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .bio-card p {
+      font-size: 0.86rem;
+      color: var(--text-main);
+    }
+
+    .bio-alias {
+      margin-top: 0.7rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+    }
+
+    .alias-label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      font-size: 0.64rem;
+    }
+
+    .alias-value {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+
+    /* Music */
+
+    .music-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 1.3rem;
+      align-items: flex-start;
+    }
+
+    .track-list {
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .track {
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 0.7rem 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      cursor: pointer;
+      transition: transform var(--transition-fast),
+        box-shadow var(--transition-fast), border-color var(--transition-fast),
+        background var(--transition-fast);
+    }
+
+    .track:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
+      border-color: rgba(250, 204, 21, 0.5);
+      background: linear-gradient(
+        to right,
+        rgba(250, 204, 21, 0.06),
+        rgba(15, 23, 42, 0.95)
+      );
+    }
+
+    .track-main {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .track-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 11px;
+      background: radial-gradient(circle at 20% 0, #facc15, #f97316);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #000;
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.9);
+    }
+
+    .track-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .track-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .track-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+    }
+
+    .track-play {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent-strong);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .music-embed {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: radial-gradient(circle at top, #020617, #020617 55%, #000);
+      padding: 0.8rem 0.8rem 0.85rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .music-embed p {
+      margin-bottom: 0.4rem;
+    }
+
+    .platforms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .platform-pill {
+      border-radius: var(--radius-pill);
+      padding: 0.2rem 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.95);
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+    }
+
+    /* Visual / Video / Shows */
+
+    .flex-two {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr);
+      gap: 1.3rem;
+    }
+
+    .video-placeholder {
+      border-radius: 18px;
+      border: 1px dashed rgba(148, 163, 184, 0.7);
+      background: repeating-linear-gradient(
+          135deg,
+          rgba(15, 23, 42, 0.9),
+          rgba(15, 23, 42, 0.9) 6px,
+          rgba(17, 24, 39, 0.9) 6px,
+          rgba(17, 24, 39, 0.9) 12px
+        ),
+        radial-gradient(circle at top, #020617, #000);
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.83rem;
+      color: var(--text-muted);
+    }
+
+    .video-label {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.7rem;
+      color: var(--accent-strong);
+    }
+
+    .video-thumb {
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: radial-gradient(circle at 0 0, #facc15, #020617 60%);
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .shows-list {
+      display: grid;
+      gap: 0.55rem;
+      font-size: 0.82rem;
+    }
+
+    .show {
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: rgba(15, 23, 42, 0.94);
+      padding: 0.55rem 0.7rem;
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr 0.9fr;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .show-date {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent-strong);
+    }
+
+    .show-venue {
+      font-weight: 600;
+    }
+
+    .show-city {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .show-status {
+      font-size: 0.7rem;
+      text-align: right;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+    }
+
+    .show-status span {
+      border-radius: var(--radius-pill);
+      padding: 0.1rem 0.6rem;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    /* Contact */
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr);
+      gap: 1.3rem;
+      align-items: flex-start;
+    }
+
+    .contact-form {
+      display: grid;
+      gap: 0.65rem;
+      font-size: 0.82rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .field label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+    }
+
+    .field input,
+    .field textarea {
+      border-radius: 12px;
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      background: rgba(15, 23, 42, 0.96);
+      padding: 0.55rem 0.7rem;
+      color: var(--text-main);
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color var(--transition-fast),
+        box-shadow var(--transition-fast), background var(--transition-fast);
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: rgba(250, 204, 21, 0.8);
+      box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.7);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .contact-note {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .contact-note strong {
+      color: var(--accent-strong);
+      font-weight: 600;
+    }
+
+    .contact-meta {
+      font-size: 0.8rem;
+      margin-top: 0.75rem;
+    }
+
+    .contact-meta p + p {
+      margin-top: 0.3rem;
+    }
+
+    .contact-meta span {
+      color: var(--accent-strong);
+    }
+
+    /* Footer */
+
+    footer {
+      border-top: 1px solid rgba(31, 41, 55, 0.95);
+      padding: 1.1rem 1.5rem 1.4rem;
+      margin-top: auto;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      background: radial-gradient(circle at top, #020617, #000);
+    }
+
+    .footer-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.7rem;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    /* Responsive */
+
+    @media (max-width: 960px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .hero-right {
+        order: -1;
+      }
+
+      .hero {
+        padding-top: 1.5rem;
+      }
+
+      main {
+        margin-top: 2.5rem;
+      }
+
+      .bio-grid,
+      .music-grid,
+      .flex-two,
+      .contact-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .artist-footer {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .show {
+        grid-template-columns: 1.4fr 1.2fr;
+      }
+
+      .show-status {
+        grid-column: 1 / -1;
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-links {
+        display: none;
+      }
+
+      .shell {
+        padding-inline: 1.1rem;
+      }
+
+      section {
+        padding-inline: 1.05rem;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero-identity {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .artist-card {
+        padding-inline: 1rem;
+      }
+
+      .avatar-wrap {
+        width: 180px;
+        height: 180px;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Sinq</h1>
-            <p>Connect, Share, Engage</p>
-            <div id="userInfo" class="user-info hidden">
-                <span id="userEmail"></span>
-                <button id="logoutBtn" class="btn-secondary" style="width: auto; padding: 8px 16px;">Logout</button>
-            </div>
+  <div class="page">
+    <!-- Header -->
+    <header>
+      <nav class="nav">
+        <div class="logo-wrap">
+          <div class="logo-icon">L</div>
+          <div>
+            <div class="logo-text-primary">LYRICSOFAGOD</div>
+            <div class="logo-text-sub">Truth • Prophecy • Bars</div>
+          </div>
         </div>
-
-        <div id="authSection" class="auth-section">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('login')">Login</button>
-                <button class="tab" onclick="showTab('signup')">Sign Up</button>
-            </div>
-
-            <div id="loginTab">
-                <h2 style="margin-bottom: 15px; color: #333;">Welcome Back</h2>
-                <input type="email" id="loginEmail" placeholder="Email" />
-                <input type="password" id="loginPassword" placeholder="Password" />
-                <button onclick="login()">Login</button>
-                <div id="loginError" class="error"></div>
-            </div>
-
-            <div id="signupTab" class="hidden">
-                <h2 style="margin-bottom: 15px; color: #333;">Join Sinq</h2>
-                <input type="text" id="signupUsername" placeholder="Username" />
-                <input type="email" id="signupEmail" placeholder="Email" />
-                <input type="password" id="signupPassword" placeholder="Password" />
-                <button onclick="signup()">Sign Up</button>
-                <div id="signupError" class="error"></div>
-            </div>
+        <div class="nav-links">
+          <a href="#bio" class="nav-link">Bio</a>
+          <a href="#music" class="nav-link">Music</a>
+          <a href="#visual" class="nav-link">Visuals</a>
+          <a href="#contact" class="nav-link">Contact</a>
+          <button class="nav-cta">
+            BOOKING
+            <span>For shows, features &amp; sync</span>
+          </button>
         </div>
+      </nav>
+    </header>
 
-        <div id="appSection" class="app-section hidden">
-            <div class="post-form">
-                <h3 style="margin-bottom: 15px; color: #333;">Share Something</h3>
-                <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-                <button onclick="createPost()">Post</button>
-                <div id="postError" class="error"></div>
+    <!-- Content shell -->
+    <div class="shell">
+      <!-- Hero -->
+      <section class="hero-section">
+        <div class="hero">
+          <div class="hero-left">
+            <div class="tagline">
+              <span class="tag-dot"></span>
+              <span>Righteous hip‑hop • Prophetic anthems</span>
             </div>
 
-            <div id="postsContainer">
-                <div class="loading">Loading posts...</div>
+            <h1 class="hero-heading">
+              <span>MARVELOUS NOEL</span>
+              <span class="hero-heading-main">LYRICSOFAGOD</span>
+              <span>CHAAKAM SHARLAWYA</span>
+            </h1>
+
+            <p class="hero-sub">
+              Bars as testimony. Hooks as <strong>prophecy</strong>.  
+              LyricsOfAgod is the voice where truth, scripture, and street reality collide — crafting
+              chant‑ready anthems that cut through the noise and call a people back to
+              <strong>identity, order, and light</strong>.
+            </p>
+
+            <div class="hero-identity">
+              <div class="id-card">
+                <div class="id-label">Artist name</div>
+                <div class="id-name">LyricsOfAgod</div>
+                <div class="id-note">The mic persona. Pure message. No compromise.</div>
+              </div>
+              <div class="id-card">
+                <div class="id-label">Hebrew name</div>
+                <div class="id-name">Chaakam Sharlawya</div>
+                <div class="id-note">Wisdom and lineage on record, not just on paper.</div>
+              </div>
+              <div class="id-card">
+                <div class="id-label">Given name</div>
+                <div class="id-name">Marvelous Noel</div>
+                <div class="id-note">The foundation behind the sound and story.</div>
+              </div>
             </div>
+
+            <div class="hero-actions">
+              <button class="btn-primary">
+                Listen now
+                <span>Latest single • Play</span>
+              </button>
+              <button class="btn-ghost">
+                Watch visuals
+                <span>Official videos &amp; live clips</span>
+              </button>
+            </div>
+
+            <div class="hero-meta">
+              <span class="meta-pill">Allentown, PA</span>
+              <span>Genre-bending: truth‑rap • boom bap • drill‑in‑order</span>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="artist-card">
+              <div class="artist-header">
+                <div class="artist-title">Artist overview</div>
+                <div class="artist-mode">
+                  <span class="live-dot"></span>
+                  Live mode
+                </div>
+              </div>
+
+              <div class="avatar-wrap">
+                <div class="avatar-glow"></div>
+                <div class="avatar-inner">
+                  Divine bars, street truth, prophetic
+                  hooks. One voice, three names, no lies.
+                </div>
+              </div>
+
+              <div class="artist-footer">
+                <p class="artist-quote">
+                  “I don’t rap for algorithms — I rap to cut through illusions.
+                  <strong>Every line is a verdict</strong>.”
+                </p>
+                <div class="stat-row">
+                  <div class="stat-pill">
+                    <span class="stat-label">Focus</span>
+                    <span class="stat-value">Truth, identity, prophecy</span>
+                  </div>
+                  <div class="stat-pill">
+                    <span class="stat-label">Energy</span>
+                    <span class="stat-value">Chant‑ready anthems</span>
+                  </div>
+                  <div class="stat-pill">
+                    <span class="stat-label">For fans of</span>
+                    <span class="stat-value">Killer Mike • Nas • Lecrae (but sharper)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
+
+      <main>
+        <!-- Bio -->
+        <section id="bio">
+          <div class="section-header">
+            <div class="section-title">Artist bio</div>
+            <div class="section-kicker">From hidden to heralded</div>
+          </div>
+          <div class="bio-grid">
+            <div class="bio-text">
+              <p>
+                LyricsOfAgod is more than a stage name — it’s a statement. Under the
+                government name <strong>Marvelous Noel</strong> and the Hebrew identity
+                <strong>Chaakam Sharlawya</strong>, this voice moves through beats like a
+                courtroom: evidence laid, judgment passed, illusions shattered.
+              </p>
+              <p>
+                Every track is crafted for clarity: clean language, heavy symbolism, and hooks that
+                crowds can remember in one listen. This is hip‑hop that calls people back to
+                truth, to identity, and to order — no confusion, no compromise.
+              </p>
+
+              <div class="bio-tags">
+                <span class="bio-tag">Truth‑centered rap</span>
+                <span class="bio-tag">Hebrew identity</span>
+                <span class="bio-tag">Scripture‑rooted bars</span>
+                <span class="bio-tag">Chant‑ready hooks</span>
+              </div>
+            </div>
+
+            <div class="bio-card">
+              <h4>Identity, decoded</h4>
+              <p>
+                Three names. One mission: use sound to break spells and remind people who they
+                are. Whether you call him LyricsOfAgod, Chaakam Sharlawya, or Marvelous Noel, the
+                assignment stays the same — <strong>rebuild a people through words</strong>.
+              </p>
+
+              <div class="bio-alias">
+                <div>
+                  <div class="alias-label">Rap name</div>
+                  <div class="alias-value">LyricsOfAgod</div>
+                </div>
+                <div>
+                  <div class="alias-label">Hebrew name</div>
+                  <div class="alias-value">Chaakam Sharlawya</div>
+                </div>
+                <div>
+                  <div class="alias-label">English name</div>
+                  <div class="alias-value">Marvelous Noel</div>
+                </div>
+                <div>
+                  <div class="alias-label">Base city</div>
+                  <div class="alias-value">Allentown, Pennsylvania</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Music -->
+        <section id="music">
+          <div class="section-header">
+            <div class="section-title">Music</div>
+            <div class="section-kicker">Press play on the message</div>
+          </div>
+
+          <div class="music-grid">
+            <div class="track-list">
+              <!-- You can replace these placeholder tracks with real ones -->
+              <div class="track">
+                <div class="track-main">
+                  <div class="track-icon">1</div>
+                  <div class="track-text">
+                    <div class="track-title">Truth Over Trends</div>
+                    <div class="track-meta">Single • 3:18 • Righteous anthem</div>
+                  </div>
+                </div>
+                <div class="track-play">
+                  Play
+                  <span>▶</span>
+                </div>
+              </div>
+
+              <div class="track">
+                <div class="track-main">
+                  <div class="track-icon">2</div>
+                  <div class="track-text">
+                    <div class="track-title">Names Carved In Stone</div>
+                    <div class="track-meta">Single • 2:56 • Identity record</div>
+                  </div>
+                </div>
+                <div class="track-play">
+                  Play
+                  <span>▶</span>
+                </div>
+              </div>
+
+              <div class="track">
+                <div class="track-main">
+                  <div class="track-icon">3</div>
+                  <div class="track-text">
+                    <div class="track-title">No Lies In My Lines</div>
+                    <div class="track-meta">Single • 3:34 • Street testimony</div>
+                  </div>
+                </div>
+                <div class="track-play">
+                  Play
+                  <span>▶</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="music-embed">
+              <p>
+                This block is ready for your actual music embeds — SoundCloud, Spotify, YouTube,
+                or direct audio players. Just replace this content with your real player code when
+                you’re ready.
+              </p>
+              <p>
+                Until then, let this stand as a promise: every future release under
+                <strong>LyricsOfAgod</strong> will be pinpoint clear, crowd‑chantable, and rooted
+                in truth, not trends.
+              </p>
+
+              <div class="platforms">
+                <span class="platform-pill">SoundCloud</span>
+                <span class="platform-pill">YouTube</span>
+                <span class="platform-pill">Spotify</span>
+                <span class="platform-pill">Apple Music</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Visuals + Shows -->
+        <section id="visual">
+          <div class="section-header">
+            <div class="section-title">Visuals &amp; shows</div>
+            <div class="section-kicker">See it, not just hear it</div>
+          </div>
+
+          <div class="flex-two">
+            <div class="video-placeholder">
+              <div class="video-label">Visual concept</div>
+              <div class="video-thumb">Future video embed</div>
+              <p>
+                Build visuals that match the sound: sharp, symbolic, and clean. No confusion, no
+                mixed signals — just bold imagery that backs up every bar and makes the crowd feel
+                the assignment in one look.
+              </p>
+            </div>
+
+            <div class="shows-list">
+              <div class="show">
+                <div>
+                  <div class="show-date">TBA</div>
+                  <div class="show-venue">Upcoming shows</div>
+                </div>
+                <div>
+                  <div class="show-city">Allentown • Bethlehem • East Coast</div>
+                </div>
+                <div class="show-status">
+                  <span>Booking in progress</span>
+                </div>
+              </div>
+              <div class="show">
+                <div>
+                  <div class="show-date">Always on</div>
+                  <div class="show-venue">Studio &amp; writing</div>
+                </div>
+                <div>
+                  <div class="show-city">New anthems in construction</div>
+                </div>
+                <div class="show-status">
+                  <span>Contact for collabs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact">
+          <div class="section-header">
+            <div class="section-title">Contact</div>
+            <div class="section-kicker">Serious inquiries only</div>
+          </div>
+
+          <div class="contact-grid">
+            <div>
+              <form class="contact-form">
+                <div class="field">
+                  <label for="name">Name</label>
+                  <input id="name" type="text" placeholder="Your name or organization" />
+                </div>
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input id="email" type="email" placeholder="you@example.com" />
+                </div>
+                <div class="field">
+                  <label for="type">Inquiry type</label>
+                  <input
+                    id="type"
+                    type="text"
+                    placeholder="Booking • Feature • Visuals • Sync"
+                  />
+                </div>
+                <div class="field">
+                  <label for="message">Message</label>
+                  <textarea
+                    id="message"
+                    placeholder="Share details, dates, and your vision. Keep it clear."
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn-primary">
+                  Send request
+                  <span>No spam • direct only</span>
+                </button>
+              </form>
+            </div>
+
+            <div>
+              <p class="contact-note">
+                For all business, creative, and collaboration inquiries related to
+                <strong>LyricsOfAgod / Chaakam Sharlawya / Marvelous Noel</strong>, use the form
+                or your preferred platform once links are live.
+              </p>
+              <div class="contact-meta">
+                <p><span>Booking:</span> Shows, tours, and community events.</p>
+                <p><span>Features:</span> Only if the record matches the mission.</p>
+                <p><span>Visuals:</span> Directors &amp; editors aligned with truth‑centered art.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://kpdgmbjdaynplyjacuxd.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZGdtYmpkYXlucGx5amFjdXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjA3MjMsImV4cCI6MjA3NDczNjcyM30.ZJM2v_5VES_AlHAAV4lHaIID7v3IBEbFUgFEcs4yOYQ';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let currentUser = null;
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <div>© <span id="year"></span> LyricsOfAgod • Chaakam Sharlawya • Marvelous Noel</div>
+        <div class="footer-links">
+          <a href="#bio">Bio</a>
+          <a href="#music">Music</a>
+          <a href="#visual">Visuals</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </div>
 
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                showApp();
-                loadPosts();
-            }
-        }
-
-        function showTab(tab) {
-            document.getElementById('loginTab').classList.add('hidden');
-            document.getElementById('signupTab').classList.add('hidden');
-            
-            if (tab === 'login') {
-                document.getElementById('loginTab').classList.remove('hidden');
-                document.querySelectorAll('.tab')[0].classList.add('active');
-                document.querySelectorAll('.tab')[1].classList.remove('active');
-            } else {
-                document.getElementById('signupTab').classList.remove('hidden');
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                document.querySelectorAll('.tab')[0].classList.remove('active');
-            }
-        }
-
-        async function signup() {
-            const username = document.getElementById('signupUsername').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const errorEl = document.getElementById('signupError');
-
-            errorEl.textContent = '';
-
-            if (!username || !email || !password) {
-                errorEl.textContent = 'Please fill in all fields';
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: { username: username }
-                    }
-                });
-
-                if (error) throw error;
-
-                await supabase.from('profiles').insert([
-                    { id: data.user.id, username: username, email: email }
-                ]);
-
-                currentUser = data.user;
-                showApp();
-                loadPosts();
-            } catch (error) {
-                errorEl.textContent = error.message;
-            }
-        }
-
-        async function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const errorEl = document.getElementById('loginError');
-
-            errorEl.textContent = '';
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) throw error;
-
-                currentUser = data.user;
-                showApp();
-                loadPosts();
-            } catch (error) {
-                errorEl.textContent = error.message;
-            }
-        }
-
-        async function logout() {
-            await supabase.auth.signOut();
-            currentUser = null;
-            document.getElementById('authSection').classList.remove('hidden');
-            document.getElementById('appSection').classList.add('hidden');
-            document.getElementById('userInfo').classList.add('hidden');
-        }
-
-        function showApp() {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('appSection').classList.remove('hidden');
-            document.getElementById('userInfo').classList.remove('hidden');
-            document.getElementById('userEmail').textContent = currentUser.email;
-        }
-
-        async function createPost() {
-            const content = document.getElementById('postContent').value;
-            const errorEl = document.getElementById('postError');
-
-            errorEl.textContent = '';
-
-            if (!content) {
-                errorEl.textContent = 'Please write something';
-                return;
-            }
-
-            try {
-                const { error } = await supabase.from('posts').insert([
-                    { 
-                        user_id: currentUser.id, 
-                        content: content 
-                    }
-                ]);
-
-                if (error) throw error;
-
-                document.getElementById('postContent').value = '';
-                loadPosts();
-            } catch (error) {
-                errorEl.textContent = error.message;
-            }
-        }
-
-        async function loadPosts() {
-            const container = document.getElementById('postsContainer');
-            container.innerHTML = '<div class="loading">Loading posts...</div>';
-
-            try {
-                const { data: posts, error } = await supabase
-                    .from('posts')
-                    .select(`
-                        *,
-                        profiles (username),
-                        likes (user_id),
-                        comments (*, profiles (username))
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                if (posts.length === 0) {
-                    container.innerHTML = '<div class="loading">No posts yet. Be the first to share!</div>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                posts.forEach(post => {
-                    const postEl = createPostElement(post);
-                    container.appendChild(postEl);
-                });
-            } catch (error) {
-                container.innerHTML = `<div class="error">Error loading posts: ${error.message}</div>`;
-            }
-        }
-
-        function createPostElement(post) {
-            const postDiv = document.createElement('div');
-            postDiv.className = 'post';
-            
-            const isLiked = post.likes.some(like => like.user_id === currentUser.id);
-            const likesCount = post.likes.length;
-
-            const date = new Date(post.created_at).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            postDiv.innerHTML = `
-                <div class="post-header">
-                    <span class="post-author">@${post.profiles.username}</span>
-                    <span class="post-date">${date}</span>
-                </div>
-                <div class="post-content">${post.content}</div>
-                <div class="post-actions">
-                    <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${post.id}, ${isLiked})">
-                        ${isLiked ? '❤️' : '🤍'} ${likesCount}
-                    </button>
-                    <button class="btn-secondary" onclick="toggleComments(${post.id})">
-                        💬 ${post.comments.length}
-                    </button>
-                </div>
-                <div id="comments-${post.id}" class="comments-section hidden">
-                    ${post.comments.map(c => `
-                        <div class="comment">
-                            <div class="comment-author">@${c.profiles.username}</div>
-                            <div class="comment-text">${c.content}</div>
-                        </div>
-                    `).join('')}
-                    <div class="comment-form">
-                        <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." />
-                        <button onclick="addComment(${post.id})">Post</button>
-                    </div>
-                </div>
-            `;
-
-            return postDiv;
-        }
-
-        async function toggleLike(postId, isLiked) {
-            try {
-                if (isLiked) {
-                    await supabase.from('likes').delete().match({ 
-                        post_id: postId, 
-                        user_id: currentUser.id 
-                    });
-                } else {
-                    await supabase.from('likes').insert([
-                        { post_id: postId, user_id: currentUser.id }
-                    ]);
-                }
-                loadPosts();
-            } catch (error) {
-                console.error('Error toggling like:', error);
-            }
-        }
-
-        function toggleComments(postId) {
-            const commentsEl = document.getElementById(`comments-${postId}`);
-            commentsEl.classList.toggle('hidden');
-        }
-
-        async function addComment(postId) {
-            const input = document.getElementById(`comment-input-${postId}`);
-            const content = input.value;
-
-            if (!content) return;
-
-            try {
-                await supabase.from('comments').insert([
-                    { 
-                        post_id: postId, 
-                        user_id: currentUser.id, 
-                        content: content 
-                    }
-                ]);
-                input.value = '';
-                loadPosts();
-            } catch (error) {
-                console.error('Error adding comment:', error);
-            }
-        }
-
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-
-        init();
-    </script>
+  <script>
+    // Set year automatically
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
